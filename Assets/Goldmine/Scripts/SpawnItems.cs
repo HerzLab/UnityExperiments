@@ -18,7 +18,7 @@ public class SpawnItems : EventMonoBehaviour {
     protected override void AwakeOverride() { }
 
     public void SpawnGold(uint nItems) {
-        manager.eventReporter.ReportScriptedEventMB("goldSpawned", new() { { "nItems", nItems } });
+        manager.eventReporter.ReportScriptedEventTS("goldSpawned", new() { { "nItems", nItems } });
         for (int i = 0; i < nItems; i++) {
             SpawnItem(goldObject);
         }
@@ -29,7 +29,7 @@ public class SpawnItems : EventMonoBehaviour {
             ErrorNotifier.Error(new InvalidOperationException("The game is trying to spawn repeat gems."));
         }
 
-        manager.eventReporter.ReportScriptedEvent("gemsSpawned", new() { { "nItems", nItems } });
+        manager.eventReporter.ReportScriptedEventTS("gemsSpawned", new() { { "nItems", nItems } });
         var indices = Enumerable.Range(0, gemObjects.Length).ToList();
         indices.ShuffleInPlace();
         for (int i = 0; i < nItems; i++) {
@@ -72,7 +72,7 @@ public class SpawnItems : EventMonoBehaviour {
 
         // Misc
         numItemsSpawned++;
-        manager.eventReporter.ReportScriptedEvent(item.name + "Location", new() {
+        manager.eventReporter.ReportScriptedEventTS(item.name + "Location", new() {
                 {"reportingId", spawnedItem.GetComponent<WorldDataReporter>().reportingID},
                 { "positionX", spawnPosition.x },
                 { "positionZ", spawnPosition.z }

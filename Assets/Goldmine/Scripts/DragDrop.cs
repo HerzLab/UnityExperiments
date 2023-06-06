@@ -48,7 +48,7 @@ public class DragDrop : MonoBehaviour {
         } else {
             transform.position = originalPos;
         }
-        manager.eventReporter.ReportScriptedEvent("timelineItemMoved", new() {
+        manager.eventReporter.ReportScriptedEventTS("timelineItemMoved", new() {
             { "name", transform.name },
             { "chosenTime", controlTimeline.GetItemTime(transform) } });
     }

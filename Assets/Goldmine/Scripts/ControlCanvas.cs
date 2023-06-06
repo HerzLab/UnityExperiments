@@ -44,7 +44,7 @@ public class ControlCanvas : MonoBehaviour
                 break;
         }
 
-        manager.eventReporter.ReportScriptedEvent("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "CentralDisplay" }, { "textDisplayed", msg } });
+        manager.eventReporter.ReportScriptedEventTS("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "CentralDisplay" }, { "textDisplayed", msg } });
         centralDisplay.text = msg;
         centralDisplay.color = color_;
         Invoke("ResetCentralDisplay", duration);
@@ -52,7 +52,7 @@ public class ControlCanvas : MonoBehaviour
 
     public void ResetCentralDisplay()
     {
-        manager.eventReporter.ReportScriptedEvent("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "CentralDisplay" }, { "textDisplayed", "" } });
+        manager.eventReporter.ReportScriptedEventTS("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "CentralDisplay" }, { "textDisplayed", "" } });
         centralDisplay.text = "";
     }
 
@@ -73,7 +73,7 @@ public class ControlCanvas : MonoBehaviour
                 break;
         }
 
-        manager.eventReporter.ReportScriptedEvent("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "CentralDisplay2" }, { "textDisplayed", msg } });
+        manager.eventReporter.ReportScriptedEventTS("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "CentralDisplay2" }, { "textDisplayed", msg } });
         centralDisplay2.text = msg;
         centralDisplay2.color = color_;
         Invoke("ResetCentralDisplay2", duration);
@@ -81,7 +81,7 @@ public class ControlCanvas : MonoBehaviour
 
     public void ResetCentralDisplay2()
     {
-        manager.eventReporter.ReportScriptedEvent("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "CentralDisplay" }, { "textDisplayed", "" } });
+        manager.eventReporter.ReportScriptedEventTS("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "CentralDisplay" }, { "textDisplayed", "" } });
         centralDisplay2.text = "";
     }
 
@@ -102,7 +102,7 @@ public class ControlCanvas : MonoBehaviour
                 break;
         }
 
-        manager.eventReporter.ReportScriptedEvent("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "TopDisplay" }, { "textDisplayed", msg } });
+        manager.eventReporter.ReportScriptedEventTS("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "TopDisplay" }, { "textDisplayed", msg } });
         topDisplay.text = msg;
         topDisplay.color = color_;
         Invoke("ResetTopDisplay", duration);
@@ -110,7 +110,7 @@ public class ControlCanvas : MonoBehaviour
 
     public void ResetTopDisplay()
     {
-        manager.eventReporter.ReportScriptedEvent("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "TopDisplay" }, { "textDisplayed", "" } });
+        manager.eventReporter.ReportScriptedEventTS("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "TopDisplay" }, { "textDisplayed", "" } });
         topDisplay.text = "";
     }
 
@@ -131,7 +131,7 @@ public class ControlCanvas : MonoBehaviour
                 break;
         }
 
-        manager.eventReporter.ReportScriptedEvent("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "BottomDisplay" }, { "textDisplayed", msg } });
+        manager.eventReporter.ReportScriptedEventTS("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "BottomDisplay" }, { "textDisplayed", msg } });
         bottomDisplay.text = msg;
         bottomDisplay.color = color_;
         Invoke("ResetBottomDisplay", duration);
@@ -139,7 +139,7 @@ public class ControlCanvas : MonoBehaviour
 
     public void ResetBottomDisplay()
     {
-        manager.eventReporter.ReportScriptedEvent("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "BottomDisplay" }, { "textDisplayed", "" } });
+        manager.eventReporter.ReportScriptedEventTS("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "BottomDisplay" }, { "textDisplayed", "" } });
         bottomDisplay.text = "";
     }
 
@@ -160,7 +160,7 @@ public class ControlCanvas : MonoBehaviour
                 break;
         }
 
-        manager.eventReporter.ReportScriptedEvent("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "Score" }, { "textDisplayed", msg } });
+        manager.eventReporter.ReportScriptedEventTS("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "Score" }, { "textDisplayed", msg } });
         scoreDisplay.text = "SCORE: " + msg;
         if (bigFont)
         {
@@ -198,7 +198,7 @@ public class ControlCanvas : MonoBehaviour
                 break;
         }
 
-        manager.eventReporter.ReportScriptedEvent("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "TaskDirections" }, { "textDisplayed", msg } });
+        manager.eventReporter.ReportScriptedEventTS("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "TaskDirections" }, { "textDisplayed", msg } });
         taskDirectionsDisplay.text = msg;
         taskDirectionsDisplay.color = color_;
     }
@@ -220,47 +220,47 @@ public class ControlCanvas : MonoBehaviour
                 break;
         }
 
-        manager.eventReporter.ReportScriptedEvent("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "TimedTrial" }, { "textDisplayed", msg } });
+        manager.eventReporter.ReportScriptedEventTS("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "TimedTrial" }, { "textDisplayed", msg } });
         timedTrialDisplay.text = msg;
         timedTrialDisplay.color = color_;
     }
 
     public void ShowRightArrow(float duration)
     {
-        manager.eventReporter.ReportScriptedEvent("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "RightArrow" }, { "textDisplayed", "Active" } });
+        manager.eventReporter.ReportScriptedEventTS("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "RightArrow" }, { "textDisplayed", "Active" } });
         rightArrow.SetActive(true);
         Invoke("ResetRightArrow", duration);
     }
 
     void ResetRightArrow()
     {
-        manager.eventReporter.ReportScriptedEvent("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "RightArrow" }, { "textDisplayed", "Inactive" } });
+        manager.eventReporter.ReportScriptedEventTS("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "RightArrow" }, { "textDisplayed", "Inactive" } });
         rightArrow.SetActive(false);
     }
 
     public void ShowLeftArrow(float duration)
     {
-        manager.eventReporter.ReportScriptedEvent("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "LeftArrow" }, { "textDisplayed", "Active" } });
+        manager.eventReporter.ReportScriptedEventTS("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "LeftArrow" }, { "textDisplayed", "Active" } });
         leftArrow.SetActive(true);
         Invoke("ResetLeftArrow", duration);
     }
 
     void ResetLeftArrow()
     {
-        manager.eventReporter.ReportScriptedEvent("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "LeftArrow" }, { "textDisplayed", "Inactive" } });
+        manager.eventReporter.ReportScriptedEventTS("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "LeftArrow" }, { "textDisplayed", "Inactive" } });
         leftArrow.SetActive(false);
     }
 
     public void ShowBackground(float duration)
     {
-        manager.eventReporter.ReportScriptedEvent("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "Background" }, { "textDisplayed", "Active" } });
+        manager.eventReporter.ReportScriptedEventTS("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "Background" }, { "textDisplayed", "Active" } });
         background.SetActive(true);
         Invoke("ResetBackground", duration);
     }
 
     void ResetBackground()
     {
-        manager.eventReporter.ReportScriptedEvent("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "Background" }, { "textDisplayed", "Inactive" } });
+        manager.eventReporter.ReportScriptedEventTS("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "Background" }, { "textDisplayed", "Inactive" } });
         background.SetActive(false);
     }
 }

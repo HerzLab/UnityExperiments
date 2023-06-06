@@ -21,7 +21,7 @@ public class ControlBase : MonoBehaviour {
         int nDoorsOpen = 0;
 
         // Log
-        manager.eventReporter.ReportScriptedEvent("baseDoorsOpen", new() { { "rightDoor", iDoors[0] }, { "leftDoor", iDoors[1] }, { "middleDoor", iDoors[2] } });
+        manager.eventReporter.ReportScriptedEventTS("baseDoorsOpen", new() { { "rightDoor", iDoors[0] }, { "leftDoor", iDoors[1] }, { "middleDoor", iDoors[2] } });
 
         // Open or close each door in turn
         for (int iDoor = 0; iDoor < iDoors.Length; iDoor++) {
