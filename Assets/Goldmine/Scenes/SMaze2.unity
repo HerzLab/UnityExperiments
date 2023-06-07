@@ -2963,12 +2963,12 @@ GameObject:
   - component: {fileID: 522422890}
   - component: {fileID: 522422892}
   m_Layer: 0
-  m_Name: GameManager
+  m_Name: GoldmineExperiment
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &522422889
 Transform:
   m_ObjectHideFlags: 0
