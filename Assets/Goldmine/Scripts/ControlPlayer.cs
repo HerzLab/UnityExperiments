@@ -93,7 +93,7 @@ public class ControlPlayer : MonoBehaviour {
         gameObject.transform.position = respawnPosition;
         gameObject.transform.rotation = respawnRotation;
 
-        Manager.eventReporter.ReportScriptedEventTS("playerRespawnTransform", new() {
+        Manager.eventReporter.ReportTS("playerRespawnTransform", new() {
                 {"positionX", gameObject.transform.position.x},
                 {"positionZ", gameObject.transform.position.z},
                 {"rotationY", gameObject.transform.rotation.eulerAngles.y},

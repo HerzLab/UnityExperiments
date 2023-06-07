@@ -62,7 +62,7 @@ namespace UnityEPL {
                 { "movie path", Path.GetDirectoryName(videoPath)},
                 { "movie duration seconds", manager.videoControl.VideoLength()}
             };
-            manager.eventReporter.ReportScriptedEventTS("movie", movieInfo);
+            manager.eventReporter.ReportTS("movie", movieInfo);
 
             await manager.textDisplayer.PressAnyKey("instructions", "In this experiment, you will watch a short educational film lasting about twenty-five minutes. Please pay attention to the film to the best of your ability. You will be asked a series of questions about the video after its completion. After the questionnaire, you will have the opportunity to take a break.\n\n Press any key to begin watching.");
 
