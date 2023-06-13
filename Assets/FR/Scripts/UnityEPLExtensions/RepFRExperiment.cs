@@ -8,7 +8,7 @@ using UnityEngine;
 namespace UnityEPL {
 
     public class RepFRExperiment : ExperimentBase<RepFRExperiment> {
-        protected override void AwakeOverride() { UnityEngine.Debug.Log("Awake Function"); }
+        protected override void AwakeOverride() { }
 
         protected void Start() {
             Run();
@@ -41,7 +41,7 @@ namespace UnityEPL {
         // applications need a different approach
         protected async Task RecordTest() {
             string wavPath = System.IO.Path.Combine(manager.fileManager.SessionPath(), "microphone_test_"
-                        + DataReporter.TimeStamp().ToString("yyyy-MM-dd_HH_mm_ss") + ".wav");
+                        + Clock.UtcNow.ToString("yyyy-MM-dd_HH_mm_ss") + ".wav");
 
             manager.lowBeep.Play();
             await DoWaitWhile(() => manager.lowBeep.isPlaying);
