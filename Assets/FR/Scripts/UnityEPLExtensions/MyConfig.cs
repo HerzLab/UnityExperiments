@@ -1,6 +1,10 @@
 namespace UnityEPL {
 
     public static partial class Config {
+        // FRExperiment.cs
+        public static string introductionVideo { get { return Config.GetSetting<string>("introductionVideo"); } }
+        public static string countdownVideo { get { return Config.GetSetting<string>("countdownVideo"); } }
+
         // RepFRExperiment.cs
         public static int[] wordRepeats { get { return Config.GetSetting<int[]>("wordRepeats"); } }
         public static int[] wordCounts { get { return Config.GetSetting<int[]>("wordCounts"); } }

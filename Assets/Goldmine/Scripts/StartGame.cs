@@ -60,7 +60,7 @@ public class StartGame : MonoBehaviour {
         if (manager.fileManager.isValidParticipant(participantCode.text) && int.TryParse(session.text, out sessionNum)) {
 
             Config.subject = participantCode.text;
-            Config.session = Convert.ToInt32(session.text);
+            Config.sessionNum = Convert.ToInt32(session.text);
 
             return true;
         }

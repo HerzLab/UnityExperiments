@@ -32,8 +32,9 @@ namespace UnityEPL {
             EndTrials();
         }
 
-        protected override Task PreTrials() { return Task.CompletedTask; }
-        protected override Task PostTrials() { return Task.CompletedTask; }
+        protected override Task PreTrialStates() { return Task.CompletedTask; }
+        protected override Task PracticeTrialStates() { return Task.CompletedTask; }
+        protected override Task PostTrialStates() { return Task.CompletedTask; }
 
         // NOTE: rather than use flags for the audio test, this is entirely based off of timings.
         // Since there is processing latency (which seems to be unity version dependent), this

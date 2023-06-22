@@ -13,12 +13,12 @@ public class ControlTutorialCanvas : MonoBehaviour {
     }
 
     public void SetCentralDisplay(string msg) {
-        manager.eventReporter.ReportTS("canvasDisplay", new() { { "canvasName", "TutorialCanvas" }, { "canvasChildObjectName", "CentralDisplay" }, { "textDisplayed", msg } });
+        manager.eventReporter.LogTS("canvasDisplay", new() { { "canvasName", "TutorialCanvas" }, { "canvasChildObjectName", "CentralDisplay" }, { "textDisplayed", msg } });
         centralDisplay.text = msg;
     }
 
     public void ResetCentralDisplay() {
-        manager.eventReporter.ReportTS("canvasDisplay", new() { { "canvasName", "TutorialCanvas" }, { "canvasChildObjectName", "CentralDisplay" }, { "textDisplayed", "" } });
+        manager.eventReporter.LogTS("canvasDisplay", new() { { "canvasName", "TutorialCanvas" }, { "canvasChildObjectName", "CentralDisplay" }, { "textDisplayed", "" } });
         centralDisplay.text = "";
     }
 }

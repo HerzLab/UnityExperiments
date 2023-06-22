@@ -148,6 +148,8 @@ namespace UnityEPL {
 
         // Trial functions
 
+        protected override Task PracticeTrialStates() { return Task.CompletedTask; }
+
         protected override async Task TrialStates() {
             InitTrial();
             await PreEncodingDelayMsg();
@@ -165,7 +167,7 @@ namespace UnityEPL {
             EndTrial();
         }
 
-        protected override Task PreTrials() {
+        protected override Task PreTrialStates() {
             // Report experiment info
             LogExperimentInfo();
 
@@ -175,7 +177,7 @@ namespace UnityEPL {
 #endif // TIMELINE_SYSTEM
             experimentName += "Goldmine";
             experimentName += "ReadOnly";
-            manager.eventReporter.ReportTS("experimentInfo", new() {
+            manager.eventReporter.LogTS("experimentInfo", new() {
                 {"experimentName", experimentName},
                 {"experimentVersion", EXPERIMENT_VERSION},
                 {"unityVersion", Application.unityVersion}
@@ -189,9 +191,9 @@ namespace UnityEPL {
             mainCanvas.SetActive(true);
             scheduledPauseCanvas.SetActive(false);
             endOfGameCanvas.SetActive(false);
-            manager.eventReporter.ReportTS("canvasActive", new() { { "canvasName", "MainCanvas" }, { "isActive", true } });
-            manager.eventReporter.ReportTS("canvasActive", new() { { "canvasName", "ScheduledPauseCanvas" }, { "isActive", false } });
-            manager.eventReporter.ReportTS("canvasActive", new() { { "canvasName", "EndOfGameCanvas" }, { "isActive", false } });
+            manager.eventReporter.LogTS("canvasActive", new() { { "canvasName", "MainCanvas" }, { "isActive", true } });
+            manager.eventReporter.LogTS("canvasActive", new() { { "canvasName", "ScheduledPauseCanvas" }, { "isActive", false } });
+            manager.eventReporter.LogTS("canvasActive", new() { { "canvasName", "EndOfGameCanvas" }, { "isActive", false } });
 
             controlMainCanvas.SetScoreDisplay(score.ToString(), "default", 0, false);
             controlEndOfGameCanvas = endOfGameCanvas.GetComponent<ControlEndOfGameCanvas>();
@@ -199,16 +201,16 @@ namespace UnityEPL {
             return Task.CompletedTask;
         }
 
-        protected override Task PostTrials() {
+        protected override Task PostTrialStates() {
             FreezeAtBase();
             mainCanvas.SetActive(false);
             endOfGameCanvas.SetActive(true);
 
             manager.LockCursor(CursorLockMode.None);
-            manager.eventReporter.ReportTS("canvasActive", new() {
+            manager.eventReporter.LogTS("canvasActive", new() {
                 { "canvasName", "MainCanvas" },
                 { "isActive", false } });
-            manager.eventReporter.ReportTS("canvasActive", new() {
+            manager.eventReporter.LogTS("canvasActive", new() {
                 { "canvasName", "EndOfGameCanvas" },
                 { "isActive", true } });
             // Print end of game stats to the canvas
@@ -224,7 +226,7 @@ namespace UnityEPL {
         // Actions that occur at the beginning of a trial
         protected void InitTrial() {
             // Log
-            manager.eventReporter.ReportTS("gameState", new() { { "stateName", "InitTrial" } });
+            manager.eventReporter.LogTS("gameState", new() { { "stateName", "InitTrial" } });
 
             // Reset the player
             FreezeAtBase();
@@ -249,7 +251,7 @@ namespace UnityEPL {
         // Actions that occur at the beginning of a practice trial
         protected void InitPracticeTrial() {
             // Log
-            manager.eventReporter.ReportTS("gameState", new() { { "stateName", "InitTrial" } });
+            manager.eventReporter.LogTS("gameState", new() { { "stateName", "InitTrial" } });
 
             // Reset the player
             FreezeAtBase();
@@ -274,7 +276,7 @@ namespace UnityEPL {
         // Execute the pre-encoding delay message 
         protected async Task PreEncodingDelayMsg() {
             // Log
-            manager.eventReporter.ReportTS("gameState", new() { { "stateName", "PreEncodingDelayMsg" } });
+            manager.eventReporter.LogTS("gameState", new() { { "stateName", "PreEncodingDelayMsg" } });
 
             // Update canvas display
             controlMainCanvas.ShowBackground(2f);
@@ -286,7 +288,7 @@ namespace UnityEPL {
         // Execute the delay interval 
         protected async Task Delay() {
             // Log
-            manager.eventReporter.ReportTS("gameState", new() { { "stateName", "Delay" } });
+            manager.eventReporter.LogTS("gameState", new() { { "stateName", "Delay" } });
 
             FreezeAtBase();
             await InterfaceManager.Delay(delayDurationMs);
@@ -295,7 +297,7 @@ namespace UnityEPL {
         // Execute the encoding interval
         protected async Task Encoding() {
             // Log
-            manager.eventReporter.ReportTS("gameState", new() { { "stateName", "Encoding" } });
+            manager.eventReporter.LogTS("gameState", new() { { "stateName", "Encoding" } });
 
             playerActive = true;
 
@@ -309,7 +311,7 @@ namespace UnityEPL {
             controlPlayer.Freeze(false);
 
             // Determine if the current trial is timed
-            manager.eventReporter.ReportTS("timedTrial", new() { { "isTimedTrial", isTimedTrial } });
+            manager.eventReporter.LogTS("timedTrial", new() { { "isTimedTrial", isTimedTrial } });
 
             // Open one door at random
             bool[] iDoors = { false, false, false };
@@ -360,7 +362,7 @@ namespace UnityEPL {
         // Execute the return to base interval
         protected async Task ReturnToBase() {
             // Log
-            manager.eventReporter.ReportTS("gameState", new() { { "stateName", "ReturnToBase" } });
+            manager.eventReporter.LogTS("gameState", new() { { "stateName", "ReturnToBase" } });
 
             playerActive = true;
 
@@ -385,7 +387,7 @@ namespace UnityEPL {
         // Execute the pre-encoding message 
         protected async Task PreTimelineMsg() {
             // Log
-            manager.eventReporter.ReportTS("gameState", new() { { "stateName", "PreTimelineMsg" } });
+            manager.eventReporter.LogTS("gameState", new() { { "stateName", "PreTimelineMsg" } });
 
             // Update canvas display
             controlMainCanvas.ShowBackground(2f);
@@ -399,7 +401,7 @@ namespace UnityEPL {
             // Setup
 
             // Log
-            manager.eventReporter.ReportTS("gameState", new() { { "stateName", "Timeline" } });
+            manager.eventReporter.LogTS("gameState", new() { { "stateName", "Timeline" } });
 
             // Reset the player
             FreezeAtBase();
@@ -443,7 +445,7 @@ namespace UnityEPL {
 
             // Report item times
             var timelineItems = controlTimeline.GetItemTimes();
-            manager.eventReporter.ReportTS("timeline", new() { { "chosenTimelineItems", timelineItems } });
+            manager.eventReporter.LogTS("timeline", new() { { "chosenTimelineItems", timelineItems } });
             //Debug.Log(JsonConvert.SerializeObject(new Dictionary<string, object> { { "items", timelineItems } }));
 
             // Update the score
@@ -500,7 +502,7 @@ namespace UnityEPL {
         // Execute the pre-retrieval delay message
         protected async Task PreRetrievalDelayMsg() {
             // Log
-            manager.eventReporter.ReportTS("gameState", new() { { "stateName", "PreRetrievalDelayMsg" } });
+            manager.eventReporter.LogTS("gameState", new() { { "stateName", "PreRetrievalDelayMsg" } });
 
             // Reset the player
             FreezeAtBase();
@@ -518,7 +520,7 @@ namespace UnityEPL {
         // Execute the retrieval interval
         protected async Task Retrieval() {
             // Log
-            manager.eventReporter.ReportTS("gameState", new() { { "stateName", "Retrieval" } });
+            manager.eventReporter.LogTS("gameState", new() { { "stateName", "Retrieval" } });
 
             playerActive = true;
             digEnabled = true;
@@ -552,13 +554,13 @@ namespace UnityEPL {
 
         protected async void EndTrial() {
             // Log
-            manager.eventReporter.ReportTS("gameState", new() { { "stateName", "EndOfTrial" } });
+            manager.eventReporter.LogTS("gameState", new() { { "stateName", "EndOfTrial" } });
 
             // Find and destroy gold pieces in the environment
             spawnItems.DestroyItems();
 
             // Update trial tracking info
-            manager.eventReporter.ReportTS("trialComplete", new() { { "trialsCompleted", trialNum } });
+            manager.eventReporter.LogTS("trialComplete", new() { { "trialsCompleted", trialNum } });
             itemsSpawnedTotal += itemsSpawnedThisTrial;
             itemsPickedUpTotal += itemsPickedUpThisTrial;
             itemsDugUpTotal += itemsDugUpThisTrial;
@@ -584,23 +586,23 @@ namespace UnityEPL {
         }
 
         protected async Task Pause() {
-            manager.eventReporter.ReportTS("gamePaused", new() { { "isPaused", true }, { "pauseType", "scheduledPause" } });
+            manager.eventReporter.LogTS("gamePaused", new() { { "isPaused", true }, { "pauseType", "scheduledPause" } });
             FreezeAtBase();
             manager.LockCursor(CursorLockMode.None);
             mainCanvas.SetActive(false);
             scheduledPauseCanvas.SetActive(true);
-            manager.eventReporter.ReportTS("canvasActive", new() { { "canvasName", "MainCanvas" }, { "isActive", false } });
-            manager.eventReporter.ReportTS("canvasActive", new() { { "canvasName", "ScheduledPauseCanvas" }, { "isActive", true } });
+            manager.eventReporter.LogTS("canvasActive", new() { { "canvasName", "MainCanvas" }, { "isActive", false } });
+            manager.eventReporter.LogTS("canvasActive", new() { { "canvasName", "ScheduledPauseCanvas" }, { "isActive", true } });
             manager.PauseTS(true);
 
-            await InputManager.Instance.WaitForKey();
+            await InputManager.Instance.WaitForKeyTS();
 
             manager.PauseTS(false);
-            manager.eventReporter.ReportTS("gamePaused", new() { { "isPaused", false }, { "pauseType", "scheduledPause" } });
+            manager.eventReporter.LogTS("gamePaused", new() { { "isPaused", false }, { "pauseType", "scheduledPause" } });
             mainCanvas.SetActive(true);
             scheduledPauseCanvas.SetActive(false);
-            manager.eventReporter.ReportTS("canvasActive", new() { { "canvasName", "MainCanvas" }, { "isActive", true } });
-            manager.eventReporter.ReportTS("canvasActive", new() { { "canvasName", "ScheduledPauseCanvas" }, { "isActive", false } });
+            manager.eventReporter.LogTS("canvasActive", new() { { "canvasName", "MainCanvas" }, { "isActive", true } });
+            manager.eventReporter.LogTS("canvasActive", new() { { "canvasName", "ScheduledPauseCanvas" }, { "isActive", false } });
             manager.LockCursor(CursorLockMode.Locked);
         }
 
@@ -651,7 +653,7 @@ namespace UnityEPL {
 
             // Add or subtract points depending on whether dig was successful
             if (minDistance <= maxDigDistance) {
-                manager.eventReporter.ReportTS("pickup", new() {
+                manager.eventReporter.LogTS("pickup", new() {
                     {"successful", true},
                     {"distanceFromNearestItem", minDistance},
                     {"nearestItemPositionX", minDistanceItem.transform.position.x},
@@ -663,7 +665,7 @@ namespace UnityEPL {
                 spawnItems.HideItem(minDistanceItem);
             } else if (minDistance == float.MaxValue) // i.e. all items have been dug
               {
-                manager.eventReporter.ReportTS("pickup", new() {
+                manager.eventReporter.LogTS("pickup", new() {
                     {"successful", false},
                     {"distanceFromNearestItem", -1}, // these -1s are for finding instances but should be removed from analysis
                     {"nearestItemPositionX", -1},
@@ -674,7 +676,7 @@ namespace UnityEPL {
                     Instantiate(itemNotFoundEffect, playerAnimationSpawnPoint.transform.position, Quaternion.identity); // +new Vector3(0f, -1.18f, 1f)
                 }
             } else {
-                manager.eventReporter.ReportTS("pickup", new() {
+                manager.eventReporter.LogTS("pickup", new() {
                     {"successful", false},
                     {"distanceFromNearestItem", minDistance},
                     {"nearestItemPositionX", minDistanceItem.transform.position.x},
@@ -733,7 +735,7 @@ namespace UnityEPL {
             // Add or subtract points depending on whether dig was successful
             if (minDistance <= maxDigDistance) {
                 UpdateScore(itemFoundReward);
-                manager.eventReporter.ReportTS("dig", new() {
+                manager.eventReporter.LogTS("dig", new() {
                     {"successful", true},
                     {"distanceFromNearestItem", minDistance},
                     {"nearestItemPositionX", minDistanceItem.transform.position.x},
@@ -748,7 +750,7 @@ namespace UnityEPL {
                 Destroy(minDistanceItem);
             } else if (minDistance == float.MaxValue) { // i.e. all items have been dug
                 UpdateScore(wrongDigPenalty);
-                manager.eventReporter.ReportTS("dig", new() {
+                manager.eventReporter.LogTS("dig", new() {
                     {"successful", false},
                     {"distanceFromNearestItem", -1}, // these -1s are for finding instances but should be removed from analysis
                     {"nearestItemPositionX", -1},
@@ -760,7 +762,7 @@ namespace UnityEPL {
                 }
             } else {
                 UpdateScore(wrongDigPenalty);
-                manager.eventReporter.ReportTS("dig", new() {
+                manager.eventReporter.LogTS("dig", new() {
                     {"successful", false},
                     {"distanceFromNearestItem", minDistance},
                     {"nearestItemPositionX", minDistanceItem.transform.position.x},
@@ -776,7 +778,7 @@ namespace UnityEPL {
         // Update the score and notify player
         public void UpdateScore(int scoreChange) {
             score += scoreChange;
-            manager.eventReporter.ReportTS("score", new() {
+            manager.eventReporter.LogTS("score", new() {
                 { "scoreChange", scoreChange },
                 { "scoreTotal", score } });
 

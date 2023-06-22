@@ -15,7 +15,7 @@ public class ControlEndOfGameCanvas : MonoBehaviour {
     }
 
     public void SetStatDisplay(string msg) {
-        manager.eventReporter.ReportTS("canvasDisplay", new() { { "canvasName", "EndOfGameCanvas" }, { "canvasChildObjectName", "StatDisplay" }, { "textDisplayed", msg } });
+        manager.eventReporter.LogTS("canvasDisplay", new() { { "canvasName", "EndOfGameCanvas" }, { "canvasChildObjectName", "StatDisplay" }, { "textDisplayed", msg } });
         statDisplay.text = msg;
     }
 
