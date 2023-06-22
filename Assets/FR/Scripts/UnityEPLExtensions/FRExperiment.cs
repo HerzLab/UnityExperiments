@@ -30,7 +30,7 @@ namespace UnityEPL {
         protected FRSession currentSession;
 
         protected override async Task PreTrialStates() {
-            Setup();
+            SetupFR();
 
             await QuitPrompt();
             await Introduction();
@@ -67,7 +67,7 @@ namespace UnityEPL {
 
         // Pre-Trial States
         protected async Task Introduction() {
-            await RepeatOnRequest(async () => {
+            await RepeatUntilNo(async () => {
                 await textDisplayer.PressAnyKey("show instruction video", "Press any key to show instruction video");
 
                 manager.videoControl.SetVideo(Config.introductionVideo, true);
@@ -75,7 +75,7 @@ namespace UnityEPL {
             }, "repeat introduction video", "Press Y to continue to practice list, \n Press N to replay instructional video.");
         }
         protected async Task MicrophoneTest() {
-            await RepeatOnRequest(async () => {
+            await RepeatUntilNo(async () => {
                 await textDisplayer.PressAnyKey("microphone test prompt", "Microphone Test", "Press any key to record a sound after the beep.");
 
                 string wavPath = System.IO.Path.Combine(manager.fileManager.SessionPath(), "microphone_test_"
@@ -171,6 +171,7 @@ namespace UnityEPL {
                 await InterfaceManager.Delay(isiDuration);
 
                 var word = currentSession.GetWord();
+                currentSession.NextWord();
                 Dictionary<string, object> data = new() {
                     { "word", word.word },
                     { "serialpos", i },
@@ -203,7 +204,7 @@ namespace UnityEPL {
                 var key = keyCode.ToString();
 
                 // Enter only numbers
-                if (Regex.IsMatch(key, @"\d$")) {
+                if (IsNumericKeyCode(keyCode)) {
                     key = key[key.Length - 1].ToString(); // Unity gives numbers as Alpha# or Keypad#
                     if (answer.Length < 3) {
                         answer += key;
@@ -211,14 +212,14 @@ namespace UnityEPL {
                     message = "modify distractor answer";
                 }
                 // Delete key removes last character from answer
-                else if (key == "delete" || key == "backspace") {
+                else if (keyCode == KeyCode.Backspace || keyCode == KeyCode.Delete) {
                     if (answer != "") {
                         answer = answer.Substring(0, answer.Length - 1);
                     }
                     message = "modify distractor answer";
                 }
                 // Submit answer
-                else if (key == "enter" || key == "return") {
+                else if (keyCode == KeyCode.Return || keyCode == KeyCode.KeypadEnter) {
                     bool correct = int.Parse(answer) == nums.Sum();
 
                     // Play tone depending on right or wrong answer
@@ -241,11 +242,12 @@ namespace UnityEPL {
 
                     // End distractor or setup next math problem
                     if ((Clock.UtcNow - startTime).TotalMilliseconds > Config.distractorDuration) {
+                        textDisplayer.Clear();
                         break;
                     } else {
                         nums = new int[] { InterfaceManager.rnd.Value.Next(1, 10),
-                                       InterfaceManager.rnd.Value.Next(1, 10),
-                                       InterfaceManager.rnd.Value.Next(1, 10) };
+                                           InterfaceManager.rnd.Value.Next(1, 10),
+                                           InterfaceManager.rnd.Value.Next(1, 10) };
                         message = "display distractor problem";
                         problem = nums[0].ToString() + " + " +
                                   nums[1].ToString() + " + " +
@@ -267,8 +269,7 @@ namespace UnityEPL {
             await InterfaceManager.Delay(Config.recallPromptDuration);
         }
         protected async Task Recall() {
-            string wavPath = Path.Combine(manager.fileManager.SessionPath(),
-                                            Config.sessionNum + ".wav");
+            string wavPath = Path.Combine(manager.fileManager.SessionPath(), currentSession.GetListIndex() + ".wav");
             bool stim = currentSession.GetState().recall_stim;
 
             manager.recorder.StartRecording(wavPath);
@@ -319,7 +320,7 @@ namespace UnityEPL {
             manager.hostPC?.SendStimMsg();
         }
 
-        protected void Setup() {
+        protected void SetupFR() {
             // Repetition specification:
             int[] repeats = Config.wordRepeats;
             int[] counts = Config.wordCounts;
@@ -344,6 +345,12 @@ namespace UnityEPL {
 
             // TODO: Load Session
             currentSession = GenerateSession();
+        }
+
+        protected bool IsNumericKeyCode(KeyCode keyCode) {
+            bool isAlphaNum = keyCode >= KeyCode.Alpha0 && keyCode <= KeyCode.Alpha9;
+            bool isKeypadNum = keyCode >= KeyCode.Keypad0 && keyCode <= KeyCode.Keypad9;
+            return isAlphaNum || isKeypadNum;
         }
 
         // Experiment Saving and Loading Logic
