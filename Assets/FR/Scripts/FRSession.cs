@@ -6,15 +6,15 @@ namespace UnityEPL {
     public class FRRun {
         public StimWordList encoding;
         public StimWordList recall;
-        public bool encoding_stim;
-        public bool recall_stim;
+        public bool encodingStim;
+        public bool recallStim;
 
-        public FRRun(StimWordList encoding_list, StimWordList recall_list,
-            bool set_encoding_stim = false, bool set_recall_stim = false) {
-            encoding = encoding_list;
-            recall = recall_list;
-            encoding_stim = set_encoding_stim;
-            recall_stim = set_recall_stim;
+        public FRRun(StimWordList encodingList, StimWordList recallList,
+            bool setEncodingStim = false, bool setRecallStim = false) {
+            encoding = encodingList;
+            recall = recallList;
+            encodingStim = setEncodingStim;
+            recallStim = setRecallStim;
         }
     }
 

@@ -1,15 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Windows.Forms;
-using Unity.VisualScripting.YamlDotNet.Core.Tokens;
-using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -30,7 +25,7 @@ namespace UnityEPL {
         protected FRSession currentSession;
 
         protected override async Task PreTrialStates() {
-            SetupFR();
+            SetupWordList();
 
             await QuitPrompt();
             await Introduction();
@@ -46,7 +41,7 @@ namespace UnityEPL {
             await CountdownVideo();
             await Orientation();
             await Encoding();
-            await Distractor();
+            await MathDistractor();
             await PauseBeforeRecall();
             await RecallPrompt();
             await Recall();
@@ -58,7 +53,7 @@ namespace UnityEPL {
             await CountdownVideo();
             await Orientation();
             await Encoding();
-            await Distractor();
+            await MathDistractor();
             await PauseBeforeRecall();
             await RecallPrompt();
             await Recall();
@@ -96,10 +91,16 @@ namespace UnityEPL {
             }, "repeat mic test", "Did you hear the recording ? \n(Y = Continue / N = Try Again).");
         }
         protected async Task QuitPrompt() {
+            SendRamulatorStateMsg(HostPC.StateMsg.WAITING, true);
+            manager.hostPC?.SendStateMsg(HostPC.StateMsg.WAITING);
+
             textDisplayer.Display("subject/session confirmation", "",
                 $"Running {Config.subject} in session {Config.sessionNum} of {Config.experimentName}." +
                 "\nPress Y to continue, N to quit.");
             var keyCode = await inputManager.GetKeyTS(new() { KeyCode.Y, KeyCode.N });
+
+            SendRamulatorStateMsg(HostPC.StateMsg.WAITING, false);
+
             if (keyCode == KeyCode.N) {
                 manager.QuitTS();
             }
@@ -141,6 +142,7 @@ namespace UnityEPL {
             };
             
             eventReporter.LogTS("start trial", data);
+            manager.ramulator?.BeginNewTrial((int)trialNum);
             manager.hostPC?.SendStateMsg(HostPC.StateMsg.TRIAL, data);
         }
         protected async Task NextListPrompt() {
@@ -186,7 +188,7 @@ namespace UnityEPL {
                 textDisplayer.Clear();
             }
         }
-        protected async Task Distractor() {
+        protected async Task MathDistractor() {
             int[] nums = new int[] {
                 InterfaceManager.rnd.Value.Next(1, 10),
                 InterfaceManager.rnd.Value.Next(1, 10),
@@ -198,6 +200,7 @@ namespace UnityEPL {
             string answer = "";
 
             var startTime = Clock.UtcNow;
+            var displayTime = startTime;
             while (true) {
                 textDisplayer.Display(message, "", problem + answer);
                 var keyCode = await inputManager.GetKeyTS();
@@ -232,13 +235,16 @@ namespace UnityEPL {
                     // Report results
                     message = "distractor answered";
                     textDisplayer.Display(message, "", problem + answer);
+                    int responseTimeMs = (int)(Clock.UtcNow - displayTime).TotalMilliseconds;
                     Dictionary<string, object> dict = new() {
                         { "correct", correct },
                         { "problem", problem },
                         { "answer", answer },
+                        { "responseTime", responseTimeMs }
                     };
                     eventReporter.LogTS(message, dict);
-                    manager.hostPC?.SendStateMsg(HostPC.StateMsg.MATH);
+                    manager.ramulator.SendMathMsg(problem, answer, responseTimeMs, correct);
+                    manager.hostPC?.SendStateMsg(HostPC.StateMsg.MATH, dict);
 
                     // End distractor or setup next math problem
                     if ((Clock.UtcNow - startTime).TotalMilliseconds > Config.distractorDuration) {
@@ -254,6 +260,7 @@ namespace UnityEPL {
                                   nums[2].ToString() + " = ";
                         answer = "";
                         textDisplayer.Display(message, "", problem + answer);
+                        displayTime = Clock.UtcNow;
                     }
                 }
             }
@@ -270,7 +277,7 @@ namespace UnityEPL {
         }
         protected async Task Recall() {
             string wavPath = Path.Combine(manager.fileManager.SessionPath(), currentSession.GetListIndex() + ".wav");
-            bool stim = currentSession.GetState().recall_stim;
+            bool stim = currentSession.GetState().recallStim;
 
             manager.recorder.StartRecording(wavPath);
             eventReporter.LogTS("start recall period");
@@ -319,8 +326,7 @@ namespace UnityEPL {
             eventReporter.LogTS("recall stimulus info");
             manager.hostPC?.SendStimMsg();
         }
-
-        protected void SetupFR() {
+        protected void SetupWordList() {
             // Repetition specification:
             int[] repeats = Config.wordRepeats;
             int[] counts = Config.wordCounts;
@@ -346,11 +352,41 @@ namespace UnityEPL {
             // TODO: Load Session
             currentSession = GenerateSession();
         }
-
         protected bool IsNumericKeyCode(KeyCode keyCode) {
             bool isAlphaNum = keyCode >= KeyCode.Alpha0 && keyCode <= KeyCode.Alpha9;
             bool isKeypadNum = keyCode >= KeyCode.Keypad0 && keyCode <= KeyCode.Keypad9;
             return isAlphaNum || isKeypadNum;
+        }
+        protected void SendRamulatorStateMsg(HostPC.StateMsg state, bool stateToggle, Dictionary<string, object> extraData = null) {
+            var dict = (extraData != null) ? new Dictionary<string, object>(extraData) : new();
+            if (state != HostPC.StateMsg.WORD) {
+                dict["phase_type"] = currentSession.GetState().encodingStim;
+            }
+            manager.ramulator.SendStateMsg(state, stateToggle, dict);
+        }
+        protected new async Task RepeatUntilNo(Func<Task> func, string description, string displayText) {
+            var repeat = true;
+            while (repeat) {
+                await func();
+
+                SendRamulatorStateMsg(HostPC.StateMsg.WAITING, true);
+                textDisplayer.Display(description, "", displayText);
+                var keyCode = await inputManager.GetKeyTS(new() { KeyCode.Y, KeyCode.N });
+                repeat = keyCode == KeyCode.N;
+                SendRamulatorStateMsg(HostPC.StateMsg.WAITING, false);
+            }
+        }
+        protected new async Task RepeatUntilYes(Func<Task> func, string description, string displayText) {
+            var repeat = true;
+            while (repeat) {
+                await func();
+
+                SendRamulatorStateMsg(HostPC.StateMsg.WAITING, true);
+                textDisplayer.Display(description, "", displayText);
+                var keyCode = await inputManager.GetKeyTS(new() { KeyCode.Y, KeyCode.N });
+                repeat = keyCode == KeyCode.Y;
+                SendRamulatorStateMsg(HostPC.StateMsg.WAITING, false);
+            }
         }
 
         // Experiment Saving and Loading Logic
@@ -438,6 +474,8 @@ namespace UnityEPL {
 
             return session;
         }
+
+
     }
 
 }
