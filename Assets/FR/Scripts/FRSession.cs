@@ -40,6 +40,11 @@ namespace UnityEPL {
         public int GetListIndex() {
             return index;
         }
+
+        public void PrintAllWordsToDebugLog() {
+            UnityEngine.Debug.Log("Words in each list\n" +
+                String.Join("\n", items.ConvertAll(x => String.Join(", ", x.encoding.words))));
+        }
     }
 
 }

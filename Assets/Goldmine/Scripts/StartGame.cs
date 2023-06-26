@@ -74,7 +74,7 @@ public class StartGame : MonoBehaviour {
             manager.LaunchExperimentTS();
             //ShowConfirmation();
         } else {
-            ErrorNotifier.Warning(new InvalidOperationException("Please set participant code and session"));
+            ErrorNotifier.WarningTS(new InvalidOperationException("Please set participant code and session"));
             //manager.Do(new EventBase<string, int>(manager.ShowWarning, "Please set participant code and session", 5000));
         }
     }
@@ -85,7 +85,7 @@ public class StartGame : MonoBehaviour {
             //ShowConfirmation();
             manager.LaunchExperimentTS();
         } else {
-            ErrorNotifier.Warning(new InvalidOperationException("Please set participant code and session"));
+            ErrorNotifier.WarningTS(new InvalidOperationException("Please set participant code and session"));
             //manager.Do(new EventBase<string, int>(manager.ShowWarning, "Please set participant code and session", 5000));
         }
     }

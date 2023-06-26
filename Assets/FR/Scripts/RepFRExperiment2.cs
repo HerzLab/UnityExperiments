@@ -10,15 +10,9 @@ using UnityEngine.UIElements;
 
 namespace UnityEPL {
 
-    public class FRExperiment : ExperimentBase<FRExperiment> {
-        protected override void AwakeOverride() { }
-
-        protected void Start() {
-            Run();
-        }
-
-        protected List<string> blankWords;
-        protected int wordsPerList;
+    public class RepFRExperiment2 : FRExperiment {
+        protected RepCounts repCounts = null;
+        protected int uniqueWordsPerList;
         protected FRSession currentSession;
 
         protected override async Task PreTrialStates() {
@@ -306,13 +300,28 @@ namespace UnityEPL {
         }
 
         // Setup Functions
-        protected virtual void SetupWordList() {
-            var wordRepeats = Config.wordRepeats;
-            if (wordRepeats.Count() != 1 && wordRepeats[0] != 1) {
-                ErrorNotifier.ErrorTS(new Exception("Config's wordRepeats should only have one item with a value of 1"));
+        protected void SetupRepetitions() {
+            // Repetition specification
+            int[] repeats = Config.wordRepeats;
+            int[] counts = Config.wordCounts;
+
+            if (repeats.Length != counts.Length) {
+                throw new Exception("Word Repeats and Counts not aligned");
             }
 
-            wordsPerList = Config.wordCounts[0];
+            for (int i = 0; i < repeats.Length; i++) {
+                if (repCounts == null) {
+                    repCounts = new RepCounts(repeats[i], counts[i]);
+                } else {
+                    repCounts = repCounts.RepCnt(repeats[i], counts[i]);
+                }
+            }
+        }
+        protected override void SetupWordList() {
+            SetupRepetitions();
+
+            wordsPerList = repCounts.TotalWords();
+            uniqueWordsPerList = repCounts.UniqueWords();
             blankWords = new List<string>(Enumerable.Repeat(string.Empty, wordsPerList));
 
             var sourceWords = ReadWordpool();
@@ -322,136 +331,12 @@ namespace UnityEPL {
             currentSession = GenerateSession(words);
         }
 
-        // Wrapper/Replacement Functions
-        protected bool IsNumericKeyCode(KeyCode keyCode) {
-            bool isAlphaNum = keyCode >= KeyCode.Alpha0 && keyCode <= KeyCode.Alpha9;
-            bool isKeypadNum = keyCode >= KeyCode.Keypad0 && keyCode <= KeyCode.Keypad9;
-            return isAlphaNum || isKeypadNum;
-        }
-        protected void SendRamulatorStateMsg(HostPC.StateMsg state, bool stateToggle, Dictionary<string, object> extraData = null) {
-            var dict = (extraData != null) ? new Dictionary<string, object>(extraData) : new();
-            if (state != HostPC.StateMsg.WORD) {
-                dict["phase_type"] = currentSession.GetState().encodingStim;
-            }
-            manager.ramulator?.SendStateMsg(state, stateToggle, dict);
-        }
-        protected new async Task RepeatUntilNo(Func<Task> func, string description, string displayText) {
-            var repeat = true;
-            while (repeat) {
-                await func();
-
-                SendRamulatorStateMsg(HostPC.StateMsg.WAITING, true);
-                textDisplayer.Display(description, "", displayText);
-                var keyCode = await inputManager.GetKeyTS(new() { KeyCode.Y, KeyCode.N });
-                repeat = keyCode == KeyCode.N;
-                SendRamulatorStateMsg(HostPC.StateMsg.WAITING, false);
-            }
-        }
-        protected new async Task RepeatUntilYes(Func<Task> func, string description, string displayText) {
-            var repeat = true;
-            while (repeat) {
-                await func();
-
-                SendRamulatorStateMsg(HostPC.StateMsg.WAITING, true);
-                textDisplayer.Display(description, "", displayText);
-                var keyCode = await inputManager.GetKeyTS(new() { KeyCode.Y, KeyCode.N });
-                repeat = keyCode == KeyCode.Y;
-                SendRamulatorStateMsg(HostPC.StateMsg.WAITING, false);
-            }
-        }
-
-        // Helper Functions
-        protected void RecallStim() {
-            // Uniform stim.
-            int recstimInterval = Config.recStimulusInterval;
-            int stimDuration = Config.stimulusDuration;
-            int recPeriod = Config.recallDuration;
-            uint stimReps = (uint)(recPeriod / (stimDuration + recstimInterval));
-
-            int total_interval = stimDuration + recstimInterval;
-            int stim_time = total_interval;
-
-            DoRepeating(0, stim_time, stimReps, RecallStimHelper);
-        }
-        protected void RecallStimHelper() {
-            eventReporter.LogTS("recall stimulus info");
-            manager.hostPC?.SendStimMsg();
-        }
-
-        // Experiment Saving and Loading Logic
-        protected void WriteLstFile(StimWordList list, int index) {
-            // create .lst files for annotation scripts
-            string lstfile = Path.Combine(manager.fileManager.SessionPath(), index.ToString() + ".lst");
-            IList<string> noRepeats = new HashSet<string>(list.words).ToList();
-            File.WriteAllLines(lstfile, noRepeats, System.Text.Encoding.UTF8);
-        }
-
         // Word/Stim List Generation
-        protected virtual List<Word> ReadWordpool() {
-            // wordpool is a file with 'word' as a header and one word per line.
-            // repeats are described in the config file with two matched arrays,
-            // repeats and counts, which describe the number of presentations
-            // words can have and the number of words that should be assigned to
-            // each of those presentation categories.
-            string source_list = manager.fileManager.GetWordList();
-            var source_words = new List<Word>();
-
-            //skip line for csv header
-            foreach (var line in File.ReadLines(source_list).Skip(1)) {
-                source_words.Add(new Word(line));
-            }
-
-            // copy wordpool to session directory
-            string path = System.IO.Path.Combine(manager.fileManager.SessionPath(), "wordpool.txt");
-            File.Copy(source_list, path, true);
-
-            return source_words;
-        }
-        protected virtual FRRun MakeRun<T>(T subsetGen, bool encStim, bool recStim) where T : WordRandomSubset {
-            var inputWords = subsetGen.Get(wordsPerList).Select(x => x.word).ToList();
-            var encList = WordGenerator.Generate(inputWords, encStim);
-            var recList = WordGenerator.Generate(blankWords, recStim);
+        protected override FRRun MakeRun<T>(T subsetGen, bool encStim, bool recStim) {
+            var inputWords = subsetGen.Get(uniqueWordsPerList).Select(x => x.word).ToList();
+            var encList = RepWordGenerator.Generate(repCounts, inputWords, encStim);
+            var recList = RepWordGenerator.Generate(repCounts, blankWords, recStim);
             return new FRRun(encList, recList, encStim, recStim);
-        }
-        protected virtual FRSession GenerateSession<T>(T randomSubset) where T : WordRandomSubset {
-            var session = new FRSession();
-
-            for (int i = 0; i < Config.practiceLists; i++) {
-                session.Add(MakeRun(randomSubset, false, false));
-            }
-
-            for (int i = 0; i < Config.preNoStimLists; i++) {
-                session.Add(MakeRun(randomSubset, false, false));
-            }
-
-            var randomized_list = new FRSession();
-
-            for (int i = 0; i < Config.encodingOnlyLists; i++) {
-                randomized_list.Add(MakeRun(randomSubset, true, false));
-            }
-
-            for (int i = 0; i < Config.retrievalOnlyLists; i++) {
-                randomized_list.Add(MakeRun(randomSubset, false, true));
-            }
-
-            for (int i = 0; i < Config.encodingAndRetrievalLists; i++) {
-                randomized_list.Add(MakeRun(randomSubset, true, true));
-            }
-
-            for (int i = 0; i < Config.noStimLists; i++) {
-                randomized_list.Add(MakeRun(randomSubset, false, false));
-            }
-
-            // TODO: JPB: (needed) (bug) All shuffles in FRExperiment, RepWordGenerator, Timeline, and FRSession may need to be ShuffleInPlace
-            session.AddRange(randomized_list.Shuffle());
-
-            for (int i = 0; i < session.Count; i++) {
-                WriteLstFile(session[i].encoding, i);
-            }
-
-            session.PrintAllWordsToDebugLog();
-
-            return session;
         }
     }
 

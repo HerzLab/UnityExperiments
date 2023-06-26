@@ -26,7 +26,7 @@ public class SpawnItems : EventMonoBehaviour {
 
     public void SpawnGems(uint nItems) {
         if (nItems > gemObjects.Length) {
-            ErrorNotifier.Error(new InvalidOperationException("The game is trying to spawn repeat gems."));
+            ErrorNotifier.ErrorTS(new InvalidOperationException("The game is trying to spawn repeat gems."));
         }
 
         manager.eventReporter.LogTS("gemsSpawned", new() { { "nItems", nItems } });
