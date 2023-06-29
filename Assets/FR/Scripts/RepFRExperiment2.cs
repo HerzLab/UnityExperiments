@@ -57,7 +57,10 @@ namespace UnityEPL {
                 await textDisplayer.PressAnyKey("show instruction video", "Press any key to show instruction video");
 
                 manager.videoControl.SetVideo(Config.introductionVideo, true);
+                SendRamulatorStateMsg(HostPC.StateMsg.INSTRUCT, true);
+                manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.INSTRUCT);
                 await manager.videoControl.PlayVideo();
+                SendRamulatorStateMsg(HostPC.StateMsg.INSTRUCT, false);
             }, "repeat introduction video", "Press Y to continue to practice list, \n Press N to replay instructional video.");
         }
         protected async Task MicrophoneTest() {
@@ -83,7 +86,7 @@ namespace UnityEPL {
         }
         protected async Task QuitPrompt() {
             SendRamulatorStateMsg(HostPC.StateMsg.WAITING, true);
-            manager.hostPC?.SendStateMsg(HostPC.StateMsg.WAITING);
+            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.WAITING);
 
             textDisplayer.Display("subject/session confirmation", "",
                 $"Running {Config.subject} in session {Config.sessionNum} of {Config.experimentName}." +
@@ -111,7 +114,7 @@ namespace UnityEPL {
 
             manager.recorder.StartRecording(wavPath);
             eventReporter.LogTS("start final recall period");
-            manager.hostPC?.SendStateMsg(HostPC.StateMsg.FINAL_RECALL, new() { { "duration", Config.finalRecallDuration } });
+            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.FINAL_RECALL, new() { { "duration", Config.finalRecallDuration } });
 
             await InterfaceManager.Delay(Config.finalRecallDuration);
 
@@ -134,7 +137,7 @@ namespace UnityEPL {
             
             eventReporter.LogTS("start trial", data);
             manager.ramulator?.BeginNewTrial((int)trialNum);
-            manager.hostPC?.SendStateMsg(HostPC.StateMsg.TRIAL, data);
+            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.TRIAL, data);
         }
         protected async Task NextListPrompt() {
             await textDisplayer.PressAnyKey("pause before list", $"Press any key for trial {trialNum}.");
@@ -144,23 +147,33 @@ namespace UnityEPL {
         }
         protected async Task CountdownVideo() {
             eventReporter.LogTS("countdown");
-            manager.hostPC?.SendStateMsg(HostPC.StateMsg.COUNTDOWN);
+            SendRamulatorStateMsg(HostPC.StateMsg.COUNTDOWN, true);
+            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.COUNTDOWN);
             manager.videoControl.SetVideo(Config.countdownVideo);
             await manager.videoControl.PlayVideo();
+            SendRamulatorStateMsg(HostPC.StateMsg.COUNTDOWN, false);
         }
         protected async Task Orientation() {
+            SendRamulatorStateMsg(HostPC.StateMsg.ORIENT, true);
+            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.ORIENT);
+
             int[] limits = Config.orientationDuration;
             int duration = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
             textDisplayer.Display("orientation stimulus", "", "+");
-            manager.hostPC?.SendStateMsg(HostPC.StateMsg.ORIENT);
+            
             await InterfaceManager.Delay(duration);
+
+            SendRamulatorStateMsg(HostPC.StateMsg.ORIENT, false);
         }
         protected async Task Encoding() {
+            SendRamulatorStateMsg(HostPC.StateMsg.ENCODING, true, new() { { "current_trial", trialNum } });
+            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.ENCODING, new() { { "current_trial", trialNum } });
+
             int[] isiLimits = Config.stimulusInterval;
- 
+
             for (int i = 0; i < 12; ++i) {
                 int isiDuration = InterfaceManager.rnd.Value.Next(isiLimits[0], isiLimits[1]);
-                manager.hostPC?.SendStateMsg(HostPC.StateMsg.ISI, new() { { "duration", isiDuration } });
+                manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.ISI, new() { { "duration", isiDuration } });
                 await InterfaceManager.Delay(isiDuration);
 
                 var word = currentSession.GetWord();
@@ -172,14 +185,19 @@ namespace UnityEPL {
                 };
 
                 eventReporter.LogTS("word stimulus info", data);
-                manager.hostPC?.SendStateMsg(HostPC.StateMsg.WORD, data);
+                manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.WORD, data);
                 textDisplayer.Display("word stimulus", "", word.word);
                 await InterfaceManager.Delay(Config.stimulusDuration);
                 eventReporter.LogTS("clear word stimulus", data);
                 textDisplayer.Clear();
             }
+
+            SendRamulatorStateMsg(HostPC.StateMsg.ENCODING, false, new() { { "current_trial", trialNum } });
         }
         protected async Task MathDistractor() {
+            SendRamulatorStateMsg(HostPC.StateMsg.DISTRACT, true, new() { { "current_trial", trialNum } });
+            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.DISTRACT, new() { { "current_trial", trialNum } });
+
             int[] nums = new int[] {
                 InterfaceManager.rnd.Value.Next(1, 10),
                 InterfaceManager.rnd.Value.Next(1, 10),
@@ -235,7 +253,7 @@ namespace UnityEPL {
                     };
                     eventReporter.LogTS(message, dict);
                     manager.ramulator?.SendMathMsg(problem, answer, responseTimeMs, correct);
-                    manager.hostPC?.SendStateMsg(HostPC.StateMsg.MATH, dict);
+                    manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.MATH, dict);
 
                     // End distractor or setup next math problem
                     if ((Clock.UtcNow - startTime).TotalMilliseconds > Config.distractorDuration) {
@@ -255,6 +273,8 @@ namespace UnityEPL {
                     }
                 }
             }
+
+            SendRamulatorStateMsg(HostPC.StateMsg.DISTRACT, false, new() { { "current_trial", trialNum } });
         }
         protected async Task PauseBeforeRecall() {
             int[] limits = Config.recallDelay;
@@ -267,12 +287,15 @@ namespace UnityEPL {
             await InterfaceManager.Delay(Config.recallPromptDuration);
         }
         protected async Task Recall() {
+            SendRamulatorStateMsg(HostPC.StateMsg.RETRIEVAL, true, new() { { "current_trial", trialNum } });
+            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.RETRIEVAL, new() { { "current_trial", trialNum } });
+
             string wavPath = Path.Combine(manager.fileManager.SessionPath(), currentSession.GetListIndex() + ".wav");
             bool stim = currentSession.GetState().recallStim;
 
             manager.recorder.StartRecording(wavPath);
             eventReporter.LogTS("start recall period");
-            manager.hostPC?.SendStateMsg(HostPC.StateMsg.RECALL, new() { { "duration", Config.recallDuration } });
+            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.RECALL, new() { { "duration", Config.recallDuration } });
 
             await InterfaceManager.Delay(Config.recallDuration);
 
@@ -283,6 +306,8 @@ namespace UnityEPL {
             if (stim) {
                 RecallStim();
             }
+
+            SendRamulatorStateMsg(HostPC.StateMsg.RETRIEVAL, false, new() { { "current_trial", trialNum } });
         }
         protected void FinishTrial() {
             if(!currentSession.NextList()) {

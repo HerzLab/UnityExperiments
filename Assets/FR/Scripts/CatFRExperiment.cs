@@ -21,18 +21,6 @@ public class CatFRExperiment : FRExperiment {
 
         // TODO: (feature) Load Session
         currentSession = GenerateSession(words);
-
-        // Old code for generating CatFR words. If someone sees this after James leaves, remove it.
-        //int iterations = 0;
-        //for (; iterations < 1000; ++iterations) {
-        //    try {
-        //        currentSession = GenerateSession(words);
-        //        break;
-        //    } catch {}
-        //}
-        //if (iterations >= 999) {
-        //    ErrorNotifier.ErrorTS(new Exception("Could not shuffle list correctly"));
-        //}
     }
 
     protected List<CategorizedWord> ReadCategorizedWordpool() {

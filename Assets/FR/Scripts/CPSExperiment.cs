@@ -39,11 +39,11 @@ public class CPSExperiment : ExperimentBase<CPSExperiment> {
         if (manager.hostPC == null) {
             throw new Exception("CPS experiment must use a Host PC.\n The hostPC is null");
         }
-        await manager.hostPC.SendTrialMsg(0, true);
+        await manager.hostPC.SendTrialMsgTS(0, true);
     }
 
     protected async Task FinishExp() {
-        await manager.hostPC.SendExitMsg();
+        await manager.hostPC.SendExitMsgTS();
         await manager.textDisplayer.PressAnyKey("display end message", "Woo!  The experiment is over.\n\n Press any key to quit.");
     }
 
@@ -66,12 +66,12 @@ public class CPSExperiment : ExperimentBase<CPSExperiment> {
         await manager.textDisplayer.PressAnyKey("instructions", "In this experiment, you will watch a short educational film lasting about twenty-five minutes. Please pay attention to the film to the best of your ability. You will be asked a series of questions about the video after its completion. After the questionnaire, you will have the opportunity to take a break.\n\n Press any key to begin watching.");
 
         UnityEngine.Debug.Log(1);
-        await manager.hostPC.SendStateMsg(HostPC.StateMsg.ENCODING, movieInfo);
+        await manager.hostPC.SendStateMsgTS(HostPC.StateMsg.ENCODING, movieInfo);
 
         // Remove 10s to not overrun video legnth
         UnityEngine.Debug.Log(2);
         var cclLength = manager.videoControl.VideoLength() - 10.0;
-        await manager.hostPC.SendCCLStartMsg(Convert.ToInt32(cclLength));
+        await manager.hostPC.SendCCLStartMsgTS(Convert.ToInt32(cclLength));
         await manager.videoControl.PlayVideo();
     }
 }
