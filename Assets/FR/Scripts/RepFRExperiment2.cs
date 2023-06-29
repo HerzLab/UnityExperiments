@@ -169,7 +169,7 @@ namespace UnityEPL {
             SendRamulatorStateMsg(HostPC.StateMsg.ENCODING, true, new() { { "current_trial", trialNum } });
             manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.ENCODING, new() { { "current_trial", trialNum } });
 
-            int[] isiLimits = Config.stimulusInterval;
+            int[] isiLimits = Config.interStimulusDuration;
 
             for (int i = 0; i < 12; ++i) {
                 int isiDuration = InterfaceManager.rnd.Value.Next(isiLimits[0], isiLimits[1]);

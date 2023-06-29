@@ -1,0 +1,16 @@
+{
+    "isTest": true,
+    "launcherScene": "Startup",
+    "eventsPerFrame": 5,
+    "frameRate": 300,
+    "vSync": 1,
+    "syncboxOn": true,
+    "networkedSyncboxOn": false,
+    "ramulatorOn": false,
+    "elememOn": false,
+    "syncBoxTestLength": 5000,
+    "networkedSyncboxPort":  8903,
+    "elememServerIP": "127.0.0.1",
+    "elememServerPort": 8889,
+    "elememHeartbeatInterval": 1000
+}

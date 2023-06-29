@@ -1,0 +1,30 @@
+{
+    "experimentClass": "FRExperiment",
+    "experimentName": "FR1",
+    "experimentScene": "FR",
+    "prefix": "any",
+    "stimMode": "none",
+
+    "wordpool": "resources/ram_wordpool_en.txt",
+    "introductionVideo": "resources/FR1_instructions.mov",
+    "countdownVideo": "resources/countdown_10s.mov",
+
+    "practiceLists": 1,
+    "preNoStimLists": 0,
+    "noStimLists": 12,
+    "encodingOnlyLists": 0,
+    "retrievalOnlyLists": 0,
+    "encodingAndRetrievalLists": 0,
+
+    "wordRepeats": [1],
+    "wordCounts": [12],
+
+    "micTestDuration": 3000,
+    "orientationDuration": [1000, 1400],
+    "stimulusDuration": 1600,
+    "interStimulusDuration": [750, 1000],
+    "distractorDuration": 20000,
+    "recallDelay": [1000, 1400],
+    "recallPromptDuration": 1000,
+    "recallDuration": 30000
+}

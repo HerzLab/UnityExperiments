@@ -5,11 +5,24 @@ namespace UnityEPL {
         public static string introductionVideo { get { return Config.GetSetting<string>("introductionVideo"); } }
         public static string countdownVideo { get { return Config.GetSetting<string>("countdownVideo"); } }
 
+        public static int micTestDuration { get { return Config.GetSetting<int>("micTestDuration"); } }
+        public static int distractorDuration { get { return Config.GetSetting<int>("distractorDuration"); } }
+        public static int[] orientationDuration { get { return Config.GetSetting<int[]>("orientationDuration"); } }
+        public static int stimulusDuration { get { return Config.GetSetting<int>("stimulusDuration"); } }
+        public static int[] interStimulusDuration { get { return Config.GetSetting<int[]>("interStimulusDuration"); } }
+        public static int recallDuration { get { return Config.GetSetting<int>("recallDuration"); } }
+        public static int recallPromptDuration { get { return Config.GetSetting<int>("recallPromptDuration"); } }
+        public static int finalRecallDuration { get { return Config.GetSetting<int>("finalRecallDuration"); } }
+
+        public static int recallStimInterval { get { return Config.GetSetting<int>("recallStimInterval"); } }
+        public static int recallStimDuration { get { return Config.GetSetting<int>("recallStimDuration"); } }
+
+
         // RepFRExperiment.cs
         public static int[] wordRepeats { get { return Config.GetSetting<int[]>("wordRepeats"); } }
         public static int[] wordCounts { get { return Config.GetSetting<int[]>("wordCounts"); } }
         public static int[] recallDelay { get { return Config.GetSetting<int[]>("recallDelay"); } }
-        public static int[] stimulusInterval { get { return Config.GetSetting<int[]>("stimulusInterval"); } }
+        
         public static int restDuration { get { return Config.GetSetting<int>("restDuration"); } }
         public static int practiceLists { get { return Config.GetSetting<int>("practiceLists"); } }
         public static int preNoStimLists { get { return Config.GetSetting<int>("preNoStimLists"); } }

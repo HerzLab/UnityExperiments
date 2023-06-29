@@ -175,7 +175,7 @@ namespace UnityEPL {
             SendRamulatorStateMsg(HostPC.StateMsg.ENCODING, true, new() { { "current_trial", trialNum } });
             manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.ENCODING, new() { { "current_trial", trialNum } });
 
-            int[] isiLimits = Config.stimulusInterval;
+            int[] isiLimits = Config.interStimulusDuration;
  
             for (int i = 0; i < 12; ++i) {
                 int isiDuration = InterfaceManager.rnd.Value.Next(isiLimits[0], isiLimits[1]);
@@ -398,12 +398,13 @@ namespace UnityEPL {
         // Helper Functions
         protected void RecallStim() {
             // Uniform stim.
-            int recstimInterval = Config.recStimulusInterval;
-            int stimDuration = Config.stimulusDuration;
+            int recStimInterval = Config.recallStimInterval;
+            int stimDuration = Config.recallStimDuration;
             int recPeriod = Config.recallDuration;
-            uint stimReps = (uint)(recPeriod / (stimDuration + recstimInterval));
 
-            int total_interval = stimDuration + recstimInterval;
+            uint stimReps = (uint)(recPeriod / (stimDuration + recStimInterval));
+
+            int total_interval = stimDuration + recStimInterval;
             int stim_time = total_interval;
 
             DoRepeating(0, stim_time, stimReps, RecallStimHelper);

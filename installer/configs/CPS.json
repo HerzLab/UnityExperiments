@@ -1,0 +1,9 @@
+{
+    "experimentClass": "CPSExperiment",
+    "experimentName": "CPS",
+    "experimentScene": "FR",
+    "prefix": "any",
+    "stimMode": "closed",
+
+    "video": "resources/RepFR1.mp4"
+}
