@@ -429,19 +429,19 @@ namespace UnityEPL {
             // repeats and counts, which describe the number of presentations
             // words can have and the number of words that should be assigned to
             // each of those presentation categories.
-            string source_list = manager.fileManager.GetWordList();
-            var source_words = new List<Word>();
+            string sourceList = manager.fileManager.GetWordList();
+            var sourceWords = new List<Word>();
 
             //skip line for csv header
-            foreach (var line in File.ReadLines(source_list).Skip(1)) {
-                source_words.Add(new Word(line));
+            foreach (var line in File.ReadLines(sourceList).Skip(1)) {
+                sourceWords.Add(new Word(line));
             }
 
-            // copy wordpool to session directory
+            // copy full wordpool to session directory
             string path = System.IO.Path.Combine(manager.fileManager.SessionPath(), "wordpool.txt");
-            File.Copy(source_list, path, true);
+            File.WriteAllText(path, String.Join("\n", sourceWords));
 
-            return source_words;
+            return sourceWords;
         }
         protected virtual FRRun MakeRun<T>(T subsetGen, bool encStim, bool recStim) where T : WordRandomSubset {
             var inputWords = subsetGen.Get(wordsPerList).Select(x => x.word).ToList();

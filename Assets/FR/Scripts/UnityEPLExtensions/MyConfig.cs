@@ -17,6 +17,8 @@ namespace UnityEPL {
         public static int recallStimInterval { get { return Config.GetSetting<int>("recallStimInterval"); } }
         public static int recallStimDuration { get { return Config.GetSetting<int>("recallStimDuration"); } }
 
+        public static bool splitWordsOverTwoSessions { get { return Config.GetSetting<bool>("splitWordsOverTwoSessions"); } }
+
 
         // RepFRExperiment.cs
         public static int[] wordRepeats { get { return Config.GetSetting<int[]>("wordRepeats"); } }

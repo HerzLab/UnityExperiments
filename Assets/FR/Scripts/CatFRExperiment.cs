@@ -30,21 +30,26 @@ public class CatFRExperiment : FRExperiment {
         // repeats and counts, which describe the number of presentations
         // words can have and the number of words that should be assigned to
         // each of those presentation categories.
-        string source_list = manager.fileManager.GetWordList();
-        Debug.Log(source_list);
-        var source_words = new List<CategorizedWord>();
+        string sourceList = manager.fileManager.GetWordList();
+        Debug.Log(sourceList);
+        var sourceWords = new List<CategorizedWord>();
 
         //skip line for csv header
-        foreach (var line in File.ReadLines(source_list).Skip(1)) {
-            string[] category_and_word = line.Split('\t');
-            source_words.Add(new CategorizedWord(category_and_word[1], category_and_word[0]));
+        foreach (var line in File.ReadLines(sourceList).Skip(1)) {
+            string[] categoryAndWord = line.Split('\t');
+            sourceWords.Add(new CategorizedWord(categoryAndWord[1], categoryAndWord[0]));
         }
 
-        // copy wordpool to session directory
+        // copy full wordpool to session directory
         string path = System.IO.Path.Combine(manager.fileManager.SessionPath(), "wordpool.txt");
-        File.Copy(source_list, path, true);
+        File.WriteAllText(path, String.Join("\n", sourceWords));
 
-        return source_words;
+        // copy full categorized wordpool to session directory
+        string catPath = System.IO.Path.Combine(manager.fileManager.SessionPath(), "categorized_wordpool.txt");
+        var catList = sourceWords.ConvertAll(x => $"{x.category}\t{x.word}");
+        File.WriteAllText(catPath, String.Join("\n", catList));
+
+        return sourceWords;
     }
 
 

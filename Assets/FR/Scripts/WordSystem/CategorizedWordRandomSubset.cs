@@ -8,7 +8,7 @@ public class CategorizedWordRandomSubset : WordRandomSubset {
     protected new Dictionary<string, List<Word>> shuffled = new();
 
     public CategorizedWordRandomSubset(List<CategorizedWord> sourceWords) {
-        var catWords = new Dictionary<string, List<Word>>();
+        Dictionary<string, List<Word>> catWords = new();
 
         foreach (var word in sourceWords) {
             List<Word> temp;
@@ -20,6 +20,17 @@ public class CategorizedWordRandomSubset : WordRandomSubset {
 
         foreach (var words in catWords) {
             shuffled[words.Key] = words.Value.Shuffle();
+        }
+
+        if (Config.splitWordsOverTwoSessions) {
+            var stableShuffledCategories = shuffled.ToList();
+            stableShuffledCategories.Sort((x, y) => {
+                return x.Key.CompareTo(y.Key);
+            });
+            stableShuffledCategories.ShuffleInPlace(InterfaceManager.stableRnd.Value);
+            int count = stableShuffledCategories.Count / 2;
+            shuffled = stableShuffledCategories.Take(count).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            //UnityEngine.Debug.Log(String.Join(", ", shuffled.ToList().ConvertAll(x => $"{x.Key}")));
         }
     }
 

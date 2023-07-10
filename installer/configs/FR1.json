@@ -9,6 +9,7 @@
     "introductionVideo": "resources/FR1_instructions.mov",
     "countdownVideo": "resources/countdown_10s.mov",
 
+    "splitWordsOverTwoSessions": true,
     "practiceLists": 1,
     "preNoStimLists": 0,
     "noStimLists": 12,
