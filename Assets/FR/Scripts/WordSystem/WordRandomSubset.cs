@@ -23,9 +23,13 @@ public class WordRandomSubset {
         if (Config.splitWordsOverTwoSessions) {
             int splitIndex = sourceWords.Count / 2;
             int lenRemove = sourceWords.Count - splitIndex;
-            sourceWords
-                .ShuffleInPlace(InterfaceManager.stableRnd.Value)
-                .RemoveRange(splitIndex, lenRemove);
+            sourceWords.ShuffleInPlace(InterfaceManager.stableRnd.Value);
+            if (Config.sessionNum % 2 == 0) {
+                sourceWords.RemoveRange(splitIndex, lenRemove);
+            } else {
+                sourceWords.RemoveRange(0, splitIndex);
+            }
+                
             //UnityEngine.Debug.Log(String.Join(", ", sourceWords.ConvertAll((x) => x.ToString())));
         }
 

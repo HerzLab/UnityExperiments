@@ -24,13 +24,23 @@ public class CategorizedWordRandomSubset : WordRandomSubset {
 
         if (Config.splitWordsOverTwoSessions) {
             var stableShuffledCategories = shuffled.ToList();
+
+            if (stableShuffledCategories.Count % 2 != 0) {
+                ErrorNotifier.ErrorTS(new Exception($"There are an odd number of categories ({stableShuffledCategories.Count}), even though the config says to splitWordsOverTwoSessions"));
+            }
+
             stableShuffledCategories.Sort((x, y) => {
                 return x.Key.CompareTo(y.Key);
             });
             stableShuffledCategories.ShuffleInPlace(InterfaceManager.stableRnd.Value);
             int count = stableShuffledCategories.Count / 2;
-            shuffled = stableShuffledCategories.Take(count).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-            //UnityEngine.Debug.Log(String.Join(", ", shuffled.ToList().ConvertAll(x => $"{x.Key}")));
+            if (Config.sessionNum % 2 == 0) {
+                shuffled = stableShuffledCategories.Take(count).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            } else {
+                shuffled = stableShuffledCategories.TakeLast(count).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            }
+
+            UnityEngine.Debug.Log(String.Join(", ", shuffled.ToList().ConvertAll(x => $"{x.Key}")));
         }
     }
 
