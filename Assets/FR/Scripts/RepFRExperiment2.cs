@@ -357,8 +357,8 @@ namespace UnityEPL {
         }
 
         // Word/Stim List Generation
-        protected override FRRun<Word> MakeRun<U>(U subsetGen, bool encStim, bool recStim) {
-            var inputWords = subsetGen.Get(uniqueWordsPerList).ToList();
+        protected override FRRun<Word> MakeRun<U>(U randomSubset, bool encStim, bool recStim) {
+            var inputWords = randomSubset.Get(uniqueWordsPerList).ToList();
             var encList = RepWordGenerator.Generate(repCounts, inputWords, encStim);
             var recList = RepWordGenerator.Generate(repCounts, blankWords, recStim);
             return new FRRun<Word>(encList, recList, encStim, recStim);

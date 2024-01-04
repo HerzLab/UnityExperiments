@@ -162,12 +162,13 @@ public class MemMapExperiment : FRExperimentBase<PairedWord> {
         return sourceWords;
     }
 
-    protected override FRRun<PairedWord> MakeRun<U>(U subsetGen, bool encStim, bool recStim) {
-        var inputWords = subsetGen.Get(wordsPerList).ToList();
-        var encList = WordGenerator<PairedWord>.Generate(inputWords, encStim);
-        var recList = WordGenerator<PairedWord>.Generate(blankWords, recStim);
+    protected override FRRun<PairedWord> MakeRun<U>(U randomSubset, bool encStim, bool recStim) {
+        var inputWords = randomSubset.Get(wordsPerList).ToList();
+        var encList = GenOpenLoopStimList(inputWords, encStim);
+        var recList = GenOpenLoopStimList(inputWords, recStim);
         return new FRRun<PairedWord>(encList, recList, encStim, recStim);
     }
+
     protected override FRSession<PairedWord> GenerateSession<U>(U randomSubset) {
         var session = new FRSession<PairedWord>();
 
@@ -179,26 +180,31 @@ public class MemMapExperiment : FRExperimentBase<PairedWord> {
             session.Add(MakeRun(randomSubset, false, false));
         }
 
-        var randomized_list = new FRSession<PairedWord>();
-
-        for (int i = 0; i < Config.encodingOnlyLists; i++) {
-            randomized_list.Add(MakeRun(randomSubset, true, false));
+        if (Config.encodingAndRetrievalLists != 0) {
+            ErrorNotifier.ErrorTS(new Exception("Config's encodingAndRetrievalLists should be 0 in Config (unsupported)"));
         }
 
-        for (int i = 0; i < Config.retrievalOnlyLists; i++) {
-            randomized_list.Add(MakeRun(randomSubset, false, true));
-        }
+        int numEncLists = Config.encodingOnlyLists;
+        int numRetLists = Config.retrievalOnlyLists;
+        int numEncAndRetLists = Config.encodingAndRetrievalLists;
+        int numNoStimLists = Config.noStimLists;
 
-        for (int i = 0; i < Config.encodingAndRetrievalLists; i++) {
-            randomized_list.Add(MakeRun(randomSubset, true, true));
+        while (numEncLists > 0 || numRetLists > 0 || numNoStimLists > 0) {
+            var randomizedList = new FRSession<PairedWord>();
+            if (numEncLists-- > 0) {
+                randomizedList.Add(MakeRun(randomSubset, true, false));
+            }
+            if (numRetLists-- > 0) {
+                randomizedList.Add(MakeRun(randomSubset, false, true));
+            }
+            if (numEncAndRetLists-- > 0) {
+                randomizedList.Add(MakeRun(randomSubset, true, true));
+            }
+            if (numNoStimLists-- > 0) {
+                randomizedList.Add(MakeRun(randomSubset, false, false));
+            }
+            session.AddRange(randomizedList.Shuffle());
         }
-
-        for (int i = 0; i < Config.noStimLists; i++) {
-            randomized_list.Add(MakeRun(randomSubset, false, false));
-        }
-
-        // TODO: JPB: (needed) (bug) All shuffles in FRExperiment, RepWordGenerator, Timeline, and FRSession may need to be ShuffleInPlace
-        session.AddRange(randomized_list.Shuffle());
 
         for (int i = 0; i < session.Count; i++) {
             WriteLstFile(session[i].encoding, i);

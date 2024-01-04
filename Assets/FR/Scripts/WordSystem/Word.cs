@@ -19,8 +19,4 @@ public class Word {
     public virtual string ToDisplayString() {
         return word;
     }
-
-    public virtual Word FromTabString(string word) {
-        return new Word(word);
-    }
 }

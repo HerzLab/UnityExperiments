@@ -364,14 +364,33 @@ namespace UnityEPL {
 
             return sourceWords;
         }
-        protected virtual FRRun<T> MakeRun<U>(U subsetGen, bool encStim, bool recStim) 
+        protected virtual FRRun<T> MakeRun<U>(U randomSubset, bool encStim, bool recStim) 
                 where U : WordRandomSubset<T>
         {
-            var inputWords = subsetGen.Get(wordsPerList).ToList();
-            var encList = WordGenerator<T>.Generate(inputWords, encStim);
-            var recList = WordGenerator<T>.Generate(blankWords, recStim);
+            var inputWords = randomSubset.Get(wordsPerList).ToList();
+            var encList = GenOpenLoopStimList(inputWords, encStim);
+            var recList = GenOpenLoopStimList(inputWords, recStim);
             return new FRRun<T>(encList, recList, encStim, recStim);
         }
+
+        protected StimWordList<T> GenOpenLoopStimList(List<T> inputWords, bool stim) {
+            if (stim) {
+                // var halfNumWords = wordsPerList / 2;
+                // var falses = Enumerable.Range(1, halfNumWords).Select(i => false).ToList();
+                // var trues = Enumerable.Range(1, wordsPerList-halfNumWords).Select(i => true).ToList();
+                // var stimList = falses.Concat(trues).ToList().Shuffle();
+                var stimList = Enumerable.Range(1, wordsPerList)
+                                .Select(i => InterfaceManager.rnd.Value.NextDouble() >= 0.5)
+                                .ToList();
+                return new StimWordList<T>(inputWords, stimList);
+            } else {
+                var stimList = Enumerable.Range(1, wordsPerList)
+                                .Select(i => false)
+                                .ToList();
+                return new StimWordList<T>(inputWords, stimList);
+            }
+        }
+
         protected virtual FRSession<T> GenerateSession<U>(U randomSubset) 
                 where U : WordRandomSubset<T>
         {

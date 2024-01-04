@@ -26,7 +26,6 @@ namespace UnityEPL {
     public class StimWordList<T> : Timeline<WordStim<T>> 
         where T : Word
     {
-
         public override bool IsReadOnly { get { return false; } }
         protected List<T> words_;
         public IList<T> words {
@@ -52,16 +51,17 @@ namespace UnityEPL {
 
         public StimWordList(List<T> word_list, List<bool> stim_list = null, double score = Double.NaN) {
             words_ = new List<T>(word_list);
-            stims_ = new List<bool>(stim_list ?? new List<bool>());
             score_ = score;
-
-            // Force the two lists to be the same size.
-            if (stims_.Count > words_.Count) {
-                stims_.RemoveRange(words_.Count, 0);
-            } else {
-                while (stims_.Count < words_.Count) {
+            if (stims_ == null) {
+                stims_ = new();
+                for (int i = 0; i < words_.Count; i++) {
                     stims_.Add(false);
                 }
+            }
+
+            if (words_.Count != stims_.Count) {
+                ErrorNotifier.ErrorTS(new
+                    ArgumentException("word_list and stim_list must be the same length"));
             }
         }
 
@@ -139,32 +139,6 @@ namespace UnityEPL {
 
         public void SetStim(int index, bool state = true) {
             stims_[index] = state;
-        }
-    }
-
-    // Generates well-spaced RepFR wordlists with open-loop stimulation assigned.
-    public class WordGenerator<T> 
-        where T : Word
-    {
-        public static void AssignRandomStim(StimWordList<T> rw) {
-            for (int i = 0; i < rw.Count; i++) {
-                bool stim = Convert.ToBoolean(InterfaceManager.rnd.Value.Next(2));
-                rw.SetStim(i, stim);
-            }
-        }
-
-        // TODO: JPB: (needed) Make sure WordGenerator works
-        public static StimWordList<T> Generate(List<T> inputWords, bool doStim) {
-            var wordList = new StimWordList<T>();
-            foreach (var word in inputWords) {
-                wordList.Add(word);
-            }
-
-            if (doStim) {
-                AssignRandomStim(wordList);                
-            }
-
-            return wordList;
         }
     }
 
