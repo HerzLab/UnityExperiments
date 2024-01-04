@@ -3,13 +3,15 @@ using UnityEPL;
 
 namespace UnityEPL {
 
-    public class FRRun {
-        public StimWordList encoding;
-        public StimWordList recall;
+    public class FRRun<T> 
+        where T : Word
+    {
+        public StimWordList<T> encoding;
+        public StimWordList<T> recall;
         public bool encodingStim;
         public bool recallStim;
 
-        public FRRun(StimWordList encodingList, StimWordList recallList,
+        public FRRun(StimWordList<T> encodingList, StimWordList<T> recallList,
             bool setEncodingStim = false, bool setRecallStim = false) {
             encoding = encodingList;
             recall = recallList;
@@ -19,13 +21,15 @@ namespace UnityEPL {
     }
 
     [Serializable]
-    public class FRSession : Timeline<FRRun> {
+    public class FRSession<T> : Timeline<FRRun<T>> 
+        where T : Word 
+    {
 
         public bool NextWord() {
             return GetState().encoding.IncrementState();
         }
 
-        public WordStim GetWord() {
+        public WordStim<T> GetWord() {
             return GetState().encoding.GetState();
         }
 

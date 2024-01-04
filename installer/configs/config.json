@@ -4,7 +4,7 @@
     "eventsPerFrame": 5,
     "frameRate": 300,
     "vSync": 1,
-    "syncboxOn": true,
+    "syncboxOn": false,
     "networkedSyncboxOn": false,
     "ramulatorOn": false,
     "elememOn": false,

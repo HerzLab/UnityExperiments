@@ -4,14 +4,14 @@ using System.Linq;
 using Unity.Burst.Intrinsics;
 using UnityEPL;
 
-public class CategorizedWordRandomSubset : WordRandomSubset {
-    protected new Dictionary<string, List<Word>> shuffled = new();
+public class CategorizedWordRandomSubset : WordRandomSubset<CategorizedWord> {
+    protected new Dictionary<string, List<CategorizedWord>> shuffled = new();
 
     public CategorizedWordRandomSubset(List<CategorizedWord> sourceWords) {
-        Dictionary<string, List<Word>> catWords = new();
+        Dictionary<string, List<CategorizedWord>> catWords = new();
 
         foreach (var word in sourceWords) {
-            List<Word> temp;
+            List<CategorizedWord> temp;
             catWords.TryGetValue(word.category, out temp);
             temp = temp != null ? temp : new();
             temp.Add(word);
@@ -58,7 +58,7 @@ public class CategorizedWordRandomSubset : WordRandomSubset {
     /// two lists worth and not enough other categories to complete the list.
     /// If you are worried about this, run it in a while loop for like 1000 iterations.
     /// It should probably work by then.
-    public override List<Word> Get(int amount) {
+    public override List<CategorizedWord> Get(int amount) {
         var numWordsPerCategory = 4;
         var numCategoriesPerList = amount / numWordsPerCategory;
 
@@ -103,7 +103,7 @@ public class CategorizedWordRandomSubset : WordRandomSubset {
         }
 
         // Get the words from each category
-        List<List<Word>> wordLists = new();
+        List<List<CategorizedWord>> wordLists = new();
         for (int i = 0; i < shuffled.Count; ++i) {
             wordLists.Add(new());
         }
@@ -130,7 +130,7 @@ public class CategorizedWordRandomSubset : WordRandomSubset {
         groups.Add(groupsSecondHalf);
 
         // Make the final word list
-        List<Word> finalWordList = new();
+        List<CategorizedWord> finalWordList = new();
         foreach (var i in groups) {
             finalWordList.Add(wordLists[i][0]);
             finalWordList.Add(wordLists[i][1]);

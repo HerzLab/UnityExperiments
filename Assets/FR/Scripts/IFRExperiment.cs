@@ -8,24 +8,24 @@ public class IFRExperiment : FRExperiment {
         StartTrial();
         await NextPracticeListPrompt();
         await CountdownVideo();
-        await Orientation();
+        await Fixation();
         await Encoding();
         await FixationDistractor();
         await PauseBeforeRecall();
         await RecallPrompt();
-        await Recall();
+        await FreeRecall();
         FinishPracticeTrial();
     }
     protected override async Task TrialStates() {
         StartTrial();
         await NextListPrompt();
         await CountdownVideo();
-        await Orientation();
+        await Fixation();
         await Encoding();
         await FixationDistractor();
         await PauseBeforeRecall();
         await RecallPrompt();
-        await Recall();
+        await FreeRecall();
         FinishTrial();
     }
 }

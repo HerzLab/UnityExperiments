@@ -6,11 +6,13 @@ using System.Linq;
 namespace UnityEPL {
 
     // Stores a word and whether or not it should be stimulated during encoding.
-    public class WordStim {
-        public string word;
+    public class WordStim<T>
+        where T : Word
+    {
+        public T word;
         public bool stim;
 
-        public WordStim(string new_word, bool new_stim = false) {
+        public WordStim(T new_word, bool new_stim = false) {
             word = new_word;
             stim = new_stim;
         }
@@ -21,11 +23,13 @@ namespace UnityEPL {
     }
 
     // This class keeps a list of words associated with their stim states.
-    public class StimWordList : Timeline<WordStim> {
+    public class StimWordList<T> : Timeline<WordStim<T>> 
+        where T : Word
+    {
 
         public override bool IsReadOnly { get { return false; } }
-        protected List<string> words_;
-        public IList<string> words {
+        protected List<T> words_;
+        public IList<T> words {
             get { return words_.AsReadOnly(); }
         }
         protected List<bool> stims_;
@@ -41,13 +45,13 @@ namespace UnityEPL {
         }
 
         public StimWordList() {
-            words_ = new List<string>();
+            words_ = new List<T>();
             stims_ = new List<bool>();
             score_ = Double.NaN;
         }
 
-        public StimWordList(List<string> word_list, List<bool> stim_list = null, double score = Double.NaN) {
-            words_ = new List<string>(word_list);
+        public StimWordList(List<T> word_list, List<bool> stim_list = null, double score = Double.NaN) {
+            words_ = new List<T>(word_list);
             stims_ = new List<bool>(stim_list ?? new List<bool>());
             score_ = score;
 
@@ -61,8 +65,8 @@ namespace UnityEPL {
             }
         }
 
-        public StimWordList(List<WordStim> word_stim_list, double score = Double.NaN) {
-            words_ = new List<string>();
+        public StimWordList(List<WordStim<T>> word_stim_list, double score = Double.NaN) {
+            words_ = new List<T>();
             stims_ = new List<bool>();
             score_ = score;
 
@@ -72,27 +76,27 @@ namespace UnityEPL {
             }
         }
 
-        public void Add(string word, bool stim = false) {
+        public void Add(T word, bool stim = false) {
             words_.Add(word);
             stims_.Add(stim);
         }
 
-        public override void Add(WordStim word_stim) {
+        public override void Add(WordStim<T> word_stim) {
             Add(word_stim.word, word_stim.stim);
         }
 
-        public void Insert(int index, string word, bool stim = false) {
+        public void Insert(int index, T word, bool stim = false) {
             words_.Insert(index, word);
             stims_.Insert(index, stim);
         }
 
-        public override void Insert(int index, WordStim word_stim) {
+        public override void Insert(int index, WordStim<T> word_stim) {
             Insert(index, word_stim.word, word_stim.stim);
         }
 
-        public override IEnumerator<WordStim> GetEnumerator() {
+        public override IEnumerator<WordStim<T>> GetEnumerator() {
             for (int i = 0; i < words_.Count; i++) {
-                yield return new WordStim(words_[i], stims_[i]);
+                yield return new WordStim<T>(words_[i], stims_[i]);
             }
         }
 
@@ -102,11 +106,11 @@ namespace UnityEPL {
             throw new NotSupportedException("method included only for compatibility");
         }
 
-        public override bool Contains(WordStim item) {
+        public override bool Contains(WordStim<T> item) {
             throw new NotSupportedException("method included only for compatibility");
         }
 
-        public override void CopyTo(WordStim[] array, int arrayIndex) {
+        public override void CopyTo(WordStim<T>[] array, int arrayIndex) {
             if (array == null) throw new ArgumentNullException();
 
             if (arrayIndex < 0) throw new ArgumentOutOfRangeException();
@@ -116,13 +120,13 @@ namespace UnityEPL {
             GetEnumerator().ToEnumerable().ToArray().CopyTo(array, arrayIndex);
         }
 
-        public override bool Remove(WordStim item) {
+        public override bool Remove(WordStim<T> item) {
             throw new NotSupportedException("method included only for compatibility");
         }
 
         // Read-only indexed access.
-        public override WordStim this[int i] {
-            get { return new WordStim(words_[i], stims_[i]); }
+        public override WordStim<T> this[int i] {
+            get { return new WordStim<T>(words_[i], stims_[i]); }
         }
 
         public override string ToString() {
@@ -139,17 +143,19 @@ namespace UnityEPL {
     }
 
     // Generates well-spaced RepFR wordlists with open-loop stimulation assigned.
-    public class WordGenerator {
-        public static void AssignRandomStim(StimWordList rw) {
+    public class WordGenerator<T> 
+        where T : Word
+    {
+        public static void AssignRandomStim(StimWordList<T> rw) {
             for (int i = 0; i < rw.Count; i++) {
                 bool stim = Convert.ToBoolean(InterfaceManager.rnd.Value.Next(2));
                 rw.SetStim(i, stim);
             }
         }
 
-        // TODO: JPB: (needed) Make suyre WordGenerator works
-        public static StimWordList Generate(List<string> inputWords, bool doStim) {
-            var wordList = new StimWordList();
+        // TODO: JPB: (needed) Make sure WordGenerator works
+        public static StimWordList<T> Generate(List<T> inputWords, bool doStim) {
+            var wordList = new StimWordList<T>();
             foreach (var word in inputWords) {
                 wordList.Add(word);
             }

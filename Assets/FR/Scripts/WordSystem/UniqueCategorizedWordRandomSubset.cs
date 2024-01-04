@@ -8,7 +8,7 @@ public class UniqueCategorizedWordRandomSubset : CategorizedWordRandomSubset {
     public UniqueCategorizedWordRandomSubset(List<CategorizedWord> sourceWords) : base(sourceWords) { }
 
     // Get one word from each category
-    public override List<Word> Get(int amount) {
+    public override List<CategorizedWord> Get(int amount) {
         var remainingCategories = shuffled
             .Where(x => x.Value.Count() > 0)
             .ToList().Shuffle();
@@ -20,7 +20,7 @@ public class UniqueCategorizedWordRandomSubset : CategorizedWordRandomSubset {
         // Make sure to use the categories with more items first to balance item usage
         remainingCategories.Sort((x, y) => y.Value.Count().CompareTo(x.Value.Count()));
 
-        var words = new List<Word>();
+        var words = new List<CategorizedWord>();
         for (int i = 0; i < amount; ++i) {
             var catWords = remainingCategories[i];
             words.Add(catWords.Value.Last());

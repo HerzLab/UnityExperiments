@@ -9,11 +9,18 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace UnityEPL {
+    public class FRExperimentBase<T> : ExperimentBase<FRExperimentBase<T>> 
+        where T : Word, new() 
+    {
+        protected override void AwakeOverride() { }
 
-    public class RepFRExperiment2 : FRExperimentBase<Word> {
-        protected RepCounts repCounts = null;
-        protected int uniqueWordsPerList;
-        protected FRSession<Word> currentSession;
+        protected void Start() {
+            Run();
+        }
+
+        protected List<T> blankWords;
+        protected int wordsPerList;
+        protected FRSession<T> currentSession;
 
         protected override async Task PreTrialStates() {
             SetupWordList();
@@ -30,81 +37,34 @@ namespace UnityEPL {
             StartTrial();
             await NextPracticeListPrompt();
             await CountdownVideo();
-            await Orientation();
+            await Fixation();
             await Encoding();
             await MathDistractor();
             await PauseBeforeRecall();
             await RecallPrompt();
-            await Recall();
+            await FreeRecall();
             FinishPracticeTrial();
         }
         protected override async Task TrialStates() {
             StartTrial();
             await NextListPrompt();
             await CountdownVideo();
-            await Orientation();
+            await Fixation();
             await Encoding();
             await MathDistractor();
             await PauseBeforeRecall();
             await RecallPrompt();
-            await Recall();
+            await FreeRecall();
             FinishTrial();
         }
-
-        // Pre-Trial States
-        protected async Task Introduction() {
-            await RepeatUntilNo(async () => {
-                await textDisplayer.PressAnyKey("show instruction video", "Press any key to show instruction video");
-
-                manager.videoControl.SetVideo(Config.introductionVideo, true);
-                SendRamulatorStateMsg(HostPC.StateMsg.INSTRUCT, true);
-                manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.INSTRUCT);
-                await manager.videoControl.PlayVideo();
-                SendRamulatorStateMsg(HostPC.StateMsg.INSTRUCT, false);
-            }, "repeat introduction video", "Press Y to continue to practice list, \n Press N to replay instructional video.");
-        }
-        protected async Task MicrophoneTest() {
-            await RepeatUntilNo(async () => {
-                await textDisplayer.PressAnyKey("microphone test prompt", "Microphone Test", "Press any key to record a sound after the beep.");
-
-                string wavPath = System.IO.Path.Combine(manager.fileManager.SessionPath(), "microphone_test_"
-                        + Clock.UtcNow.ToString("yyyy-MM-dd_HH_mm_ss") + ".wav");
-
-                manager.lowBeep.Play();
-                await DoWaitWhile(() => manager.lowBeep.isPlaying);
-                await InterfaceManager.Delay(100); // This is needed so you don't hear the end of the beep
-
-                manager.recorder.StartRecording(wavPath);
-                manager.textDisplayer.DisplayText("microphone test recording", "<color=red>Recording...</color>");
-                await InterfaceManager.Delay(Config.micTestDuration);
-                var clip = manager.recorder.StopRecording();
-
-                manager.textDisplayer.DisplayText("microphone test playing", "<color=green>Playing...</color>");
-                manager.playback.Play(clip);
-                await InterfaceManager.Delay(Config.micTestDuration);
-            }, "repeat mic test", "Did you hear the recording ? \n(Y = Continue / N = Try Again).");
-        }
-        protected async Task QuitPrompt() {
-            SendRamulatorStateMsg(HostPC.StateMsg.WAITING, true);
-            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.WAITING);
-
-            textDisplayer.Display("subject/session confirmation", "",
-                $"Running {Config.subject} in session {Config.sessionNum} of {Config.experimentName}." +
-                "\nPress Y to continue, N to quit.");
-            var keyCode = await inputManager.GetKeyTS(new() { KeyCode.Y, KeyCode.N });
-
-            SendRamulatorStateMsg(HostPC.StateMsg.WAITING, false);
-
-            if (keyCode == KeyCode.N) {
-                manager.QuitTS();
+        protected override void SendRamulatorStateMsg(HostPC.StateMsg state, bool stateToggle, Dictionary<string, object> extraData = null) {
+            var dict = (extraData != null) ? new Dictionary<string, object>(extraData) : new();
+            if (state != HostPC.StateMsg.WORD) {
+                dict["phase_type"] = currentSession.GetState().encodingStim;
             }
+            manager.ramulator?.SendStateMsg(state, stateToggle, dict);
         }
-        protected async Task ConfirmStart() {
-            await textDisplayer.PressAnyKey("confirm start",
-                "Please let the experimenter know if you have any questions about what you just did.\n\n" +
-                "If you think you understand, please explain the task to the experimenter in your own words.\n\n" +
-                "Press any key to continue to the first list.");
-        }
+
 
         // Post-Trial States
         protected async Task FinalRecall() {
@@ -146,21 +106,24 @@ namespace UnityEPL {
             await textDisplayer.PressAnyKey("pause before list", "Press any key for practice trial.");
         }
         protected async Task CountdownVideo() {
+            SendRamulatorStateMsg(HostPC.StateMsg.COUNTDOWN, true, new() { { "current_trial", trialNum } });
+            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.COUNTDOWN, new() { { "current_trial", trialNum } });
+
             eventReporter.LogTS("countdown");
-            SendRamulatorStateMsg(HostPC.StateMsg.COUNTDOWN, true);
             manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.COUNTDOWN);
             manager.videoControl.SetVideo(Config.countdownVideo);
             await manager.videoControl.PlayVideo();
-            SendRamulatorStateMsg(HostPC.StateMsg.COUNTDOWN, false);
+
+            SendRamulatorStateMsg(HostPC.StateMsg.COUNTDOWN, false, new() { { "current_trial", trialNum } });
         }
-        protected async Task Orientation() {
+        protected async Task Fixation() {
             SendRamulatorStateMsg(HostPC.StateMsg.ORIENT, true);
             manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.ORIENT);
 
             int[] limits = Config.fixationDuration;
             int duration = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
             textDisplayer.Display("orientation stimulus", "", "+");
-            
+            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.ORIENT);
             await InterfaceManager.Delay(duration);
 
             SendRamulatorStateMsg(HostPC.StateMsg.ORIENT, false);
@@ -170,29 +133,39 @@ namespace UnityEPL {
             manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.ENCODING, new() { { "current_trial", trialNum } });
 
             int[] isiLimits = Config.interStimulusDuration;
-
+ 
             for (int i = 0; i < 12; ++i) {
                 int isiDuration = InterfaceManager.rnd.Value.Next(isiLimits[0], isiLimits[1]);
                 manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.ISI, new() { { "duration", isiDuration } });
                 await InterfaceManager.Delay(isiDuration);
 
-                var word = currentSession.GetWord();
+                var wordStim = currentSession.GetWord();
                 currentSession.NextWord();
                 Dictionary<string, object> data = new() {
-                    { "word", word.word },
+                    { "word", wordStim.word },
                     { "serialpos", i },
-                    { "stim", word.stim },
+                    { "stim", wordStim.stim },
                 };
 
                 eventReporter.LogTS("word stimulus info", data);
                 manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.WORD, data);
-                textDisplayer.Display("word stimulus", "", word.word);
+                textDisplayer.Display("word stimulus", "", wordStim.word.ToDisplayString());
                 await InterfaceManager.Delay(Config.stimulusDuration);
                 eventReporter.LogTS("clear word stimulus", data);
                 textDisplayer.Clear();
             }
 
             SendRamulatorStateMsg(HostPC.StateMsg.ENCODING, false, new() { { "current_trial", trialNum } });
+        }
+        protected async Task FixationDistractor() {
+            SendRamulatorStateMsg(HostPC.StateMsg.DISTRACT, true, new() { { "current_trial", trialNum } });
+            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.DISTRACT, new() { { "current_trial", trialNum } });
+
+            textDisplayer.Display("display distractor fixation cross", "", "+");
+            await InterfaceManager.Delay(Config.distractorDuration);
+            textDisplayer.Clear();
+
+            SendRamulatorStateMsg(HostPC.StateMsg.DISTRACT, false, new() { { "current_trial", trialNum } });
         }
         protected async Task MathDistractor() {
             SendRamulatorStateMsg(HostPC.StateMsg.DISTRACT, true, new() { { "current_trial", trialNum } });
@@ -274,7 +247,7 @@ namespace UnityEPL {
                 }
             }
 
-            SendRamulatorStateMsg(HostPC.StateMsg.DISTRACT, false, new() { { "current_trial", trialNum } });
+            SendRamulatorStateMsg(HostPC.StateMsg.DISTRACT, false, new() { { "current_trial", trialNum } });;
         }
         protected async Task PauseBeforeRecall() {
             int[] limits = Config.recallDelay;
@@ -286,7 +259,7 @@ namespace UnityEPL {
             textDisplayer.Display("display recall text", "", "*******");
             await InterfaceManager.Delay(Config.recallPromptDuration);
         }
-        protected async Task Recall() {
+        protected async Task FreeRecall() {
             SendRamulatorStateMsg(HostPC.StateMsg.RETRIEVAL, true, new() { { "current_trial", trialNum } });
             manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.RETRIEVAL, new() { { "current_trial", trialNum } });
 
@@ -325,43 +298,121 @@ namespace UnityEPL {
         }
 
         // Setup Functions
-        protected void SetupRepetitions() {
-            // Repetition specification
-            int[] repeats = Config.wordRepeats;
-            int[] counts = Config.wordCounts;
-
-            if (repeats.Length != counts.Length) {
-                throw new Exception("Word Repeats and Counts not aligned");
+        protected virtual void SetupWordList() {
+            var wordRepeats = Config.wordRepeats;
+            if (wordRepeats.Count() != 1 && wordRepeats[0] != 1) {
+                ErrorNotifier.ErrorTS(new Exception("Config's wordRepeats should only have one item with a value of 1"));
             }
 
-            for (int i = 0; i < repeats.Length; i++) {
-                if (repCounts == null) {
-                    repCounts = new RepCounts(repeats[i], counts[i]);
-                } else {
-                    repCounts = repCounts.RepCnt(repeats[i], counts[i]);
-                }
-            }
-        }
-        protected override void SetupWordList() {
-            SetupRepetitions();
-
-            wordsPerList = repCounts.TotalWords();
-            uniqueWordsPerList = repCounts.UniqueWords();
-            blankWords = new List<Word>(Enumerable.Range(1, wordsPerList).Select(i => new Word("")).ToList());
+            wordsPerList = Config.wordCounts[0];
+            blankWords = new List<T>(Enumerable.Range(1, wordsPerList).Select(i => new T()).ToList());
 
             var sourceWords = ReadWordpool();
-            var words = new WordRandomSubset<Word>(sourceWords);
+            var words = new WordRandomSubset<T>(sourceWords);
 
             // TODO: (feature) Load Session
             currentSession = GenerateSession(words);
         }
 
+        // Helper Functions
+        protected void RecallStim() {
+            // Uniform stim.
+            int recStimInterval = Config.recallStimInterval;
+            int stimDuration = Config.recallStimDuration;
+            int recPeriod = Config.recallDuration;
+
+            uint stimReps = (uint)(recPeriod / (stimDuration + recStimInterval));
+
+            int total_interval = stimDuration + recStimInterval;
+            int stim_time = total_interval;
+
+            DoRepeating(0, stim_time, stimReps, RecallStimHelper);
+        }
+        protected void RecallStimHelper() {
+            eventReporter.LogTS("recall stimulus info");
+            manager.hostPC?.SendStimMsgTS();
+        }
+
+        // Experiment Saving and Loading Logic
+        protected void WriteLstFile(StimWordList<T> list, int index) {
+            // create .lst files for annotation scripts
+            string lstfile = Path.Combine(manager.fileManager.SessionPath(), index.ToString() + ".lst");
+            IList<string> noRepeats = new HashSet<string>(list.words.Select(wordStim => wordStim.word)).ToList();
+            File.WriteAllLines(lstfile, noRepeats, System.Text.Encoding.UTF8);
+        }
+
         // Word/Stim List Generation
-        protected override FRRun<Word> MakeRun<U>(U subsetGen, bool encStim, bool recStim) {
-            var inputWords = subsetGen.Get(uniqueWordsPerList).ToList();
-            var encList = RepWordGenerator.Generate(repCounts, inputWords, encStim);
-            var recList = RepWordGenerator.Generate(repCounts, blankWords, recStim);
-            return new FRRun<Word>(encList, recList, encStim, recStim);
+        // TODO: JPB: (Noa) (feature) Change FRExperiment::ReadWordpool to be generic for reading from line
+        protected virtual List<T> ReadWordpool() {
+            // wordpool is a file with 'word' as a header and one word per line.
+            // repeats are described in the config file with two matched arrays,
+            // repeats and counts, which describe the number of presentations
+            // words can have and the number of words that should be assigned to
+            // each of those presentation categories.
+            string sourceList = manager.fileManager.GetWordList();
+            var sourceWords = new List<T>();
+
+            //skip line for tsv header
+            foreach (var line in File.ReadLines(sourceList).Skip(1)) {
+                T item = (T)Activator.CreateInstance(typeof(T), line);
+                sourceWords.Add(item);
+            }
+
+            // copy full wordpool to session directory
+            string path = System.IO.Path.Combine(manager.fileManager.SessionPath(), "wordpool.txt");
+            File.WriteAllText(path, String.Join("\n", sourceWords));
+
+            return sourceWords;
+        }
+        protected virtual FRRun<T> MakeRun<U>(U subsetGen, bool encStim, bool recStim) 
+                where U : WordRandomSubset<T>
+        {
+            var inputWords = subsetGen.Get(wordsPerList).ToList();
+            var encList = WordGenerator<T>.Generate(inputWords, encStim);
+            var recList = WordGenerator<T>.Generate(blankWords, recStim);
+            return new FRRun<T>(encList, recList, encStim, recStim);
+        }
+        protected virtual FRSession<T> GenerateSession<U>(U randomSubset) 
+                where U : WordRandomSubset<T>
+        {
+            var session = new FRSession<T>();
+
+            for (int i = 0; i < Config.practiceLists; i++) {
+                session.Add(MakeRun(randomSubset, false, false));
+            }
+
+            for (int i = 0; i < Config.preNoStimLists; i++) {
+                session.Add(MakeRun(randomSubset, false, false));
+            }
+
+            var randomized_list = new FRSession<T>();
+
+            for (int i = 0; i < Config.encodingOnlyLists; i++) {
+                randomized_list.Add(MakeRun(randomSubset, true, false));
+            }
+
+            for (int i = 0; i < Config.retrievalOnlyLists; i++) {
+                randomized_list.Add(MakeRun(randomSubset, false, true));
+            }
+
+            for (int i = 0; i < Config.encodingAndRetrievalLists; i++) {
+                randomized_list.Add(MakeRun(randomSubset, true, true));
+            }
+
+            for (int i = 0; i < Config.noStimLists; i++) {
+                randomized_list.Add(MakeRun(randomSubset, false, false));
+            }
+
+            // TODO: JPB: (needed) (bug) All shuffles in FRExperiment, RepWordGenerator, Timeline, and FRSession may need to be ShuffleInPlace
+            session.AddRange(randomized_list.Shuffle());
+
+            for (int i = 0; i < session.Count; i++) {
+                WriteLstFile(session[i].encoding, i);
+            }
+
+            session.PrintAllWordsToDebugLog();
+
+            return session;
         }
     }
 

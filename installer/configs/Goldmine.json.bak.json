@@ -1,0 +1,10 @@
+{
+   "experimentClass": "GoldmineExperiment",
+   "experimentName": "Goldmine",
+   "experimentScene": "SMaze2",
+   "prefix": "any",
+   "stimMode": "none",
+
+   "tutorialScene": "Tutorial",
+   "availableScenes": ["SMaze2", "SMaze"]
+}

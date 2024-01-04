@@ -6815,6 +6815,7 @@ Terrain:
   m_AllowAutoConnect: 1
   m_EnableHeightmapRayTracing: 1
   m_EnableTreesAndDetailsRayTracing: 0
+  m_TreeMotionVectorModeOverride: 3
 --- !u!4 &1229463105
 Transform:
   m_ObjectHideFlags: 0
@@ -8746,7 +8747,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1738315882
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8773,8 +8774,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d324ee2dd470e4bf9afbb7587283b713, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  reportingID: Object ID not set.
-  reportTo: {fileID: 0}
 --- !u!114 &1738315884
 MonoBehaviour:
   m_ObjectHideFlags: 0

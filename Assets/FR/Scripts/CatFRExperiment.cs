@@ -6,7 +6,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEPL;
 
-public class CatFRExperiment : FRExperiment {
+public class CatFRExperiment : FRExperimentBase<CategorizedWord> {
     protected override void SetupWordList() {
         var wordRepeats = Config.wordRepeats;
         if (wordRepeats.Count() != 1 && wordRepeats[0] != 1) {
@@ -14,7 +14,7 @@ public class CatFRExperiment : FRExperiment {
         }
 
         wordsPerList = Config.wordCounts[0];
-        blankWords = new List<string>(Enumerable.Repeat(string.Empty, wordsPerList));
+        blankWords = new List<CategorizedWord>(Enumerable.Range(1, wordsPerList).Select(i => new CategorizedWord("", "")).ToList());
 
         var sourceWords = ReadCategorizedWordpool();
         var words = new CategorizedWordRandomSubset(sourceWords);

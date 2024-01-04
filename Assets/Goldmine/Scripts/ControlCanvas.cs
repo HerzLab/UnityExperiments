@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEPL;
 
-public class ControlCanvas : MonoBehaviour
+public class ControlCanvas : EventMonoBehaviour
 {
     public Text centralDisplay; // large text in the middle of the screen
     public Text centralDisplay2; // large text (not bolded) in the middle of the screen
@@ -22,10 +22,7 @@ public class ControlCanvas : MonoBehaviour
 
     private string lastScoreText;
 
-    void Awake()
-    {
-        manager = InterfaceManager.Instance;
-    }
+    override protected void AwakeOverride() { }
 
     public void SetCentralDisplay(string msg, string color, float duration)
     {
@@ -160,6 +157,9 @@ public class ControlCanvas : MonoBehaviour
                 break;
         }
 
+        Debug.Log(manager);
+        Debug.Log(InterfaceManager.Instance);
+        Debug.Log(manager.eventReporter);
         manager.eventReporter.LogTS("canvasDisplay", new() { { "canvasName", "MainCanvas" }, { "canvasChildObjectName", "Score" }, { "textDisplayed", msg } });
         scoreDisplay.text = "SCORE: " + msg;
         if (bigFont)

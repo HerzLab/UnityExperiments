@@ -7,7 +7,8 @@ namespace UnityEPL {
 
         public static int micTestDuration { get { return Config.GetSetting<int>("micTestDuration"); } }
         public static int distractorDuration { get { return Config.GetSetting<int>("distractorDuration"); } }
-        public static int[] orientationDuration { get { return Config.GetSetting<int[]>("orientationDuration"); } }
+        public static int[] fixationDuration { get { return Config.GetSetting<int[]>("fixationDuration"); } }
+        public static int[] postFixationDelay { get { return Config.GetSetting<int[]>("postFixationDelay"); } }
         public static int stimulusDuration { get { return Config.GetSetting<int>("stimulusDuration"); } }
         public static int[] interStimulusDuration { get { return Config.GetSetting<int[]>("interStimulusDuration"); } }
         public static int recallDuration { get { return Config.GetSetting<int>("recallDuration"); } }
@@ -38,6 +39,9 @@ namespace UnityEPL {
 
         // CPSExperiment.cs
         public static string video { get { return Config.GetSetting<string>("video"); } }
+
+        // MemMapExperiment.cs
+        public static int[] postInterStimulusDuration { get { return Config.GetSetting<int[]>("postInterStimulusDuration"); } }
     }
 
 }

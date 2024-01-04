@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEPL;
 
-public class WordRandomSubset {
-    protected List<Word> shuffled;
+public class WordRandomSubset<T> where T : Word {
+    protected List<T> shuffled;
     protected int index;
 
     /// <summary>
@@ -16,7 +16,7 @@ public class WordRandomSubset {
         index = 0;
     }
 
-    public WordRandomSubset(List<Word> sourceWords) {
+    public WordRandomSubset(List<T> sourceWords) {
         index = 0;
         
         // Only keep the words for that session
@@ -36,7 +36,7 @@ public class WordRandomSubset {
         shuffled = sourceWords.Shuffle();
     }
 
-    public virtual List<Word> Get(int amount) {
+    public virtual List<T> Get(int amount) {
         if ((shuffled.Count - index) < amount) {
             throw new IndexOutOfRangeException("Word list too small for session");
         }

@@ -49,14 +49,14 @@ namespace UnityEPL {
     }
 
     // A list of words which will each be repeated the specified number of times.
-    public class RepWordList : StimWordList {
+    public class RepWordList : StimWordList<Word> {
         public int repeats;
 
         public RepWordList(int repeats_ = 1) {
             repeats = repeats_;
         }
 
-        public RepWordList(List<string> wordList, int repeats_ = 1,
+        public RepWordList(List<Word> wordList, int repeats_ = 1,
             List<bool> stimList = null)
             : base(wordList, stimList) {
             repeats = repeats_;
@@ -104,7 +104,7 @@ namespace UnityEPL {
 
         // Prepares a list of repeated words with better than random spacing,
         // while keeping the repeats associated with their stim state.
-        public static StimWordList SpreadWords(
+        public static StimWordList<Word> SpreadWords(
                 List<RepWordList> repwordLists,
                 double topPercentSpaced = 0.2) {
 
@@ -132,7 +132,7 @@ namespace UnityEPL {
             }
 
             arrangements.Sort((a, b) => a.Item1.CompareTo(b.Item1));
-            var wordlst = new List<WordStim>();
+            var wordlst = new List<WordStim<Word>>();
             foreach (var wl in repwordLists) {
                 foreach (var wordStim in wl) {
                     for (int i = 0; i < wl.repeats; i++) {
@@ -141,13 +141,13 @@ namespace UnityEPL {
                 }
             }
 
-            var wordsSpread = new List<WordStim>(wordlst);
+            var wordsSpread = new List<WordStim<Word>>(wordlst);
 
             for (int i = 0; i < wordlst.Count; i++) {
                 wordsSpread[arrangements[0].Item2[i]] = wordlst[i];
             }
 
-            return new StimWordList(wordsSpread, score: arrangements[0].Item1);
+            return new StimWordList<Word>(wordsSpread, score: arrangements[0].Item1);
         }
 
         public static void AssignRandomStim(RepWordList rw) {
@@ -159,7 +159,7 @@ namespace UnityEPL {
 
         // Create a RepFR open-stim word list from specified lists of words to be
         // repeated and list of words to use once.
-        public static StimWordList Generate(
+        public static StimWordList<Word> Generate(
             List<RepWordList> repeats,
             RepWordList singles,
             bool doStim,
@@ -173,7 +173,7 @@ namespace UnityEPL {
                 AssignRandomStim(singles);
             }
 
-            StimWordList preparedWords = SpreadWords(repeats, topPercentSpaced);
+            StimWordList<Word> preparedWords = SpreadWords(repeats, topPercentSpaced);
 
             foreach (var word_stim in singles) {
                 int insert_at = InterfaceManager.rnd.Value.Next(preparedWords.Count + 1);
@@ -185,9 +185,9 @@ namespace UnityEPL {
 
         // Create a RepFR open-stim word list from a list of repetitions and counts,
         // and a list of candidate words.
-        public static StimWordList Generate(
+        public static StimWordList<Word> Generate(
             RepCounts repCounts,
-            List<string> inputWords,
+            List<Word> inputWords,
             bool doStim,
             double topPercentSpaced = 0.2) {
 
