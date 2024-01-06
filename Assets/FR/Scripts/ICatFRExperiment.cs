@@ -12,9 +12,9 @@ public class ICatFRExperiment : CatFRExperiment {
         await Encoding();
         await FixationDistractor();
         await PauseBeforeRecall();
-        await RecallPrompt();
+        await RecallOrientation();
         await FreeRecall();
-        FinishPracticeTrial();
+        FinishTrial();
     }
     protected override async Task TrialStates() {
         StartTrial();
@@ -24,7 +24,7 @@ public class ICatFRExperiment : CatFRExperiment {
         await Encoding();
         await FixationDistractor();
         await PauseBeforeRecall();
-        await RecallPrompt();
+        await RecallOrientation();
         await FreeRecall();
         FinishTrial();
     }

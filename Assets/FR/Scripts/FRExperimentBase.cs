@@ -41,9 +41,9 @@ namespace UnityEPL {
             await Encoding();
             await MathDistractor();
             await PauseBeforeRecall();
-            await RecallPrompt();
+            await RecallOrientation();
             await FreeRecall();
-            FinishPracticeTrial();
+            FinishTrial();
         }
         protected override async Task TrialStates() {
             StartTrial();
@@ -53,7 +53,7 @@ namespace UnityEPL {
             await Encoding();
             await MathDistractor();
             await PauseBeforeRecall();
-            await RecallPrompt();
+            await RecallOrientation();
             await FreeRecall();
             FinishTrial();
         }
@@ -127,6 +127,11 @@ namespace UnityEPL {
             await InterfaceManager.Delay(duration);
 
             SendRamulatorStateMsg(HostPC.StateMsg.ORIENT, false);
+        }
+        protected async Task Orientation(int duration) {
+            manager.highBeep.Play();
+            textDisplayer.Display("display recall text", "", "*******");
+            await InterfaceManager.Delay(duration);
         }
         protected async Task Encoding() {
             SendRamulatorStateMsg(HostPC.StateMsg.ENCODING, true, new() { { "current_trial", trialNum } });
@@ -254,10 +259,8 @@ namespace UnityEPL {
             int interval = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
             await InterfaceManager.Delay(interval);
         }
-        protected async Task RecallPrompt() {
-            manager.highBeep.Play();
-            textDisplayer.Display("display recall text", "", "*******");
-            await InterfaceManager.Delay(Config.recallPromptDuration);
+        protected async Task RecallOrientation() {
+            await Orientation(Config.recallOrientationDuration);
         }
         protected async Task FreeRecall() {
             SendRamulatorStateMsg(HostPC.StateMsg.RETRIEVAL, true, new() { { "current_trial", trialNum } });
@@ -284,16 +287,17 @@ namespace UnityEPL {
         }
         protected void FinishTrial() {
             if(!currentSession.NextList()) {
-                EndTrials();
-            }
-        }
-        protected void FinishPracticeTrial() {
-            if (!currentSession.NextList()) {
                 EndPracticeTrials();
                 EndTrials();
             }
+
             if (practiceTrialNum > Config.practiceLists) {
                 EndPracticeTrials();
+            }
+
+            int numTrials = currentSession.Count - Config.practiceLists;
+            if (trialNum > numTrials) {
+                EndTrials();
             }
         }
 

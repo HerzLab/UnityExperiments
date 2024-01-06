@@ -26,6 +26,6 @@
     "interStimulusDuration": [750, 1000],
     "distractorDuration": 20000,
     "recallDelay": [1000, 1400],
-    "recallPromptDuration": 1000,
+    "recallOrientationDuration": 1000,
     "recallDuration": 30000
 }

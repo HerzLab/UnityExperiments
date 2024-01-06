@@ -21,15 +21,18 @@ public class MemMapExperiment : FRExperimentBase<PairedWord> {
     }
     protected override async Task PracticeTrialStates() {
         StartTrial();
-        // await NextPracticeListPrompt();
-        // await CountdownVideo();
-        // await Fixation();
-        // await Encoding();
-        // await MathDistractor();
-        // await PauseBeforeRecall();
-        // await RecallPrompt();
-        // await Recall();
-        FinishPracticeTrial();
+        await NextListPrompt();
+        await CountdownVideo();
+        await Fixation();
+        await Encoding();
+        await MathDistractor();
+        await PauseBeforeRecall();
+        await RecallOrientation();
+        await CuedRecall();
+        await PauseBeforeRecall();
+        await RecallOrientation();
+        await Recognition();
+        FinishTrial();
     }
     protected override async Task TrialStates() {
         StartTrial();
@@ -38,12 +41,13 @@ public class MemMapExperiment : FRExperimentBase<PairedWord> {
         await Fixation();
         await Encoding();
         await MathDistractor();
-        await Fixation();
-        //await PauseBeforeRecall();
-        //await RecallPrompt();
-        await FreeRecall();
-        FinishTrial();
+        await PauseBeforeRecall();
+        await RecallOrientation();
         await CuedRecall();
+        await PauseBeforeRecall();
+        await RecallOrientation();
+        await Recognition();
+        FinishTrial();
     }
 
 
@@ -66,34 +70,40 @@ public class MemMapExperiment : FRExperimentBase<PairedWord> {
         }
 
     protected new async Task Encoding() {
-            SendRamulatorStateMsg(HostPC.StateMsg.ENCODING, true, new() { { "current_trial", trialNum } });
-            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.ENCODING, new() { { "current_trial", trialNum } });
+        SendRamulatorStateMsg(HostPC.StateMsg.ENCODING, true, new() { { "current_trial", trialNum } });
+        manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.ENCODING, new() { { "current_trial", trialNum } });
 
-            int[] isiLimits = Config.interStimulusDuration;
- 
-            for (int i = 0; i < 12; ++i) {
-                int isiDuration = InterfaceManager.rnd.Value.Next(isiLimits[0], isiLimits[1]);
-                manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.ISI, new() { { "duration", isiDuration } });
-                await InterfaceManager.Delay(isiDuration);
+        int[] isiLimits = Config.interStimulusDuration;
 
-                var wordStim = currentSession.GetWord();
-                currentSession.NextWord();
-                Dictionary<string, object> data = new() {
-                    { "word", wordStim.word },
-                    { "serialpos", i },
-                    { "stim", wordStim.stim },
-                };
+        for (int i = 0; i < 12; ++i) {
+            int isiDuration = InterfaceManager.rnd.Value.Next(isiLimits[0], isiLimits[1]);
+            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.ISI, new() { { "duration", isiDuration } });
+            await InterfaceManager.Delay(isiDuration);
 
-                eventReporter.LogTS("word stimulus info", data);
-                manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.WORD, data);
-                textDisplayer.Display("word stimulus", "", wordStim.word.ToDisplayString());
-                await InterfaceManager.Delay(Config.stimulusDuration);
-                eventReporter.LogTS("clear word stimulus", data);
-                textDisplayer.Clear();
-            }
+            var wordStim = currentSession.GetWord();
+            currentSession.NextWord();
+            Dictionary<string, object> data = new() {
+                { "word", wordStim.word },
+                { "serialpos", i },
+                { "stim", wordStim.stim },
+            };
 
-            SendRamulatorStateMsg(HostPC.StateMsg.ENCODING, false, new() { { "current_trial", trialNum } });
+            eventReporter.LogTS("word stimulus info", data);
+            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.WORD, data);
+            textDisplayer.Display("word stimulus", "", wordStim.word.ToDisplayString());
+            await InterfaceManager.Delay(Config.stimulusDuration);
+            eventReporter.LogTS("clear word stimulus", data);
+            textDisplayer.Clear();
         }
+
+        SendRamulatorStateMsg(HostPC.StateMsg.ENCODING, false, new() { { "current_trial", trialNum } });
+    }
+
+    protected async Task PauseBeforeRecog() {
+        int[] limits = Config.recallDelay;
+        int interval = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
+        await InterfaceManager.Delay(interval);
+    }
 
     protected async Task CuedRecall() {
         // TODO: JPB: (Noa) (needed) CuedRecall is not implemented
@@ -115,6 +125,10 @@ public class MemMapExperiment : FRExperimentBase<PairedWord> {
         if (stim) {
             RecallStim();
         }
+    }
+
+    protected async Task Recognition() {
+
     }
 
     protected override void SetupWordList() {

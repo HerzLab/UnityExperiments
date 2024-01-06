@@ -284,7 +284,7 @@ namespace UnityEPL {
         protected async Task RecallPrompt() {
             manager.highBeep.Play();
             textDisplayer.Display("display recall text", "", "*******");
-            await InterfaceManager.Delay(Config.recallPromptDuration);
+            await InterfaceManager.Delay(Config.recallOrientationDuration);
         }
         protected async Task Recall() {
             SendRamulatorStateMsg(HostPC.StateMsg.RETRIEVAL, true, new() { { "current_trial", trialNum } });

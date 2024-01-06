@@ -12,7 +12,7 @@ namespace UnityEPL {
         public static int stimulusDuration { get { return Config.GetSetting<int>("stimulusDuration"); } }
         public static int[] interStimulusDuration { get { return Config.GetSetting<int[]>("interStimulusDuration"); } }
         public static int recallDuration { get { return Config.GetSetting<int>("recallDuration"); } }
-        public static int recallPromptDuration { get { return Config.GetSetting<int>("recallPromptDuration"); } }
+        public static int recallOrientationDuration { get { return Config.GetSetting<int>("recallOrientationDuration"); } }
         public static int finalRecallDuration { get { return Config.GetSetting<int>("finalRecallDuration"); } }
 
         public static int recallStimInterval { get { return Config.GetSetting<int>("recallStimInterval"); } }

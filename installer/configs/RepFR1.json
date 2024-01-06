@@ -21,7 +21,7 @@
     "fixationDuration": [1000, 1400],
     "micTestDuration": 3000,
     "recallDelay": [1000, 1400],
-    "recallPromptDuration": 1000,
+    "recallOrientationDuration": 1000,
     "recallDuration": 30000,
     "stimMode": "none"
 }
