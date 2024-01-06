@@ -362,6 +362,10 @@ namespace UnityEPL {
             string path = System.IO.Path.Combine(manager.fileManager.SessionPath(), "wordpool.txt");
             File.WriteAllText(path, String.Join("\n", sourceWords));
 
+            // copy original wordpool to session directory
+            string origPath = System.IO.Path.Combine(manager.fileManager.SessionPath(), "original_wordpool.txt");
+            File.Copy(sourceList, origPath, true);
+
             return sourceWords;
         }
         protected virtual FRRun<T> MakeRun<U>(U randomSubset, bool encStim, bool recStim) 
@@ -390,7 +394,6 @@ namespace UnityEPL {
                 return new StimWordList<T>(inputWords, stimList);
             }
         }
-
         protected virtual FRSession<T> GenerateSession<U>(U randomSubset) 
                 where U : WordRandomSubset<T>
         {

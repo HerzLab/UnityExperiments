@@ -12,4 +12,8 @@ public class CategorizedWord : Word {
     public CategorizedWord(string word, string category) : base(word) {
         this.category = category;
     }
+
+    public override string ToTSV() {
+        return category + "\t" + word;
+    }
 }

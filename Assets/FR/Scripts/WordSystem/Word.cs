@@ -1,3 +1,5 @@
+
+
 public class Word {
     public string word { get; protected set; }
 
@@ -13,6 +15,10 @@ public class Word {
         return word;
     }
     public override string ToString() {
+        return word;
+    }
+
+    public virtual string ToTSV() {
         return word;
     }
 
