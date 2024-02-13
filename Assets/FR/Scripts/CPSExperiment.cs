@@ -71,7 +71,8 @@ public class CPSExperiment : ExperimentBase<CPSExperiment> {
         // Remove 10s to not overrun video legnth
         UnityEngine.Debug.Log(2);
         var cclLength = manager.videoControl.VideoLength() - 10.0;
-        await manager.hostPC.SendCCLStartMsgTS(Convert.ToInt32(cclLength));
+        var cclMsg = HostPcCclMsg.START_STIM(Convert.ToInt32(cclLength));
+        await manager.hostPC.SendCCLMsgTS(cclMsg);
         await manager.videoControl.PlayVideo();
     }
 }
