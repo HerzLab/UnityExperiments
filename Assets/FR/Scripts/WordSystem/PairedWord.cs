@@ -34,4 +34,8 @@ public class PairedWord : Word {
             recogWord = word;
         }
     }
+
+    public override string ToString() {
+        return $"({word}, {pairedWord}, {cuedWord}, {recogWord})";
+    }
 }

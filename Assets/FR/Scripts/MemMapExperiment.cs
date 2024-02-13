@@ -28,17 +28,16 @@ public class MemMapExperiment : FRExperimentBase<PairedWord> {
     protected override async Task PracticeTrialStates() {
         StartTrial();
         await NextPracticeListPrompt();
+        await CountdownVideo();
+        await Fixation();
+        await Encoding();
+        await MathDistractor();
+        await PauseBeforeRecall();
+        await RecallOrientation();
         await CuedRecall();
-        // await CountdownVideo();
-        // await Fixation();
-        // await Encoding();
-        // await MathDistractor();
-        // await PauseBeforeRecall();
-        // await RecallOrientation();
-        // await CuedRecall();
-        // await PauseBeforeRecall();
-        // await RecallOrientation();
-        // await Recognition();
+        await PauseBeforeRecall();
+        await RecallOrientation();
+        await Recognition();
         FinishTrial();
     }
     protected override async Task TrialStates() {
@@ -76,11 +75,20 @@ public class MemMapExperiment : FRExperimentBase<PairedWord> {
         manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ENCODING(), new() { { "current_trial", trialNum } });
 
         int[] isiLimits = Config.interStimulusDuration;
+        int[] stimEarlyOnsetMsLimits = Config.stimEarlyOnsetMs;
+        var encStimWords = currentSession.GetState().encoding;
 
-        for (int i = 0; i < 12; ++i) {
+        for (int i = 0; i < encStimWords.Count; ++i) {
             int isiDuration = InterfaceManager.rnd.Value.Next(isiLimits[0], isiLimits[1]);
+            int stimEarlyDuration = InterfaceManager.rnd.Value.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
+            isiDuration -= stimEarlyDuration;
+
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(isiDuration));
             await InterfaceManager.Delay(isiDuration);
+
+            manager.hostPC?.SendStimMsgTS();
+            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(stimEarlyDuration));
+            await InterfaceManager.Delay(stimEarlyDuration);
 
             var wordStim = currentSession.GetEncWord();
             currentSession.NextWord();
@@ -119,7 +127,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord> {
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(isiDuration));
             await InterfaceManager.Delay(isiDuration);
 
-            // TODO: JPB: (Noa) (needed) stim here for isiDuration + Config.stimulusDuration
+            manager.hostPC?.SendStimMsgTS();
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(stimEarlyDuration));
             await InterfaceManager.Delay(stimEarlyDuration);
 
@@ -130,14 +138,14 @@ public class MemMapExperiment : FRExperimentBase<PairedWord> {
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(Config.stimulusDuration+Config.recallDuration));
 
             Dictionary<string, object> data = new() {
-                { "word", wordStim.word },
+                { "word", wordStim.word.cuedWord },
                 { "serialpos", i },
                 { "stim", wordStim.stim },
             };
             eventReporter.LogTS("word stimulus info", data);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
 
-            textDisplayer.Display("word stimulus", "", wordStim.word.ToDisplayString());
+            textDisplayer.Display("word stimulus", "", "\n"+wordStim.word.cuedWord+"\n");
             await InterfaceManager.Delay(Config.stimulusDuration);
             eventReporter.LogTS("clear word stimulus", data);
             textDisplayer.Clear();
@@ -161,7 +169,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord> {
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(isiDuration));
             await InterfaceManager.Delay(isiDuration);
 
-            // TODO: JPB: (Noa) (needed) stim here for isiDuration
+            manager.hostPC?.SendStimMsgTS();
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(stimEarlyDuration));
             await InterfaceManager.Delay(stimEarlyDuration);
 
@@ -172,14 +180,14 @@ public class MemMapExperiment : FRExperimentBase<PairedWord> {
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(Config.stimulusDuration+Config.recogDuration));
 
             Dictionary<string, object> data = new() {
-                { "word", wordStim.word },
+                { "word", wordStim.word.recogWord },
                 { "serialpos", i },
                 { "stim", wordStim.stim },
             };
             eventReporter.LogTS("word stimulus info", data);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
 
-            textDisplayer.Display("word stimulus", "", wordStim.word.ToDisplayString());
+            textDisplayer.Display("word stimulus", "", "\n"+wordStim.word.recogWord+"\n");
             await InterfaceManager.Delay(Config.stimulusDuration);
             eventReporter.LogTS("clear word stimulus", data);
             textDisplayer.Clear();
@@ -262,6 +270,22 @@ public class MemMapExperiment : FRExperimentBase<PairedWord> {
         return new FRRun<PairedWord>(encList, recList, encStim, recStim);
     }
 
+    protected FRRun<PairedWord> MakeAndSetRun<U>(U randomSubset, bool encStim, bool recStim, List<bool> wordOrders) 
+        where U : WordRandomSubset<PairedWord>
+    {
+        // Make run
+        var frRun = MakeRun(randomSubset, encStim, recStim);
+        // Set word orders
+        for (int i=0; i < frRun.encoding.Count; ++i) {
+            frRun.encoding[i].word.setCuedWord(wordOrders[i]);
+        }
+        for (int i=0; i < frRun.recall.Count; ++i) {
+            frRun.recall[i].word.setCuedWord(wordOrders[i]);
+        }
+
+        return frRun;
+    }
+
     protected StimWordList<PairedWord> GenStimList(List<PairedWord> inputWords, bool stim) {
         var stimList = Enumerable.Range(1, wordsPerList).Select(i => stim).ToList();
         return new StimWordList<PairedWord>(inputWords, stimList);
@@ -271,11 +295,13 @@ public class MemMapExperiment : FRExperimentBase<PairedWord> {
         var session = new FRSession<PairedWord>();
 
         for (int i = 0; i < Config.practiceLists; i++) {
-            session.Add(MakeRun(randomSubset, false, false));
+            var wordOrders = Enumerable.Range(0, wordsPerList).Select(i => i % 2 == 0).ToList();
+            session.Add(MakeAndSetRun(randomSubset, false, false, wordOrders));
         }
 
         for (int i = 0; i < Config.preNoStimLists; i++) {
-            session.Add(MakeRun(randomSubset, false, false));
+            var wordOrders = Enumerable.Range(0, wordsPerList).Select(i => i % 2 == 0).ToList();
+            session.Add(MakeAndSetRun(randomSubset, false, false, wordOrders));
         }
 
         if (Config.encodingAndRetrievalLists != 0) {
@@ -375,52 +401,28 @@ public class MemMapExperiment : FRExperimentBase<PairedWord> {
             var encLists = new List<FRRun<PairedWord>>();
             var numEncListsInBlock = Math.Min(numEncLists-blockNum*numBlocks, numListsPerBlock);
             for (int i = 0; i < numListsPerBlock; i++) {
-                encLists.Add(MakeRun(randomSubset, true, false));
-                for (int j=0; j < encLists[i].encoding.Count; ++j) {
-                    encLists[i].encoding[j].word.setCuedWord(wordOrders[i][j]);
-                }
-                for (int j=0; j < encLists[i].recall.Count; ++j) {
-                    encLists[i].recall[j].word.setCuedWord(wordOrders[i][j]);
-                }
+                encLists.Add(MakeAndSetRun(randomSubset, true, false, wordOrders[i]));
             }
 
             // Create a list, for the 'retrieval' stim type, of FRRuns with the wordOrders
             var retLists = new List<FRRun<PairedWord>>();
             var numRetListsInBlock = Math.Min(numRetLists-blockNum*numBlocks, numListsPerBlock);
             for (int i = 0; i < numListsPerBlock; i++) {
-                retLists.Add(MakeRun(randomSubset, false, true));
-                for (int j=0; j < retLists[i].encoding.Count; ++j) {
-                    retLists[i].encoding[j].word.setCuedWord(wordOrders[i][j]);
-                }
-                for (int j=0; j < retLists[i].recall.Count; ++j) {
-                    retLists[i].recall[j].word.setCuedWord(wordOrders[i][j]);
-                }
+                retLists.Add(MakeAndSetRun(randomSubset, false, true, wordOrders[i]));
             }
 
             // Create a list, for the 'encoding and retrieval' stim type, of FRRuns with the wordOrders
             var encAndRetLists = new List<FRRun<PairedWord>>();
             var numEncAndRetListsInBlock = Math.Min(numEncAndRetLists-blockNum*numBlocks, numListsPerBlock);
             for (int i = 0; i < numListsPerBlock; i++) {
-                encAndRetLists.Add(MakeRun(randomSubset, true, true));
-                for (int j=0; j < encAndRetLists[i].encoding.Count; ++j) {
-                    encAndRetLists[i].encoding[j].word.setCuedWord(wordOrders[i][j]);
-                }
-                for (int j=0; j < encAndRetLists[i].recall.Count; ++j) {
-                    encAndRetLists[i].recall[j].word.setCuedWord(wordOrders[i][j]);
-                }
+                encAndRetLists.Add(MakeAndSetRun(randomSubset, true, true, wordOrders[i]));
             }
 
             // Create a list, for the 'no stim' stim type, of FRRuns with the wordOrders
             var noStimLists = new List<FRRun<PairedWord>>();
             var numNoStimListsInBlock = Math.Min(numNoStimLists-blockNum*numBlocks, numListsPerBlock);
             for (int i = 0; i < numListsPerBlock; i++) {
-                noStimLists.Add(MakeRun(randomSubset, false, false));
-                for (int j=0; j < noStimLists[i].encoding.Count; ++j) {
-                    noStimLists[i].encoding[j].word.setCuedWord(wordOrders[i][j]);
-                }
-                for (int j=0; j < noStimLists[i].recall.Count; ++j) {
-                    noStimLists[i].recall[j].word.setCuedWord(wordOrders[i][j]);
-                }
+                noStimLists.Add(MakeAndSetRun(randomSubset, false, false, wordOrders[i]));
             }
             
             // Randomize the order of each stim type's list (of wordOrders)
