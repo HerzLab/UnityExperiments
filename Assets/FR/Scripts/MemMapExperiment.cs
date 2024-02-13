@@ -58,31 +58,28 @@ public class MemMapExperiment : FRExperimentBase<PairedWord> {
     }
 
     protected new async Task Fixation() {
-            SendRamulatorStateMsg(HostPC.StateMsg.ORIENT, true);
-            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.ORIENT);
+            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
 
             int[] limits = Config.fixationDuration;
             int duration = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
             textDisplayer.Display("orientation stimulus", "", "+");
-            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.ORIENT);
+            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
             await InterfaceManager.Delay(duration);
 
             textDisplayer.Clear();
             limits = Config.postFixationDelay;
             duration = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
             await InterfaceManager.Delay(duration);
-
-            SendRamulatorStateMsg(HostPC.StateMsg.ORIENT, false);
         }
 
     protected new async Task Encoding() {
-        manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.ENCODING, new() { { "current_trial", trialNum } });
+        manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ENCODING(), new() { { "current_trial", trialNum } });
 
         int[] isiLimits = Config.interStimulusDuration;
 
         for (int i = 0; i < 12; ++i) {
             int isiDuration = InterfaceManager.rnd.Value.Next(isiLimits[0], isiLimits[1]);
-            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.ISI, new() { { "duration", isiDuration } });
+            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(isiDuration));
             await InterfaceManager.Delay(isiDuration);
 
             var wordStim = currentSession.GetEncWord();
@@ -94,7 +91,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord> {
             };
 
             eventReporter.LogTS("word stimulus info", data);
-            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.WORD, data);
+            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
             textDisplayer.Display("word stimulus", "", wordStim.word.ToDisplayString());
             await InterfaceManager.Delay(Config.stimulusDuration);
             eventReporter.LogTS("clear word stimulus", data);
@@ -109,8 +106,6 @@ public class MemMapExperiment : FRExperimentBase<PairedWord> {
     }
 
     protected async Task CuedRecall() {
-        manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.RECALL, new() { { "current_trial", trialNum } });
-
         int[] isiLimits = Config.interStimulusDuration;
         int[] stimEarlyOnsetMsLimits = Config.stimEarlyOnsetMs;
         var recStimWords = currentSession.GetState().recall;
@@ -121,18 +116,18 @@ public class MemMapExperiment : FRExperimentBase<PairedWord> {
             int stimEarlyDuration = InterfaceManager.rnd.Value.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
             isiDuration -= stimEarlyDuration;
 
-            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.ISI, new() { { "duration", isiDuration } });
+            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(isiDuration));
             await InterfaceManager.Delay(isiDuration);
 
             // TODO: JPB: (Noa) (needed) stim here for isiDuration + Config.stimulusDuration
-            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.ISI, new() { { "duration", stimEarlyDuration } });
+            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(stimEarlyDuration));
             await InterfaceManager.Delay(stimEarlyDuration);
 
             string wavPath = Path.Combine(manager.fileManager.SessionPath(), 
                 "cuedRecall_" + currentSession.GetListIndex() + "_" + i +".wav");
             manager.recorder.StartRecording(wavPath);
             eventReporter.LogTS("start recall period");
-            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.RECALL, new() { { "duration", Config.stimulusDuration } });
+            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(Config.stimulusDuration+Config.recallDuration));
 
             Dictionary<string, object> data = new() {
                 { "word", wordStim.word },
@@ -140,7 +135,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord> {
                 { "stim", wordStim.stim },
             };
             eventReporter.LogTS("word stimulus info", data);
-            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.WORD, data);
+            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
 
             textDisplayer.Display("word stimulus", "", wordStim.word.ToDisplayString());
             await InterfaceManager.Delay(Config.stimulusDuration);
@@ -153,8 +148,6 @@ public class MemMapExperiment : FRExperimentBase<PairedWord> {
     }
 
     protected async Task Recognition() {
-        manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.RECALL, new() { { "current_trial", trialNum } });
-
         int[] isiLimits = Config.interStimulusDuration;
         int[] stimEarlyOnsetMsLimits = Config.stimEarlyOnsetMs;
         var recStimWords = currentSession.GetState().recall;
@@ -165,18 +158,18 @@ public class MemMapExperiment : FRExperimentBase<PairedWord> {
             int stimEarlyDuration = InterfaceManager.rnd.Value.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
             isiDuration -= stimEarlyDuration;
 
-            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.ISI, new() { { "duration", isiDuration } });
+            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(isiDuration));
             await InterfaceManager.Delay(isiDuration);
 
             // TODO: JPB: (Noa) (needed) stim here for isiDuration
-            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.ISI, new() { { "duration", stimEarlyDuration } });
+            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(stimEarlyDuration));
             await InterfaceManager.Delay(stimEarlyDuration);
 
             string wavPath = Path.Combine(manager.fileManager.SessionPath(), 
                 "cuedRecall_" + currentSession.GetListIndex() + "_" + i +".wav");
             manager.recorder.StartRecording(wavPath);
             eventReporter.LogTS("start recall period");
-            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.RECALL, new() { { "duration", Config.stimulusDuration } });
+            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(Config.stimulusDuration+Config.recogDuration));
 
             Dictionary<string, object> data = new() {
                 { "word", wordStim.word },
@@ -184,14 +177,14 @@ public class MemMapExperiment : FRExperimentBase<PairedWord> {
                 { "stim", wordStim.stim },
             };
             eventReporter.LogTS("word stimulus info", data);
-            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.WORD, data);
+            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
 
             textDisplayer.Display("word stimulus", "", wordStim.word.ToDisplayString());
             await InterfaceManager.Delay(Config.stimulusDuration);
             eventReporter.LogTS("clear word stimulus", data);
             textDisplayer.Clear();
 
-            await inputManager.WaitForKeyTS(skipKeys, TimeSpan.FromMilliseconds(Config.recallDuration));
+            await inputManager.WaitForKeyTS(skipKeys, TimeSpan.FromMilliseconds(Config.recogDuration));
             var clip = manager.recorder.StopRecording();
         }
     }
