@@ -27,10 +27,14 @@ namespace UnityEPL {
 
         public bool NextWord() {
             return GetState().encoding.IncrementState();
+            return GetState().recall.IncrementState();
         }
 
-        public WordStim<T> GetWord() {
+        public WordStim<T> GetEncWord() {
             return GetState().encoding.GetState();
+        }
+        public WordStim<T> GetRecWord() {
+            return GetState().recall.GetState();
         }
 
         public bool NextList() {

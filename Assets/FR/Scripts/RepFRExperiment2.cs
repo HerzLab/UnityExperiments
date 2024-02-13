@@ -91,7 +91,7 @@ namespace UnityEPL {
             textDisplayer.Display("subject/session confirmation", "",
                 $"Running {Config.subject} in session {Config.sessionNum} of {Config.experimentName}." +
                 "\nPress Y to continue, N to quit.");
-            var keyCode = await inputManager.GetKeyTS(new() { KeyCode.Y, KeyCode.N });
+            var keyCode = await inputManager.GetKeyTS(new List<KeyCode>() { KeyCode.Y, KeyCode.N });
 
             SendRamulatorStateMsg(HostPC.StateMsg.WAITING, false);
 
@@ -176,7 +176,7 @@ namespace UnityEPL {
                 manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.ISI, new() { { "duration", isiDuration } });
                 await InterfaceManager.Delay(isiDuration);
 
-                var word = currentSession.GetWord();
+                var word = currentSession.GetEncWord();
                 currentSession.NextWord();
                 Dictionary<string, object> data = new() {
                     { "word", word.word },

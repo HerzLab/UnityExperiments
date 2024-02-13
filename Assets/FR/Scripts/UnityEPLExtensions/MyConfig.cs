@@ -41,7 +41,9 @@ namespace UnityEPL {
         public static string video { get { return Config.GetSetting<string>("video"); } }
 
         // MemMapExperiment.cs
-        public static int[] postInterStimulusDuration { get { return Config.GetSetting<int[]>("postInterStimulusDuration"); } }
+        public static int recogDuration { get { return Config.GetSetting<int>("recogDuration"); } }
+        public static int[] stimEarlyOnsetMs { get { return Config.GetSetting<int[]>("stimEarlyOnsetMs"); } }
+        public static int[] postInterStimulusDuration { get { return Config.GetSetting<int[]>("stimEarlyOnsetMs"); } }
     }
 
 }

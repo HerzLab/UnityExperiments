@@ -129,8 +129,9 @@ namespace UnityEPL {
             SendRamulatorStateMsg(HostPC.StateMsg.ORIENT, false);
         }
         protected async Task Orientation(int duration) {
-            manager.highBeep.Play();
+            manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.ORIENT);
             textDisplayer.Display("display recall text", "", "*******");
+            manager.highBeep.Play();
             await InterfaceManager.Delay(duration);
         }
         protected async Task Encoding() {
@@ -144,7 +145,7 @@ namespace UnityEPL {
                 manager.hostPC?.SendStateMsgTS(HostPC.StateMsg.ISI, new() { { "duration", isiDuration } });
                 await InterfaceManager.Delay(isiDuration);
 
-                var wordStim = currentSession.GetWord();
+                var wordStim = currentSession.GetEncWord();
                 currentSession.NextWord();
                 Dictionary<string, object> data = new() {
                     { "word", wordStim.word },
@@ -346,7 +347,6 @@ namespace UnityEPL {
         }
 
         // Word/Stim List Generation
-        // TODO: JPB: (Noa) (feature) Change FRExperiment::ReadWordpool to be generic for reading from line
         protected virtual List<T> ReadWordpool() {
             // wordpool is a file with 'word' as a header and one word per line.
             // repeats are described in the config file with two matched arrays,
