@@ -221,51 +221,6 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     }
 
     // Word/Stim List Generation
-    // protected List<PairedWord> ReadPairedWordpool() {
-    //     // wordpool is a file with 'word' as a header and one word per line.
-    //     // repeats are described in the config file with two matched arrays,
-    //     // repeats and counts, which describe the number of presentations
-    //     // words can have and the number of words that should be assigned to
-    //     // each of those presentation categories.
-    //     string sourceList = manager.fileManager.GetWordList();
-    //     var sourceWords = new List<PairedWord>();
-
-    //     // skip line for tsv header
-    //     var fileLines = File.ReadLines(sourceList).Skip(1).ToList().ShuffleInPlace(InterfaceManager.stableRnd.Value); 
-    //     for (int i = 0; i < fileLines.Count - 1; i += 3) {
-    //         var word = fileLines[i].Trim().Split('\t')[0];
-    //         var pairedWord = fileLines[i+1].Trim().Split('\t')[0];
-    //         sourceWords.Add(new PairedWord(word, pairedWord));
-    //     }
-
-    //     // copy full wordpool to session directory
-    //     string path = System.IO.Path.Combine(manager.fileManager.SessionPath(), "wordpool.txt");
-    //     File.WriteAllText(path, String.Join("\n", sourceWords));
-
-    //     // copy original wordpool to session directory
-    //     string origPath = System.IO.Path.Combine(manager.fileManager.SessionPath(), "original_wordpool.txt");
-    //     File.Copy(sourceList, origPath, true);
-
-    //     return sourceWords;
-    // }
-
-    // protected override void SetupWordList() {
-    //     var wordRepeats = Config.wordRepeats;
-    //     if (wordRepeats.Count() != 1 && wordRepeats[0] != 1) {
-    //         ErrorNotifier.ErrorTS(new Exception("Config's wordRepeats should only have one item with a value of 1"));
-    //     }
-
-    //     wordsPerList = Config.wordCounts[0];
-
-    //     var sourceWords = ReadWordpool<Word>();
-    //     var words = new WordRandomSubset<Word>(sourceWords);
-    //     //var sourceWords = ReadPairedWordpool();
-
-    //     // TODO: (feature) Load Session
-    //     currentSession = GenerateSession(words);
-
-    // }
-
     protected override void SetupWordList() {
         var wordRepeats = Config.wordRepeats;
         var wordCounts = Config.wordCounts;
@@ -344,29 +299,13 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         return new MemMapTrial<PairedWord>(encStimList, recallStimList, recogStimList, encStim, recallStim, recogStim);
     }
 
-    // protected MemMapSession<Word> MakeAndSetTrial<U>(U randomSubset, bool encStim, bool recStim, bool recogStim, List<bool> wordOrders) 
-    //     where U : WordRandomSubset<PairedWord>
-    // {
-    //     // Make run
-    //     var frRun = MakeRun(randomSubset, encStim, recStim);
-    //     // Set word orders
-    //     for (int i=0; i < frRun.encoding.Count; ++i) {
-    //         frRun.encoding[i].word.setCuedWord(wordOrders[i]);
-    //     }
-    //     for (int i=0; i < frRun.recall.Count; ++i) {
-    //         frRun.recall[i].word.setCuedWord(wordOrders[i]);
-    //     }
-
-    //     return frRun;
-    // }
-
     protected StimWordList<PairedWord> GenStimList(List<PairedWord> inputWords, bool stim) {
         var stimList = Enumerable.Range(1, inputWords.Count).Select(i => stim).ToList();
         return new StimWordList<PairedWord>(inputWords, stimList);
     }
 
-    protected new MemMapSession<PairedWord> GenerateSession<V>(V randomSubset) 
-        where V : WordRandomSubset<Word>
+    protected new MemMapSession<PairedWord> GenerateSession<T>(T randomSubset) 
+        where T : WordRandomSubset<Word>
     {
         var session = new MemMapSession<PairedWord>();
 
