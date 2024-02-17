@@ -10,7 +10,7 @@ using UnityEngine.UIElements;
 
 namespace UnityEPL {
 
-    public class RepFRExperiment2 : FRExperimentBase<Word> {
+    public class RepFRExperiment2 : FRExperimentBase<Word, FRRun<Word>, FRSession<Word>> {
         protected RepCounts repCounts = null;
         protected int uniqueWordsPerList;
         protected FRSession<Word> currentSession;
@@ -347,9 +347,8 @@ namespace UnityEPL {
 
             wordsPerList = repCounts.TotalWords();
             uniqueWordsPerList = repCounts.UniqueWords();
-            blankWords = new List<Word>(Enumerable.Range(1, wordsPerList).Select(i => new Word("")).ToList());
 
-            var sourceWords = ReadWordpool();
+            var sourceWords = ReadWordpool<Word>();
             var words = new WordRandomSubset<Word>(sourceWords);
 
             // TODO: (feature) Load Session
@@ -359,6 +358,7 @@ namespace UnityEPL {
         // Word/Stim List Generation
         protected override FRRun<Word> MakeRun<U>(U randomSubset, bool encStim, bool recStim) {
             var inputWords = randomSubset.Get(uniqueWordsPerList).ToList();
+            var blankWords = new List<Word>(Enumerable.Range(1, wordsPerList).Select(i => new Word("")).ToList());
             var encList = RepWordGenerator.Generate(repCounts, inputWords, encStim);
             var recList = RepWordGenerator.Generate(repCounts, blankWords, recStim);
             return new FRRun<Word>(encList, recList, encStim, recStim);

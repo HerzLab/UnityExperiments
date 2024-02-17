@@ -8,10 +8,12 @@ using UnityEngine;
 using UnityEPL;
 using System.Collections.Immutable;
 
-public class MemMapExperiment : FRExperimentBase<PairedWord> {
+public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedWord>, MemMapSession<PairedWord>> {
     protected readonly List<KeyCode> skipKeys = new List<KeyCode> {KeyCode.Space};
     protected readonly List<KeyCode> ynKeyCodes = new List<KeyCode> {KeyCode.Y, KeyCode.N};
     //protected const ImmutableList<KeyCode> ynKeys = ImmutableList<KeyCode>.Create(KeyCode.Y, KeyCode.N);
+
+    protected int lureWordsPerList;
 
     protected override async Task PreTrialStates() {
         SetupWordList();
@@ -19,7 +21,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord> {
         // await QuitPrompt();
         // await Introduction();
         // await MicrophoneTest();
-        // await ConfirmStart();
+        await ConfirmStart();
     }
     protected override async Task PostTrialStates() {
         await Questioneer();
@@ -219,89 +221,165 @@ public class MemMapExperiment : FRExperimentBase<PairedWord> {
     }
 
     // Word/Stim List Generation
-    protected List<PairedWord> ReadPairedWordpool() {
-        // wordpool is a file with 'word' as a header and one word per line.
-        // repeats are described in the config file with two matched arrays,
-        // repeats and counts, which describe the number of presentations
-        // words can have and the number of words that should be assigned to
-        // each of those presentation categories.
-        string sourceList = manager.fileManager.GetWordList();
-        var sourceWords = new List<PairedWord>();
+    // protected List<PairedWord> ReadPairedWordpool() {
+    //     // wordpool is a file with 'word' as a header and one word per line.
+    //     // repeats are described in the config file with two matched arrays,
+    //     // repeats and counts, which describe the number of presentations
+    //     // words can have and the number of words that should be assigned to
+    //     // each of those presentation categories.
+    //     string sourceList = manager.fileManager.GetWordList();
+    //     var sourceWords = new List<PairedWord>();
 
-        // skip line for tsv header
-        var fileLines = File.ReadLines(sourceList).Skip(1).ToList().ShuffleInPlace(InterfaceManager.stableRnd.Value); 
-        for (int i = 0; i < fileLines.Count - 1; i += 2) {
-            var word = fileLines[i].Trim().Split('\t')[0];
-            var pairedWord = fileLines[i+1].Trim().Split('\t')[0];
-            sourceWords.Add(new PairedWord(word, pairedWord));
-        }
+    //     // skip line for tsv header
+    //     var fileLines = File.ReadLines(sourceList).Skip(1).ToList().ShuffleInPlace(InterfaceManager.stableRnd.Value); 
+    //     for (int i = 0; i < fileLines.Count - 1; i += 3) {
+    //         var word = fileLines[i].Trim().Split('\t')[0];
+    //         var pairedWord = fileLines[i+1].Trim().Split('\t')[0];
+    //         sourceWords.Add(new PairedWord(word, pairedWord));
+    //     }
 
-        // copy full wordpool to session directory
-        string path = System.IO.Path.Combine(manager.fileManager.SessionPath(), "wordpool.txt");
-        File.WriteAllText(path, String.Join("\n", sourceWords));
+    //     // copy full wordpool to session directory
+    //     string path = System.IO.Path.Combine(manager.fileManager.SessionPath(), "wordpool.txt");
+    //     File.WriteAllText(path, String.Join("\n", sourceWords));
 
-        // copy original wordpool to session directory
-        string origPath = System.IO.Path.Combine(manager.fileManager.SessionPath(), "original_wordpool.txt");
-        File.Copy(sourceList, origPath, true);
+    //     // copy original wordpool to session directory
+    //     string origPath = System.IO.Path.Combine(manager.fileManager.SessionPath(), "original_wordpool.txt");
+    //     File.Copy(sourceList, origPath, true);
 
-        return sourceWords;
-    }
+    //     return sourceWords;
+    // }
+
+    // protected override void SetupWordList() {
+    //     var wordRepeats = Config.wordRepeats;
+    //     if (wordRepeats.Count() != 1 && wordRepeats[0] != 1) {
+    //         ErrorNotifier.ErrorTS(new Exception("Config's wordRepeats should only have one item with a value of 1"));
+    //     }
+
+    //     wordsPerList = Config.wordCounts[0];
+
+    //     var sourceWords = ReadWordpool<Word>();
+    //     var words = new WordRandomSubset<Word>(sourceWords);
+    //     //var sourceWords = ReadPairedWordpool();
+
+    //     // TODO: (feature) Load Session
+    //     currentSession = GenerateSession(words);
+
+    // }
 
     protected override void SetupWordList() {
         var wordRepeats = Config.wordRepeats;
+        var wordCounts = Config.wordCounts;
         if (wordRepeats.Count() != 1 && wordRepeats[0] != 1) {
             ErrorNotifier.ErrorTS(new Exception("Config's wordRepeats should only have one item with a value of 1"));
+        } else if (wordCounts.Count() != 1) {
+            ErrorNotifier.ErrorTS(new Exception("Config's wordCounts should only have one item in it"));
         }
 
-        wordsPerList = Config.wordCounts[0];
-        blankWords = new List<PairedWord>(Enumerable.Range(1, wordsPerList).Select(i => new PairedWord("", "")).ToList());
+        var lureWordRepeats = Config.lureWordRepeats;
+        var lureWordCounts = Config.lureWordCounts;
+        if (lureWordRepeats.Count() != 1 && lureWordRepeats[0] != 1) {
+            ErrorNotifier.ErrorTS(new Exception("Config's lureWordRepeats should only have one item with a value of 1"));
+        } else if (lureWordCounts.Count() != 1) {
+            ErrorNotifier.ErrorTS(new Exception("Config's lureWordCounts should only have one item in it"));
+        }
 
-        var sourceWords = ReadPairedWordpool();
-        var words = new WordRandomSubset<PairedWord>(sourceWords);
+        wordsPerList = wordCounts[0];
+        lureWordsPerList = lureWordCounts[0];
+
+        var sourceWords = ReadWordpool<Word>();
+        var words = new WordRandomSubset<Word>(sourceWords);
 
         // TODO: (feature) Load Session
-        currentSession = GenerateSession(words);
+        currentSession = GenerateSession<WordRandomSubset<Word>>(words);
     }
 
-    protected override FRRun<PairedWord> MakeRun<U>(U randomSubset, bool encStim, bool recStim) {
-        var inputWords = randomSubset.Get(wordsPerList).ToList();
-        var encList = GenStimList(inputWords, encStim);
-        var recList = GenStimList(inputWords, recStim);
-        return new FRRun<PairedWord>(encList, recList, encStim, recStim);
-    }
-
-    protected FRRun<PairedWord> MakeAndSetRun<U>(U randomSubset, bool encStim, bool recStim, List<bool> wordOrders) 
-        where U : WordRandomSubset<PairedWord>
+    protected MemMapTrial<PairedWord> MakeTrial<U>(U randomSubset, bool encStim, bool recallStim, bool recogStim, List<bool> wordOrders, List<int> recogOrders) 
+        where U : WordRandomSubset<Word>
     {
-        // Make run
-        var frRun = MakeRun(randomSubset, encStim, recStim);
-        // Set word orders
-        for (int i=0; i < frRun.encoding.Count; ++i) {
-            frRun.encoding[i].word.setCuedWord(wordOrders[i]);
-        }
-        for (int i=0; i < frRun.recall.Count; ++i) {
-            frRun.recall[i].word.setCuedWord(wordOrders[i]);
+        // Make paired words
+        var randomWords = randomSubset.Get(wordsPerList*2).ToList();
+        var pairedWords = new List<PairedWord>();
+        for (int i = 0; i < randomWords.Count - 1; i += 2) {
+            pairedWords.Add(new(randomWords[i].word, randomWords[i+1].word));
         }
 
-        return frRun;
+        // Make lure words
+        randomWords = randomSubset.Get(lureWordsPerList).ToList();
+        var lureWords = new List<PairedWord>();
+        for (int i = 0; i < randomWords.Count - 1; ++i) {
+            lureWords.Add(new(randomWords[i].word, ""));
+        }
+
+        // Make encoding, recall, and recognition word lists
+        var encWords = new List<PairedWord>(pairedWords);
+        var recallWords = new List<PairedWord>(pairedWords);
+        var recogWords = pairedWords.Concat(lureWords).ToList();
+
+        // Swap the word order for recall and recog words as needed
+        if (wordOrders.Count != wordsPerList) {
+            ErrorNotifier.ErrorTS(new Exception($"The number of word orders {wordOrders.Count} does not equal the number of words per list {wordsPerList}"));
+        }
+        for (int i = 0; i < wordOrders.Count; ++i) {
+            if (wordOrders[i]) {
+                recallWords[i] = new PairedWord(recallWords[i].pairedWord, recallWords[i].word);
+            } else {
+                recogWords[i] = new PairedWord(recogWords[i].pairedWord, recogWords[i].word);
+            }
+        }
+
+        // Reassign the order of the recognition word list
+        if (recogOrders.Count != recogWords.Count) {
+            ErrorNotifier.ErrorTS(new Exception($"The number of recog orders {recogOrders.Count} does not equal the number of words per list {recogWords.Count}"));
+        }
+        var oldRecogWords = new List<PairedWord>(recogWords);
+        for (int i = 0; i < recogOrders.Count; ++i) {
+            recogWords[i] = oldRecogWords[recogOrders[i]];
+        }
+
+        // Create the StimWord Lists
+        var encStimList = GenStimList(encWords, encStim);
+        var recallStimList = GenStimList(recallWords, recallStim);
+        var recogStimList = GenStimList(recogWords, recogStim);
+
+        return new MemMapTrial<PairedWord>(encStimList, recallStimList, recogStimList, encStim, recallStim, recogStim);
     }
+
+    // protected MemMapSession<Word> MakeAndSetTrial<U>(U randomSubset, bool encStim, bool recStim, bool recogStim, List<bool> wordOrders) 
+    //     where U : WordRandomSubset<PairedWord>
+    // {
+    //     // Make run
+    //     var frRun = MakeRun(randomSubset, encStim, recStim);
+    //     // Set word orders
+    //     for (int i=0; i < frRun.encoding.Count; ++i) {
+    //         frRun.encoding[i].word.setCuedWord(wordOrders[i]);
+    //     }
+    //     for (int i=0; i < frRun.recall.Count; ++i) {
+    //         frRun.recall[i].word.setCuedWord(wordOrders[i]);
+    //     }
+
+    //     return frRun;
+    // }
 
     protected StimWordList<PairedWord> GenStimList(List<PairedWord> inputWords, bool stim) {
-        var stimList = Enumerable.Range(1, wordsPerList).Select(i => stim).ToList();
+        var stimList = Enumerable.Range(1, inputWords.Count).Select(i => stim).ToList();
         return new StimWordList<PairedWord>(inputWords, stimList);
     }
 
-    protected override FRSession<PairedWord> GenerateSession<U>(U randomSubset) {
-        var session = new FRSession<PairedWord>();
+    protected new MemMapSession<PairedWord> GenerateSession<V>(V randomSubset) 
+        where V : WordRandomSubset<Word>
+    {
+        var session = new MemMapSession<PairedWord>();
+
+        var tempRecogOrder = new List<int>() {1,2,3,4,5,6};
 
         for (int i = 0; i < Config.practiceLists; i++) {
             var wordOrders = Enumerable.Range(0, wordsPerList).Select(i => i % 2 == 0).ToList();
-            session.Add(MakeAndSetRun(randomSubset, false, false, wordOrders));
+            session.Add(MakeTrial(randomSubset, false, false, false, wordOrders, tempRecogOrder));
         }
 
         for (int i = 0; i < Config.preNoStimLists; i++) {
             var wordOrders = Enumerable.Range(0, wordsPerList).Select(i => i % 2 == 0).ToList();
-            session.Add(MakeAndSetRun(randomSubset, false, false, wordOrders));
+            session.Add(MakeTrial(randomSubset, false, false, false, wordOrders, tempRecogOrder));
         }
 
         if (Config.encodingAndRetrievalLists != 0) {
@@ -327,69 +405,69 @@ public class MemMapExperiment : FRExperimentBase<PairedWord> {
             // Each word order has the same number of trues and falses (or 1 off if odd number of words)
             // wordOrders =  [[TTF], [TFT], [TFF]]
 
-            // Create a list, for each stim type, of FRRuns with the wordOrders
-            // This also adds the words to each FRRun
-            // encLists =    [FRRun(TTF, E), FRRun(TFT, E), FRRun(TFF, E)]
-            // retLists =    [FRRun(TTF, R), FRRun(TFT, R), FRRun(TFF, R)]
-            // noStimLists = [FRRun(TTF, N), FRRun(TFT, N), FRRun(TFF, N)]
+            // Create a list, for each stim type, of MemMapTrials with the wordOrders
+            // This also adds the words to each MemMapTrial
+            // encLists =    [MemMapTrial(TTF, E), MemMapTrial(TFT, E), MemMapTrial(TFF, E)]
+            // retLists =    [MemMapTrial(TTF, R), MemMapTrial(TFT, R), MemMapTrial(TFF, R)]
+            // noStimLists = [MemMapTrial(TTF, N), MemMapTrial(TFT, N), MemMapTrial(TFF, N)]
 
             // Randomize the order of each stim type's list (of wordOrders)
-            // encLists =    [FRRun(TFT, E), FRRun(TFF, E), FRRun(TTF, E)]  // shuffled
-            // retLists =    [FRRun(TFF, R), FRRun(TTF, R), FRRun(TFT, R)]  // shuffled
-            // noStimLists = [FRRun(TTF, N), FRRun(TFT, N), FRRun(TFF, N)]  // shuffled
+            // encLists =    [MemMapTrial(TFT, E), MemMapTrial(TFF, E), MemMapTrial(TTF, E)]  // shuffled
+            // retLists =    [MemMapTrial(TFF, R), MemMapTrial(TTF, R), MemMapTrial(TFT, R)]  // shuffled
+            // noStimLists = [MemMapTrial(TTF, N), MemMapTrial(TFT, N), MemMapTrial(TFF, N)]  // shuffled
 
             // Only use the correct amount of lists for each stim type
             // This does nothing on the first iteration
-            // encLists =    [FRRun(TFT, E), FRRun(TFF, E), FRRun(TTF, E)]
-            // retLists =    [FRRun(TFF, R), FRRun(TTF, R), FRRun(TFT, R)]
-            // noStimLists = [FRRun(TTF, N), FRRun(TFT, N), FRRun(TFF, N)]
+            // encLists =    [MemMapTrial(TFT, E), MemMapTrial(TFF, E), MemMapTrial(TTF, E)]
+            // retLists =    [MemMapTrial(TFF, R), MemMapTrial(TTF, R), MemMapTrial(TFT, R)]
+            // noStimLists = [MemMapTrial(TTF, N), MemMapTrial(TFT, N), MemMapTrial(TFF, N)]
 
                 // Create a list using the first of each stim type, randomize it, and add the elements of that list to the session
-                // randomizedList = [[FRRun(TFT, E), FRRun(TFF, R), FRRun(TTF, N)]]
-                // randomizedList = [[FRRun(TFT, N), FRRun(TTF, R), FRRun(TFF, E)]] // shuffled
-                // session =        [FRRun(TFT, N), FRRun(TTF, R), FRRun(TFF, E)]
+                // randomizedList = [[MemMapTrial(TFT, E), MemMapTrial(TFF, R), MemMapTrial(TTF, N)]]
+                // randomizedList = [[MemMapTrial(TFT, N), MemMapTrial(TTF, R), MemMapTrial(TFF, E)]] // shuffled
+                // session =        [MemMapTrial(TFT, N), MemMapTrial(TTF, R), MemMapTrial(TFF, E)]
 
                 // Create a list using the second of each stim type, randomize it, and add the elements of that list to the session
-                // randomizedList = [[FRRun(TFF, E), FRRun(TTF, R), FRRun(TFT, N)]]
-                // randomizedList = [[FRRun(TFF, N), FRRun(TFT, E), FRRun(TTF, R)]] // shuffled
-                // session =        [FRRun(TFT, N), FRRun(TTF, R), FRRun(TFF, E),
-                //                   FRRun(TFF, N), FRRun(TFT, E), FRRun(TTF, R)]
+                // randomizedList = [[MemMapTrial(TFF, E), MemMapTrial(TTF, R), MemMapTrial(TFT, N)]]
+                // randomizedList = [[MemMapTrial(TFF, N), MemMapTrial(TFT, E), MemMapTrial(TTF, R)]] // shuffled
+                // session =        [MemMapTrial(TFT, N), MemMapTrial(TTF, R), MemMapTrial(TFF, E),
+                //                   MemMapTrial(TFF, N), MemMapTrial(TFT, E), MemMapTrial(TTF, R)]
 
                 // Create a list using the third of each stim type, randomize it, and add the elements of that list to the session
-                // randomizedList = [[FRRun(TTF, E), FRRun(TFT, R), FRRun(TFF, N)]]
-                // randomizedList = [[FRRun(TFF, R), FRRun(TTF, N), FRRun(TFT, E)]] // shuffled
-                // session =        [FRRun(TFT, N), FRRun(TTF, R), FRRun(TFF, E),
-                //                   FRRun(TFF, N), FRRun(TFT, E), FRRun(TTF, R),
-                //                   FRRun(TFF, R), FRRun(TTF, N), FRRun(TFT, E)]
+                // randomizedList = [[MemMapTrial(TTF, E), MemMapTrial(TFT, R), MemMapTrial(TFF, N)]]
+                // randomizedList = [[MemMapTrial(TFF, R), MemMapTrial(TTF, N), MemMapTrial(TFT, E)]] // shuffled
+                // session =        [MemMapTrial(TFT, N), MemMapTrial(TTF, R), MemMapTrial(TFF, E),
+                //                   MemMapTrial(TFF, N), MemMapTrial(TFT, E), MemMapTrial(TTF, R),
+                //                   MemMapTrial(TFF, R), MemMapTrial(TTF, N), MemMapTrial(TFT, E)]
 
         // This part shows the second iteration of the loop
             
             // wordOrders =  [[FFT], [TFT], [TTF]]
 
-            // encLists =    [FRRun(FFT, E), FRRun(TFT, E), FRRun(TTF, E)]
-            // retLists =    [FRRun(FFT, R), FRRun(TFT, R), FRRun(TTF, R)]
-            // noStimLists = [FRRun(FFT, N), FRRun(TFT, N), FRRun(TTF, N)]
+            // encLists =    [MemMapTrial(FFT, E), MemMapTrial(TFT, E), MemMapTrial(TTF, E)]
+            // retLists =    [MemMapTrial(FFT, R), MemMapTrial(TFT, R), MemMapTrial(TTF, R)]
+            // noStimLists = [MemMapTrial(FFT, N), MemMapTrial(TFT, N), MemMapTrial(TTF, N)]
 
-            // encLists =    [FRRun(TFT, E), FRRun(TTF, E), FRRun(FFT, E)]  // shuffled
-            // retLists =    [FRRun(FFT, R), FRRun(TFT, R), FRRun(TTF, R)]  // shuffled
-            // noStimLists = [FRRun(TFT, N), FRRun(FFT, N), FRRun(TTF, N)]  // shuffled
+            // encLists =    [MemMapTrial(TFT, E), MemMapTrial(TTF, E), MemMapTrial(FFT, E)]  // shuffled
+            // retLists =    [MemMapTrial(FFT, R), MemMapTrial(TFT, R), MemMapTrial(TTF, R)]  // shuffled
+            // noStimLists = [MemMapTrial(TFT, N), MemMapTrial(FFT, N), MemMapTrial(TTF, N)]  // shuffled
 
-            // encLists =    [FRRun(TFT, E)]
-            // retLists =    [FRRun(FFT, R)]
-            // noStimLists = [FRRun(TFT, N)]
+            // encLists =    [MemMapTrial(TFT, E)]
+            // retLists =    [MemMapTrial(FFT, R)]
+            // noStimLists = [MemMapTrial(TFT, N)]
 
-                // randomizedList = [[FRRun(TFT, E), FRRun(FFT, R), FRRun(TFT, N)]]
-                // randomizedList = [[FRRun(TFT, N), FRRun(TFT, E), FRRun(FFT, R)]] // shuffled
-                // session =        [FRRun(TFT, N), FRRun(TTF, R), FRRun(TFF, E),
-                //                   FRRun(TFF, N), FRRun(TFT, E), FRRun(TTF, R),
-                //                   FRRun(TFF, R), FRRun(TTF, N), FRRun(TFT, E),
-                //                   FRRun(TFT, N), FRRun(TFT, E), FRRun(FFT, R)]
+                // randomizedList = [[MemMapTrial(TFT, E), MemMapTrial(FFT, R), MemMapTrial(TFT, N)]]
+                // randomizedList = [[MemMapTrial(TFT, N), MemMapTrial(TFT, E), MemMapTrial(FFT, R)]] // shuffled
+                // session =        [MemMapTrial(TFT, N), MemMapTrial(TTF, R), MemMapTrial(TFF, E),
+                //                   MemMapTrial(TFF, N), MemMapTrial(TFT, E), MemMapTrial(TTF, R),
+                //                   MemMapTrial(TFF, R), MemMapTrial(TTF, N), MemMapTrial(TFT, E),
+                //                   MemMapTrial(TFT, N), MemMapTrial(TFT, E), MemMapTrial(FFT, R)]
 
         // This is the final result
-        // session = [FRRun(TFT, N), FRRun(TTF, R), FRRun(TFF, E),
-        //            FRRun(TFF, N), FRRun(TFT, E), FRRun(TTF, R),
-        //            FRRun(TFF, R), FRRun(TTF, N), FRRun(TFT, E),
-        //            FRRun(TFT, N), FRRun(TFT, E), FRRun(FFT, R)]
+        // session = [MemMapTrial(TFT, N), MemMapTrial(TTF, R), MemMapTrial(TFF, E),
+        //            MemMapTrial(TFF, N), MemMapTrial(TFT, E), MemMapTrial(TTF, R),
+        //            MemMapTrial(TFF, R), MemMapTrial(TTF, N), MemMapTrial(TFT, E),
+        //            MemMapTrial(TFT, N), MemMapTrial(TFT, E), MemMapTrial(FFT, R)]
 
         // For each block, do the following loop
         for (int blockNum = 0; blockNum < numBlocks; ++blockNum) {
@@ -397,32 +475,32 @@ public class MemMapExperiment : FRExperimentBase<PairedWord> {
             // Each word order has the same number of trues and falses (or 1 off if odd number of words)
             var wordOrders = GenerateUniqueBoolLists(numListsPerBlock, numStimMethods);
 
-            // Create a list, for the 'encoding' stim type, of FRRuns with the wordOrders
-            var encLists = new List<FRRun<PairedWord>>();
+            // Create a list, for the 'encoding' stim type, of MemMapTrials with the wordOrders
+            var encLists = new List<MemMapTrial<PairedWord>>();
             var numEncListsInBlock = Math.Min(numEncLists-blockNum*numBlocks, numListsPerBlock);
             for (int i = 0; i < numListsPerBlock; i++) {
-                encLists.Add(MakeAndSetRun(randomSubset, true, false, wordOrders[i]));
+                encLists.Add(MakeTrial(randomSubset, true, false, false, wordOrders[i], tempRecogOrder));
             }
 
-            // Create a list, for the 'retrieval' stim type, of FRRuns with the wordOrders
-            var retLists = new List<FRRun<PairedWord>>();
+            // Create a list, for the 'retrieval' stim type, of MemMapTrials with the wordOrders
+            var retLists = new List<MemMapTrial<PairedWord>>();
             var numRetListsInBlock = Math.Min(numRetLists-blockNum*numBlocks, numListsPerBlock);
             for (int i = 0; i < numListsPerBlock; i++) {
-                retLists.Add(MakeAndSetRun(randomSubset, false, true, wordOrders[i]));
+                retLists.Add(MakeTrial(randomSubset, false, true, true, wordOrders[i], tempRecogOrder));
             }
 
-            // Create a list, for the 'encoding and retrieval' stim type, of FRRuns with the wordOrders
-            var encAndRetLists = new List<FRRun<PairedWord>>();
+            // Create a list, for the 'encoding and retrieval' stim type, of MemMapTrials with the wordOrders
+            var encAndRetLists = new List<MemMapTrial<PairedWord>>();
             var numEncAndRetListsInBlock = Math.Min(numEncAndRetLists-blockNum*numBlocks, numListsPerBlock);
             for (int i = 0; i < numListsPerBlock; i++) {
-                encAndRetLists.Add(MakeAndSetRun(randomSubset, true, true, wordOrders[i]));
+                encAndRetLists.Add(MakeTrial(randomSubset, true, true, true, wordOrders[i], tempRecogOrder));
             }
 
-            // Create a list, for the 'no stim' stim type, of FRRuns with the wordOrders
-            var noStimLists = new List<FRRun<PairedWord>>();
+            // Create a list, for the 'no stim' stim type, of MemMapTrials with the wordOrders
+            var noStimLists = new List<MemMapTrial<PairedWord>>();
             var numNoStimListsInBlock = Math.Min(numNoStimLists-blockNum*numBlocks, numListsPerBlock);
             for (int i = 0; i < numListsPerBlock; i++) {
-                noStimLists.Add(MakeAndSetRun(randomSubset, false, false, wordOrders[i]));
+                noStimLists.Add(MakeTrial(randomSubset, false, false, false, wordOrders[i], tempRecogOrder));
             }
             
             // Randomize the order of each stim type's list (of wordOrders)
@@ -438,11 +516,11 @@ public class MemMapExperiment : FRExperimentBase<PairedWord> {
             noStimLists = noStimLists.Take(numNoStimListsInBlock).ToList();
 
             // For each potential list index:
-            //      Create a list of FRRun's from that index of each stim type
+            //      Create a list of MemMapTrial's from that index of each stim type
             //      Randomize this new list
             //      Add the elements of that list to the session
             for (int i=0; i < numListsPerBlock; ++i) {
-                var randomizedList = new FRSession<PairedWord>();
+                var randomizedList = new MemMapSession<PairedWord>();
                 if (i < numEncListsInBlock) {
                     randomizedList.Add(encLists[i]);
                 }

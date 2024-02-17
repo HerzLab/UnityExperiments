@@ -19,6 +19,8 @@
 
     "wordRepeats": [1],
     "wordCounts": [3],
+    "lureWordRepeats": [1],
+    "lureWordCounts": [3],
 
     "micTestDuration": 3000,
     "fixationDuration": [250, 250],

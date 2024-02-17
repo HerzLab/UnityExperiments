@@ -3,15 +3,16 @@ using UnityEPL;
 
 namespace UnityEPL {
 
-    public class FRRun<T> 
-        where T : Word
+    public class FRRun<WordType> 
+        where WordType : Word
     {
-        public StimWordList<T> encoding;
-        public StimWordList<T> recall;
+        public StimWordList<WordType> encoding;
+        public StimWordList<WordType> recall;
         public bool encodingStim;
         public bool recallStim;
 
-        public FRRun(StimWordList<T> encodingList, StimWordList<T> recallList,
+
+        public FRRun(StimWordList<WordType> encodingList, StimWordList<WordType> recallList,
             bool setEncodingStim = false, bool setRecallStim = false) {
             encoding = encodingList;
             recall = recallList;
@@ -21,19 +22,20 @@ namespace UnityEPL {
     }
 
     [Serializable]
-    public class FRSession<T> : Timeline<FRRun<T>> 
-        where T : Word 
+    public class FRSessionBase<WordType, TrialType> : Timeline<TrialType>
+        where WordType : Word
+        where TrialType : FRRun<WordType>
     {
 
         public bool NextWord() {
-            return GetState().encoding.IncrementState();
-            return GetState().recall.IncrementState();
+            bool ret = GetState().recall.IncrementState();
+            return ret & GetState().encoding.IncrementState();
         }
 
-        public WordStim<T> GetEncWord() {
+        public WordStim<WordType> GetEncWord() {
             return GetState().encoding.GetState();
         }
-        public WordStim<T> GetRecWord() {
+        public WordStim<WordType> GetRecWord() {
             return GetState().recall.GetState();
         }
 
@@ -54,5 +56,9 @@ namespace UnityEPL {
                 String.Join("\n", items.ConvertAll(x => String.Join(", ", x.encoding.words))));
         }
     }
+
+    public class FRSession<T> : FRSessionBase<T, FRRun<T>> 
+        where T : Word
+    {}
 
 }

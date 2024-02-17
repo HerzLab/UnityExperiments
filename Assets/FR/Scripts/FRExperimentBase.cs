@@ -9,8 +9,10 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace UnityEPL {
-    public class FRExperimentBase<T> : ExperimentBase<FRExperimentBase<T>> 
-        where T : Word, new() 
+    public class FRExperimentBase<WordType, TrialType, SessionType> : ExperimentBase<FRExperimentBase<WordType, TrialType, SessionType>> 
+        where WordType : Word, new()
+        where TrialType : FRRun<WordType>
+        where SessionType : FRSessionBase<WordType, TrialType>, new()
     {
         protected override void AwakeOverride() { }
 
@@ -18,9 +20,8 @@ namespace UnityEPL {
             Run();
         }
 
-        protected List<T> blankWords;
         protected int wordsPerList;
-        protected FRSession<T> currentSession;
+        protected SessionType currentSession;
 
         protected override async Task PreTrialStates() {
             SetupWordList();
@@ -305,18 +306,20 @@ namespace UnityEPL {
         // Setup Functions
         protected virtual void SetupWordList() {
             var wordRepeats = Config.wordRepeats;
+            var wordCounts = Config.wordCounts;
             if (wordRepeats.Count() != 1 && wordRepeats[0] != 1) {
                 ErrorNotifier.ErrorTS(new Exception("Config's wordRepeats should only have one item with a value of 1"));
+            } else if (wordCounts.Count() != 1) {
+                ErrorNotifier.ErrorTS(new Exception("Config's wordCounts should only have one item in it"));
             }
 
-            wordsPerList = Config.wordCounts[0];
-            blankWords = new List<T>(Enumerable.Range(1, wordsPerList).Select(i => new T()).ToList());
+            wordsPerList = wordCounts[0];
 
-            var sourceWords = ReadWordpool();
-            var words = new WordRandomSubset<T>(sourceWords);
+            var sourceWords = ReadWordpool<WordType>();
+            var words = new WordRandomSubset<WordType>(sourceWords);
 
             // TODO: (feature) Load Session
-            currentSession = GenerateSession(words);
+            currentSession = GenerateSession<WordRandomSubset<WordType>>(words);
         }
 
         // Helper Functions
@@ -339,7 +342,7 @@ namespace UnityEPL {
         }
 
         // Experiment Saving and Loading Logic
-        protected void WriteLstFile(StimWordList<T> list, int index) {
+        protected void WriteLstFile(StimWordList<WordType> list, int index) {
             // create .lst files for annotation scripts
             string lstfile = Path.Combine(manager.fileManager.SessionPath(), index.ToString() + ".lst");
             IList<string> noRepeats = new HashSet<string>(list.words.Select(wordStim => wordStim.word)).ToList();
@@ -347,7 +350,9 @@ namespace UnityEPL {
         }
 
         // Word/Stim List Generation
-        protected virtual List<T> ReadWordpool() {
+        protected virtual List<T> ReadWordpool<T>() 
+            where T : Word, new() 
+        {
             // wordpool is a file with 'word' as a header and one word per line.
             // repeats are described in the config file with two matched arrays,
             // repeats and counts, which describe the number of presentations
@@ -372,16 +377,17 @@ namespace UnityEPL {
 
             return sourceWords;
         }
-        protected virtual FRRun<T> MakeRun<U>(U randomSubset, bool encStim, bool recStim) 
-                where U : WordRandomSubset<T>
+        protected virtual TrialType MakeRun<T>(T randomSubset, bool encStim, bool recallStim) 
+            where T : WordRandomSubset<WordType>
         {
             var inputWords = randomSubset.Get(wordsPerList).ToList();
             var encList = GenOpenLoopStimList(inputWords, encStim);
-            var recList = GenOpenLoopStimList(inputWords, recStim);
-            return new FRRun<T>(encList, recList, encStim, recStim);
+            var recallList = GenOpenLoopStimList(inputWords, recallStim);
+
+            return (TrialType)(new FRRun<WordType>(encList, recallList, encStim, recallStim));
         }
 
-        protected StimWordList<T> GenOpenLoopStimList(List<T> inputWords, bool stim) {
+        protected StimWordList<WordType> GenOpenLoopStimList(List<WordType> inputWords, bool stim) {
             if (stim) {
                 // var halfNumWords = wordsPerList / 2;
                 // var falses = Enumerable.Range(1, halfNumWords).Select(i => false).ToList();
@@ -390,18 +396,18 @@ namespace UnityEPL {
                 var stimList = Enumerable.Range(1, wordsPerList)
                                 .Select(i => InterfaceManager.rnd.Value.NextDouble() >= 0.5)
                                 .ToList();
-                return new StimWordList<T>(inputWords, stimList);
+                return new StimWordList<WordType>(inputWords, stimList);
             } else {
                 var stimList = Enumerable.Range(1, wordsPerList)
                                 .Select(i => false)
                                 .ToList();
-                return new StimWordList<T>(inputWords, stimList);
+                return new StimWordList<WordType>(inputWords, stimList);
             }
         }
-        protected virtual FRSession<T> GenerateSession<U>(U randomSubset) 
-                where U : WordRandomSubset<T>
+        protected virtual SessionType GenerateSession<T>(T randomSubset) 
+                where T : WordRandomSubset<WordType>
         {
-            var session = new FRSession<T>();
+            var session = new SessionType();
 
             for (int i = 0; i < Config.practiceLists; i++) {
                 session.Add(MakeRun(randomSubset, false, false));
@@ -411,7 +417,7 @@ namespace UnityEPL {
                 session.Add(MakeRun(randomSubset, false, false));
             }
 
-            var randomized_list = new FRSession<T>();
+            var randomized_list = new SessionType();
 
             for (int i = 0; i < Config.encodingOnlyLists; i++) {
                 randomized_list.Add(MakeRun(randomSubset, true, false));

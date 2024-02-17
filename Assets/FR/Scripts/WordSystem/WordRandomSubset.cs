@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEPL;
 
-public class WordRandomSubset<T> where T : Word {
+public class WordRandomSubset<T> 
+    where T : Word
+{
     protected List<T> shuffled;
     protected int index;
 

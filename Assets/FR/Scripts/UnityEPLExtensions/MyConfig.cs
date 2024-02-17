@@ -44,6 +44,8 @@ namespace UnityEPL {
         public static int recogDuration { get { return Config.GetSetting<int>("recogDuration"); } }
         public static int[] stimEarlyOnsetMs { get { return Config.GetSetting<int[]>("stimEarlyOnsetMs"); } }
         public static int[] postInterStimulusDuration { get { return Config.GetSetting<int[]>("stimEarlyOnsetMs"); } }
+        public static int[] lureWordRepeats { get { return Config.GetSetting<int[]>("lureWordRepeats"); } }
+        public static int[] lureWordCounts { get { return Config.GetSetting<int[]>("lureWordCounts"); } }
     }
 
 }
