@@ -40,7 +40,7 @@ public class WordRandomSubset<T>
 
     public virtual List<T> Get(int amount) {
         if ((shuffled.Count - index) < amount) {
-            throw new IndexOutOfRangeException("Word list too small for session");
+            throw new IndexOutOfRangeException($"Word list ({shuffled.Count}) too small for session (> {index+amount})");
         }
         int indexNow = index;
         index += amount;

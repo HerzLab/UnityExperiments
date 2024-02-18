@@ -30,6 +30,10 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     protected override async Task PracticeTrialStates() {
         StartTrial();
         await NextPracticeListPrompt();
+        await Encoding();
+        await CuedRecall();
+        await Recognition();
+
         await CountdownVideo();
         await Fixation();
         await Encoding();
@@ -118,10 +122,10 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     protected async Task CuedRecall() {
         int[] isiLimits = Config.interStimulusDuration;
         int[] stimEarlyOnsetMsLimits = Config.stimEarlyOnsetMs;
-        var recStimWords = currentSession.GetState().recall;
+        var recallStimWords = currentSession.GetState().recall;
 
-        for (int i = 0; i < recStimWords.Count; ++i) {
-            var wordStim = recStimWords[i];
+        for (int i = 0; i < recallStimWords.Count; ++i) {
+            var wordStim = recallStimWords[i];
             int isiDuration = InterfaceManager.rnd.Value.Next(isiLimits[0], isiLimits[1]);
             int stimEarlyDuration = InterfaceManager.rnd.Value.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
             isiDuration -= stimEarlyDuration;
@@ -140,14 +144,14 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(Config.stimulusDuration+Config.recallDuration));
 
             Dictionary<string, object> data = new() {
-                { "word", wordStim.word.cuedWord },
+                { "word", wordStim.word.word },
                 { "serialpos", i },
                 { "stim", wordStim.stim },
             };
             eventReporter.LogTS("word stimulus info", data);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
 
-            textDisplayer.Display("word stimulus", "", "\n"+wordStim.word.cuedWord+"\n");
+            textDisplayer.Display("word stimulus", "", "\n"+wordStim.word.word+"\n");
             await InterfaceManager.Delay(Config.stimulusDuration);
             eventReporter.LogTS("clear word stimulus", data);
             textDisplayer.Clear();
@@ -160,10 +164,10 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     protected async Task Recognition() {
         int[] isiLimits = Config.interStimulusDuration;
         int[] stimEarlyOnsetMsLimits = Config.stimEarlyOnsetMs;
-        var recStimWords = currentSession.GetState().recall;
+        var recogStimWords = currentSession.GetState().recog;
 
-        for (int i = 0; i < recStimWords.Count; ++i) {
-            var wordStim = recStimWords[i];
+        for (int i = 0; i < recogStimWords.Count; ++i) {
+            var wordStim = recogStimWords[i];
             int isiDuration = InterfaceManager.rnd.Value.Next(isiLimits[0], isiLimits[1]);
             int stimEarlyDuration = InterfaceManager.rnd.Value.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
             isiDuration -= stimEarlyDuration;
@@ -182,14 +186,14 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(Config.stimulusDuration+Config.recogDuration));
 
             Dictionary<string, object> data = new() {
-                { "word", wordStim.word.recogWord },
+                { "word", wordStim.word.word },
                 { "serialpos", i },
                 { "stim", wordStim.stim },
             };
             eventReporter.LogTS("word stimulus info", data);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
 
-            textDisplayer.Display("word stimulus", "", "\n"+wordStim.word.recogWord+"\n");
+            textDisplayer.Display("word stimulus", "", "\n"+wordStim.word.word+"\n");
             await InterfaceManager.Delay(Config.stimulusDuration);
             eventReporter.LogTS("clear word stimulus", data);
             textDisplayer.Clear();
@@ -222,6 +226,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
 
     // Word/Stim List Generation
     protected override void SetupWordList() {
+        // Validate word repeats and counts
         var wordRepeats = Config.wordRepeats;
         var wordCounts = Config.wordCounts;
         if (wordRepeats.Count() != 1 && wordRepeats[0] != 1) {
@@ -230,6 +235,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             ErrorNotifier.ErrorTS(new Exception("Config's wordCounts should only have one item in it"));
         }
 
+        // Validate lure word repeats and counts
         var lureWordRepeats = Config.lureWordRepeats;
         var lureWordCounts = Config.lureWordCounts;
         if (lureWordRepeats.Count() != 1 && lureWordRepeats[0] != 1) {
@@ -238,9 +244,11 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             ErrorNotifier.ErrorTS(new Exception("Config's lureWordCounts should only have one item in it"));
         }
 
+        // Set member variables
         wordsPerList = wordCounts[0];
         lureWordsPerList = lureWordCounts[0];
 
+        // Read words and generate the random subset needed
         var sourceWords = ReadWordpool<Word>();
         var words = new WordRandomSubset<Word>(sourceWords);
 
@@ -261,7 +269,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         // Make lure words
         randomWords = randomSubset.Get(lureWordsPerList).ToList();
         var lureWords = new List<PairedWord>();
-        for (int i = 0; i < randomWords.Count - 1; ++i) {
+        for (int i = 0; i < randomWords.Count; ++i) {
             lureWords.Add(new(randomWords[i].word, ""));
         }
 
@@ -304,25 +312,41 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         return new StimWordList<PairedWord>(inputWords, stimList);
     }
 
+    protected List<int> GenZigZagList(int numList1, int numList2) {
+        var list1 = Enumerable.Range(0, wordsPerList).ToList();
+        var list2 = Enumerable.Range(wordsPerList, lureWordsPerList).ToList();
+        var retList = new List<int>();
+        for (int i=0; i < Math.Max(wordsPerList, lureWordsPerList); ++i) {
+            if (i < list1.Count) { retList.Add(list1[i]); }
+            if (i < list2.Count) { retList.Add(list2[i]); }
+        }
+        return retList;
+    }
+
     protected new MemMapSession<PairedWord> GenerateSession<T>(T randomSubset) 
         where T : WordRandomSubset<Word>
     {
         var session = new MemMapSession<PairedWord>();
 
-        var tempRecogOrder = new List<int>() {1,2,3,4,5,6};
+        var tempRecogOrders = new List<int>() {0,1,5,3,4,2};
 
+        // Practice Lists
         for (int i = 0; i < Config.practiceLists; i++) {
             var wordOrders = Enumerable.Range(0, wordsPerList).Select(i => i % 2 == 0).ToList();
-            session.Add(MakeTrial(randomSubset, false, false, false, wordOrders, tempRecogOrder));
+            var recogOrders = GenZigZagList(wordsPerList, lureWordsPerList);
+            session.Add(MakeTrial(randomSubset, false, false, false, wordOrders, recogOrders));
         }
 
+        // Pre No-Stim Lists
         for (int i = 0; i < Config.preNoStimLists; i++) {
             var wordOrders = Enumerable.Range(0, wordsPerList).Select(i => i % 2 == 0).ToList();
-            session.Add(MakeTrial(randomSubset, false, false, false, wordOrders, tempRecogOrder));
+            var recogOrders = Enumerable.Range(0, wordsPerList+lureWordsPerList).ToList().Shuffle();
+            session.Add(MakeTrial(randomSubset, false, false, false, wordOrders, recogOrders));
         }
 
+        // Check for invalid list types
         if (Config.encodingAndRetrievalLists != 0) {
-            ErrorNotifier.ErrorTS(new Exception("Config's encodingAndRetrievalLists should be 0 in Config (unsupported)"));
+            ErrorNotifier.ErrorTS(new Exception("Config's encodingAndRetrievalLists should be 0 in Config"));
         }
 
         int numEncLists = Config.encodingOnlyLists;
@@ -330,9 +354,11 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         int numEncAndRetLists = Config.encodingAndRetrievalLists;
         int numNoStimLists = Config.noStimLists;
 
+        List<List<bool>> uniqueBoolLists = GenerateUniqueBoolLists(wordsPerList);
+
+
         int maxNumListsPerStimType = Math.Max(numEncLists, Math.Max(numRetLists, Math.Max(numEncAndRetLists, numNoStimLists)));
-        int numStimMethods = (new List<int> {numEncLists, numRetLists, numEncAndRetLists, numNoStimLists}).Count(x => x > 0);
-        int numListsPerBlock = Math.Min(maxNumListsPerStimType, numStimMethods);
+        int numListsPerBlock = Math.Min(maxNumListsPerStimType, uniqueBoolLists.Count);
         int numBlocks = (int)Math.Ceiling((double)maxNumListsPerStimType / numListsPerBlock);
 
         // This example assumes numEncLists = 4, numRetLists = 4, numNoStimLists = 4, numEncAndRetLists = 0
@@ -412,34 +438,34 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         for (int blockNum = 0; blockNum < numBlocks; ++blockNum) {
             // Make the word orders for each list in a block
             // Each word order has the same number of trues and falses (or 1 off if odd number of words)
-            var wordOrders = GenerateUniqueBoolLists(numListsPerBlock, numStimMethods);
+            var wordOrders = uniqueBoolLists.Shuffle().Take(numListsPerBlock).ToList();
 
             // Create a list, for the 'encoding' stim type, of MemMapTrials with the wordOrders
             var encLists = new List<MemMapTrial<PairedWord>>();
             var numEncListsInBlock = Math.Min(numEncLists-blockNum*numBlocks, numListsPerBlock);
-            for (int i = 0; i < numListsPerBlock; i++) {
-                encLists.Add(MakeTrial(randomSubset, true, false, false, wordOrders[i], tempRecogOrder));
+            for (int i = 0; i < numEncListsInBlock; i++) {
+                encLists.Add(MakeTrial(randomSubset, true, false, false, wordOrders[i], tempRecogOrders));
             }
 
             // Create a list, for the 'retrieval' stim type, of MemMapTrials with the wordOrders
             var retLists = new List<MemMapTrial<PairedWord>>();
             var numRetListsInBlock = Math.Min(numRetLists-blockNum*numBlocks, numListsPerBlock);
-            for (int i = 0; i < numListsPerBlock; i++) {
-                retLists.Add(MakeTrial(randomSubset, false, true, true, wordOrders[i], tempRecogOrder));
+            for (int i = 0; i < numRetListsInBlock; i++) {
+                retLists.Add(MakeTrial(randomSubset, false, true, true, wordOrders[i], tempRecogOrders));
             }
 
             // Create a list, for the 'encoding and retrieval' stim type, of MemMapTrials with the wordOrders
             var encAndRetLists = new List<MemMapTrial<PairedWord>>();
             var numEncAndRetListsInBlock = Math.Min(numEncAndRetLists-blockNum*numBlocks, numListsPerBlock);
-            for (int i = 0; i < numListsPerBlock; i++) {
-                encAndRetLists.Add(MakeTrial(randomSubset, true, true, true, wordOrders[i], tempRecogOrder));
+            for (int i = 0; i < numEncAndRetListsInBlock; i++) {
+                encAndRetLists.Add(MakeTrial(randomSubset, true, true, true, wordOrders[i], tempRecogOrders));
             }
 
             // Create a list, for the 'no stim' stim type, of MemMapTrials with the wordOrders
             var noStimLists = new List<MemMapTrial<PairedWord>>();
             var numNoStimListsInBlock = Math.Min(numNoStimLists-blockNum*numBlocks, numListsPerBlock);
-            for (int i = 0; i < numListsPerBlock; i++) {
-                noStimLists.Add(MakeTrial(randomSubset, false, false, false, wordOrders[i], tempRecogOrder));
+            for (int i = 0; i < numNoStimListsInBlock; i++) {
+                noStimLists.Add(MakeTrial(randomSubset, false, false, false, wordOrders[i], tempRecogOrders));
             }
             
             // Randomize the order of each stim type's list (of wordOrders)
@@ -485,14 +511,18 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         return session;
     }
 
-    protected static List<List<bool>> GenerateUniqueBoolLists(int numLists, int numElements) {
+    protected static List<List<bool>> GenerateUniqueBoolLists(int numElements) {
         var allCombinations = new List<List<bool>>();
-        GenerateCombinations(new List<bool>(), numElements, ref allCombinations);
-        return allCombinations.ShuffleInPlace().Take(numLists).ToList();
+        GenerateUniqueBoolListsHelper(new List<bool>(), numElements, ref allCombinations);
+        return allCombinations;
     }
-    protected static void GenerateCombinations(List<bool> current, int numElements, ref List<List<bool>> allCombinations) {
-        if (current.Count == numElements)
-        {
+    protected static void GenerateUniqueBoolListsHelper(List<bool> current, int numElements, ref List<List<bool>> allCombinations) {
+        // This function generates every combination of an even number of trues and falses for numElements
+        // If numElements is odd, then it's every combination that is up to 1 different
+        // Ex: numElements = 3 : TTF, TFT, FTT, TFF, FTF, FFT
+        // Ex: numElements = 4 : TTFF, TFTF, FTTF, FFTT, FTFT, TFFT 
+
+        if (current.Count == numElements) {
             allCombinations.Add(new List<bool>(current));
             return;
         }
@@ -502,20 +532,13 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         int countFalse = current.Count(x => !x);
 
         // Add true if possible
-        if (countTrue < numElements / 2 || (numElements % 2 != 0 && countTrue <= numElements / 2))
-        {
-            current.Add(true);
-            GenerateCombinations(current, numElements, ref allCombinations);
-            current.RemoveAt(current.Count - 1);
+        if (countTrue < numElements / 2 || (numElements % 2 != 0 && countTrue <= numElements / 2)) {
+            GenerateUniqueBoolListsHelper(current.Append(true).ToList(), numElements, ref allCombinations);
         }
 
         // Add false if possible
-        if (countFalse < numElements / 2 || (numElements % 2 != 0 && countFalse <= numElements / 2))
-        {
-            current.Add(false);
-            GenerateCombinations(current, numElements, ref allCombinations);
-            current.RemoveAt(current.Count - 1);
+        if (countFalse < numElements / 2 || (numElements % 2 != 0 && countFalse <= numElements / 2)) {
+            GenerateUniqueBoolListsHelper(current.Append(false).ToList(), numElements, ref allCombinations);
         }
     }
-
 }

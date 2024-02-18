@@ -305,6 +305,7 @@ namespace UnityEPL {
 
         // Setup Functions
         protected virtual void SetupWordList() {
+            // Validate word repeats and counts
             var wordRepeats = Config.wordRepeats;
             var wordCounts = Config.wordCounts;
             if (wordRepeats.Count() != 1 && wordRepeats[0] != 1) {
@@ -313,8 +314,10 @@ namespace UnityEPL {
                 ErrorNotifier.ErrorTS(new Exception("Config's wordCounts should only have one item in it"));
             }
 
+            // Set member variables
             wordsPerList = wordCounts[0];
 
+            // Read words and generate the random subset needed
             var sourceWords = ReadWordpool<WordType>();
             var words = new WordRandomSubset<WordType>(sourceWords);
 
