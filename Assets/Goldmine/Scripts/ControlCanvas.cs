@@ -18,7 +18,6 @@ public class ControlCanvas : EventMonoBehaviour
     public GameObject rightArrow;
     public GameObject leftArrow;
     public GameObject background;
-    protected InterfaceManager manager;
 
     private string lastScoreText;
 

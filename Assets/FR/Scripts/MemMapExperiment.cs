@@ -256,7 +256,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         currentSession = GenerateSession<WordRandomSubset<Word>>(words);
     }
 
-    protected MemMapTrial<PairedWord> MakeTrial<U>(U randomSubset, bool encStim, bool recallStim, bool recogStim, List<bool> wordOrders, List<int> recogOrders) 
+    protected MemMapTrial<PairedWord> MakeTrial<U>(U randomSubset, bool encStim, bool recallStim, bool recogStim, List<bool> wordOrders, List<int> recallOrders, List<int> recogOrders) 
         where U : WordRandomSubset<Word>
     {
         // Make paired words
@@ -288,6 +288,15 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             } else {
                 recogWords[i] = new PairedWord(recogWords[i].pairedWord, recogWords[i].word);
             }
+        }
+
+        // Reassign the order of the recall word list
+        if (recallOrders.Count != recallWords.Count) {
+            ErrorNotifier.ErrorTS(new Exception($"The number of recall orders {recallOrders.Count} does not equal the number of words per list {recallWords.Count}"));
+        }
+        var oldRecallWords = new List<PairedWord>(recallWords);
+        for (int i = 0; i < recallOrders.Count; ++i) {
+            recallWords[i] = oldRecallWords[recallOrders[i]];
         }
 
         // Reassign the order of the recognition word list
@@ -323,25 +332,57 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         return retList;
     }
 
+    protected static List<List<int>> GenUniqueOrdersLists(int numElements, int numLists) {
+        var inputList = Enumerable.Range(0, numElements).ToList();
+        return GenUniqueRandomLists<List<int>, int>(numLists, inputList);
+    }
+
+    protected static List<T> GenUniqueRandomLists<T, U>(int numCombos, T inputList) 
+        where T : List<U>
+    {
+        var uniqueCombinations = new HashSet<int>();
+        var result = new List<T>();
+
+        int attempts = 0;
+        // The math for figuring out how many permutations should exists (due to duplicates) is annoying
+        // https://math.stackexchange.com/questions/4251947/permutations-of-elements-where-some-elements-are-of-the-same-kind
+        // if (numCombos > Statistics.Permutation(inputList.Count, inputList.Count)) {
+        //     throw new Exception("Tried to generate unique random lists, but there are less permutations possible than the number requested");
+        // }
+
+        while (result.Count < numCombos && attempts < numCombos * 10) {
+            T combination = (T) inputList.Shuffle();
+            int hash = combination.GetSequenceHashCode();
+
+            if (!uniqueCombinations.Contains(hash)) {
+                uniqueCombinations.Add(hash);
+                result.Add(combination);
+            }
+            ++attempts;
+        }
+
+        return result;
+    }
+
     protected new MemMapSession<PairedWord> GenerateSession<T>(T randomSubset) 
         where T : WordRandomSubset<Word>
     {
         var session = new MemMapSession<PairedWord>();
 
-        var tempRecogOrders = new List<int>() {0,1,5,3,4,2};
-
         // Practice Lists
         for (int i = 0; i < Config.practiceLists; i++) {
             var wordOrders = Enumerable.Range(0, wordsPerList).Select(i => i % 2 == 0).ToList();
+            var recallOrders = Enumerable.Range(0, wordsPerList).ToList().Shuffle(InterfaceManager.stableRnd.Value);
             var recogOrders = GenZigZagList(wordsPerList, lureWordsPerList);
-            session.Add(MakeTrial(randomSubset, false, false, false, wordOrders, recogOrders));
+            session.Add(MakeTrial(randomSubset, false, false, false, wordOrders, recallOrders, recogOrders));
         }
 
         // Pre No-Stim Lists
         for (int i = 0; i < Config.preNoStimLists; i++) {
             var wordOrders = Enumerable.Range(0, wordsPerList).Select(i => i % 2 == 0).ToList();
+            var recallOrders = Enumerable.Range(0, wordsPerList).ToList().Shuffle();
             var recogOrders = Enumerable.Range(0, wordsPerList+lureWordsPerList).ToList().Shuffle();
-            session.Add(MakeTrial(randomSubset, false, false, false, wordOrders, recogOrders));
+            session.Add(MakeTrial(randomSubset, false, false, false, wordOrders, recallOrders, recogOrders));
         }
 
         // Check for invalid list types
@@ -354,131 +395,110 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         int numEncAndRetLists = Config.encodingAndRetrievalLists;
         int numNoStimLists = Config.noStimLists;
 
-        List<List<bool>> uniqueBoolLists = GenerateUniqueBoolLists(wordsPerList);
+        // Generate the unique bool lists for the paired words
+        // 1000 is a random number to limit it if the word lists get too long
+        List<List<bool>> uniqueBoolLists = GenerateUniqueBoolLists(wordsPerList, 100);
 
-
+        // TODO: JPB: (noa) (feature) Make config value that limits the number of lists per block
+        //            This could be important if patients don't finish the task consistently
         int maxNumListsPerStimType = Math.Max(numEncLists, Math.Max(numRetLists, Math.Max(numEncAndRetLists, numNoStimLists)));
         int numListsPerBlock = Math.Min(maxNumListsPerStimType, uniqueBoolLists.Count);
         int numBlocks = (int)Math.Ceiling((double)maxNumListsPerStimType / numListsPerBlock);
 
-        // This example assumes numEncLists = 4, numRetLists = 4, numNoStimLists = 4, numEncAndRetLists = 0
-        // For each block, do the following loop
+        // This example assumes wordsPerList = 3, numEncLists = 4, numRetLists = 4, numNoStimLists = 4, and numEncAndRetLists = 0
 
-        // This part below shows the first iteration of the loop
-
-            // Make the word orders for each list in a block
-            // Each word order has the same number of trues and falses (or 1 off if odd number of words)
-            // wordOrders =  [[TTF], [TFT], [TFF]]
-
-            // Create a list, for each stim type, of MemMapTrials with the wordOrders
-            // This also adds the words to each MemMapTrial
-            // encLists =    [MemMapTrial(TTF, E), MemMapTrial(TFT, E), MemMapTrial(TFF, E)]
-            // retLists =    [MemMapTrial(TTF, R), MemMapTrial(TFT, R), MemMapTrial(TFF, R)]
-            // noStimLists = [MemMapTrial(TTF, N), MemMapTrial(TFT, N), MemMapTrial(TFF, N)]
-
-            // Randomize the order of each stim type's list (of wordOrders)
-            // encLists =    [MemMapTrial(TFT, E), MemMapTrial(TFF, E), MemMapTrial(TTF, E)]  // shuffled
-            // retLists =    [MemMapTrial(TFF, R), MemMapTrial(TTF, R), MemMapTrial(TFT, R)]  // shuffled
-            // noStimLists = [MemMapTrial(TTF, N), MemMapTrial(TFT, N), MemMapTrial(TFF, N)]  // shuffled
-
-            // Only use the correct amount of lists for each stim type
-            // This does nothing on the first iteration
-            // encLists =    [MemMapTrial(TFT, E), MemMapTrial(TFF, E), MemMapTrial(TTF, E)]
-            // retLists =    [MemMapTrial(TFF, R), MemMapTrial(TTF, R), MemMapTrial(TFT, R)]
-            // noStimLists = [MemMapTrial(TTF, N), MemMapTrial(TFT, N), MemMapTrial(TFF, N)]
-
-                // Create a list using the first of each stim type, randomize it, and add the elements of that list to the session
-                // randomizedList = [[MemMapTrial(TFT, E), MemMapTrial(TFF, R), MemMapTrial(TTF, N)]]
-                // randomizedList = [[MemMapTrial(TFT, N), MemMapTrial(TTF, R), MemMapTrial(TFF, E)]] // shuffled
-                // session =        [MemMapTrial(TFT, N), MemMapTrial(TTF, R), MemMapTrial(TFF, E)]
-
-                // Create a list using the second of each stim type, randomize it, and add the elements of that list to the session
-                // randomizedList = [[MemMapTrial(TFF, E), MemMapTrial(TTF, R), MemMapTrial(TFT, N)]]
-                // randomizedList = [[MemMapTrial(TFF, N), MemMapTrial(TFT, E), MemMapTrial(TTF, R)]] // shuffled
-                // session =        [MemMapTrial(TFT, N), MemMapTrial(TTF, R), MemMapTrial(TFF, E),
-                //                   MemMapTrial(TFF, N), MemMapTrial(TFT, E), MemMapTrial(TTF, R)]
-
-                // Create a list using the third of each stim type, randomize it, and add the elements of that list to the session
-                // randomizedList = [[MemMapTrial(TTF, E), MemMapTrial(TFT, R), MemMapTrial(TFF, N)]]
-                // randomizedList = [[MemMapTrial(TFF, R), MemMapTrial(TTF, N), MemMapTrial(TFT, E)]] // shuffled
-                // session =        [MemMapTrial(TFT, N), MemMapTrial(TTF, R), MemMapTrial(TFF, E),
-                //                   MemMapTrial(TFF, N), MemMapTrial(TFT, E), MemMapTrial(TTF, R),
-                //                   MemMapTrial(TFF, R), MemMapTrial(TTF, N), MemMapTrial(TFT, E)]
-
-        // This part shows the second iteration of the loop
+        // This part below shows the first iteration of the loop (which is for the first block)
+        // There is only one iteration in this example
             
-            // wordOrders =  [[FFT], [TFT], [TTF]]
+            // Make the word orders for each stim type
+            // The word orders are which word is the shown word and which is the paired word for recall and recognition
+            // Each word order has the same number of trues and falses (or 1 off if odd number of words)
+            // Each stim type must have the same word orders in a unique ordering
+            // [[[TTF], [TFT], [TFF], [FTF]],  -> Encoding
+            //  [[TFF], [TTF], [FTF], [TFT]],  -> Retrieval
+            //  [[TTF], [TFF], [TFT], [FTF]],  -> Encoding and Retrieval
+            //  [[FTF], [TTF], [TFF], [TFT]]]  -> No stim
 
-            // encLists =    [MemMapTrial(FFT, E), MemMapTrial(TFT, E), MemMapTrial(TTF, E)]
-            // retLists =    [MemMapTrial(FFT, R), MemMapTrial(TFT, R), MemMapTrial(TTF, R)]
-            // noStimLists = [MemMapTrial(FFT, N), MemMapTrial(TFT, N), MemMapTrial(TTF, N)]
+            // Make the recall orders for each stim type
+            // The recall orders are how to shuffle the recall words
+            // Each stim type must have the same word orders in a unique ordering
+            // [[[2,1,3], [1,2,3], [3,2,1], [1,3,2]],  -> Encoding
+            //  [[1,3,2], [1,2,3], [3,2,1], [2,1,3]],  -> Retrieval
+            //  [[1,2,3], [2,1,3], [1,3,2], [3,2,1]],  -> Encoding and Retrieval
+            //  [[3,2,1], [2,1,3], [1,3,2], [1,2,3]]]  -> No stim
 
-            // encLists =    [MemMapTrial(TFT, E), MemMapTrial(TTF, E), MemMapTrial(FFT, E)]  // shuffled
-            // retLists =    [MemMapTrial(FFT, R), MemMapTrial(TFT, R), MemMapTrial(TTF, R)]  // shuffled
-            // noStimLists = [MemMapTrial(TFT, N), MemMapTrial(FFT, N), MemMapTrial(TTF, N)]  // shuffled
+            // Make the recognition orders for each stim type
+            // The recognition orders are how to shuffle the recognition words (including the lures)
+            // Each stim type must have the same word orders in a unique ordering
+            // [[[1,5,6,2,4,3], [4,3,6,2,1,5], [5,2,1,4,6,3], [3,2,6,1,4,5]],  -> Encoding
+            //  [[5,2,1,4,6,3], [1,5,6,2,4,3], [3,2,6,1,4,5], [4,3,6,2,1,5]],  -> Retrieval
+            //  [[1,5,6,2,4,3], [4,3,6,2,1,5], [3,2,6,1,4,5], [5,2,1,4,6,3]],  -> Encoding and Retrieval
+            //  [[3,2,6,1,4,5], [1,5,6,2,4,3], [4,3,6,2,1,5], [5,2,1,4,6,3]]]  -> No stim
 
-            // encLists =    [MemMapTrial(TFT, E)]
-            // retLists =    [MemMapTrial(FFT, R)]
-            // noStimLists = [MemMapTrial(TFT, N)]
-
-                // randomizedList = [[MemMapTrial(TFT, E), MemMapTrial(FFT, R), MemMapTrial(TFT, N)]]
-                // randomizedList = [[MemMapTrial(TFT, N), MemMapTrial(TFT, E), MemMapTrial(FFT, R)]] // shuffled
-                // session =        [MemMapTrial(TFT, N), MemMapTrial(TTF, R), MemMapTrial(TFF, E),
-                //                   MemMapTrial(TFF, N), MemMapTrial(TFT, E), MemMapTrial(TTF, R),
-                //                   MemMapTrial(TFF, R), MemMapTrial(TTF, N), MemMapTrial(TFT, E),
-                //                   MemMapTrial(TFT, N), MemMapTrial(TFT, E), MemMapTrial(FFT, R)]
-
-        // This is the final result
-        // session = [MemMapTrial(TFT, N), MemMapTrial(TTF, R), MemMapTrial(TFF, E),
-        //            MemMapTrial(TFF, N), MemMapTrial(TFT, E), MemMapTrial(TTF, R),
-        //            MemMapTrial(TFF, R), MemMapTrial(TTF, N), MemMapTrial(TFT, E),
-        //            MemMapTrial(TFT, N), MemMapTrial(TFT, E), MemMapTrial(FFT, R)]
+            // Create groupings of each stim type as a Trial (for as many as there are), shuffle it, and add them all to the session
+            // The shuffled order does not have to be unique for each iteration
+            // You will notice that there are no "Encoding and Retrieval" lists added because numEncAndRetLists = 0
+            // [MemMapTrial(E,[TTF], [2,1,3], [1,5,6,2,4,3]), MemMapTrial(R, [TFF], [1,3,2], [1,5,6,2,4,3]), MemMapTrial(N, [FTF], [3,2,1], [3,2,6,1,4,5])]
+            // [MemMapTrial(R, [TFF], [1,3,2], [1,5,6,2,4,3]), MemMapTrial(E,[TTF], [2,1,3], [1,5,6,2,4,3]), MemMapTrial(N, [FTF], [3,2,1], [3,2,6,1,4,5])]
+            // session = [MemMapTrial(R, [TFF], [1,3,2], [1,5,6,2,4,3]), MemMapTrial(E,[TTF], [2,1,3], [1,5,6,2,4,3]), MemMapTrial(N, [FTF], [3,2,1], [3,2,6,1,4,5])]
+            // ... (skipping the next 2 lists)
+            // [MemMapTrial(E, [FTF], [1,3,2], [3,2,6,1,4,5]), MemMapTrial(R, [TFT], [2,1,3], [4,3,6,2,1,5]), MemMapTrial(N, [TFT], [1,2,3], [5,2,1,4,6,3])]
+            // [MemMapTrial(N, [TFT], [1,2,3], [5,2,1,4,6,3]), MemMapTrial(R, [TFT], [2,1,3], [4,3,6,2,1,5]), MemMapTrial(E, [FTF], [1,3,2], [3,2,6,1,4,5])]
+            // session = [MemMapTrial(R, [TFF], [1,3,2], [1,5,6,2,4,3]), MemMapTrial(E,[TTF], [2,1,3], [1,5,6,2,4,3]), MemMapTrial(N, [FTF], [3,2,1], [3,2,6,1,4,5]),
+            //            MemMapTrial(E, [TFT], [1,2,3], [4,3,6,2,1,5]), MemMapTrial(R, [TTF], [1,2,3], [1,5,6,2,4,3]), MemMapTrial(N, [TTF], [2,1,3], [1,5,6,2,4,3]),
+            //            MemMapTrial(R, [FTF], [3,2,1], [3,2,6,1,4,5]), MemMapTrial(N, [TFF], [1,3,2], [4,3,6,2,1,5]), MemMapTrial(E, [TFF], [3,2,1], [5,2,1,4,6,3]),
+            //            MemMapTrial(N, [TFT], [1,2,3], [5,2,1,4,6,3]), MemMapTrial(R, [TFT], [2,1,3], [4,3,6,2,1,5]), MemMapTrial(E, [FTF], [1,3,2], [3,2,6,1,4,5])]
+            
+        // If there were to be more iterations, you would do the same thing as the first iteration
+        // The only difference would be that you add the new trials to the already populated session
 
         // For each block, do the following loop
         for (int blockNum = 0; blockNum < numBlocks; ++blockNum) {
             // Make the word orders for each list in a block
             // Each word order has the same number of trues and falses (or 1 off if odd number of words)
-            var wordOrders = uniqueBoolLists.Shuffle().Take(numListsPerBlock).ToList();
+            var wordOrderOptions = uniqueBoolLists.Shuffle().Take(numListsPerBlock).ToList();
+            // Make a unique random ordering for each stim type
+            List<List<List<bool>>> wordOrders = GenUniqueRandomLists<List<List<bool>>, List<bool>>(4, wordOrderOptions);
+
+            // Make the recall orders for each list in a block
+            var wordsPerRecallList = wordsPerList;
+            var recallOrderOptions = GenUniqueOrdersLists(wordsPerRecallList, numListsPerBlock);
+            // Make a unique random ordering for each stim type
+            List<List<List<int>>> recallOrders = GenUniqueRandomLists<List<List<int>>, List<int>>(4, recallOrderOptions);
+
+            // Make the recog orders for each list in a block
+            var wordsPerRecogList = wordsPerList + lureWordsPerList;
+            var recogOrderOptions = GenUniqueOrdersLists(wordsPerRecogList, numListsPerBlock);
+            // Make a unique random ordering for each stim type
+            List<List<List<int>>> recogOrders = GenUniqueRandomLists<List<List<int>>, List<int>>(4, recogOrderOptions);
 
             // Create a list, for the 'encoding' stim type, of MemMapTrials with the wordOrders
             var encLists = new List<MemMapTrial<PairedWord>>();
             var numEncListsInBlock = Math.Min(numEncLists-blockNum*numBlocks, numListsPerBlock);
             for (int i = 0; i < numEncListsInBlock; i++) {
-                encLists.Add(MakeTrial(randomSubset, true, false, false, wordOrders[i], tempRecogOrders));
+                encLists.Add(MakeTrial(randomSubset, true, false, false, wordOrders[0][i], recallOrders[0][i], recogOrders[0][i]));
             }
 
             // Create a list, for the 'retrieval' stim type, of MemMapTrials with the wordOrders
             var retLists = new List<MemMapTrial<PairedWord>>();
             var numRetListsInBlock = Math.Min(numRetLists-blockNum*numBlocks, numListsPerBlock);
             for (int i = 0; i < numRetListsInBlock; i++) {
-                retLists.Add(MakeTrial(randomSubset, false, true, true, wordOrders[i], tempRecogOrders));
+                retLists.Add(MakeTrial(randomSubset, false, true, true, wordOrders[1][i], recallOrders[1][i], recogOrders[1][i]));
             }
 
             // Create a list, for the 'encoding and retrieval' stim type, of MemMapTrials with the wordOrders
             var encAndRetLists = new List<MemMapTrial<PairedWord>>();
             var numEncAndRetListsInBlock = Math.Min(numEncAndRetLists-blockNum*numBlocks, numListsPerBlock);
             for (int i = 0; i < numEncAndRetListsInBlock; i++) {
-                encAndRetLists.Add(MakeTrial(randomSubset, true, true, true, wordOrders[i], tempRecogOrders));
+                encAndRetLists.Add(MakeTrial(randomSubset, true, true, true, wordOrders[2][i], recallOrders[2][i], recogOrders[2][i]));
             }
 
             // Create a list, for the 'no stim' stim type, of MemMapTrials with the wordOrders
             var noStimLists = new List<MemMapTrial<PairedWord>>();
             var numNoStimListsInBlock = Math.Min(numNoStimLists-blockNum*numBlocks, numListsPerBlock);
             for (int i = 0; i < numNoStimListsInBlock; i++) {
-                noStimLists.Add(MakeTrial(randomSubset, false, false, false, wordOrders[i], tempRecogOrders));
+                noStimLists.Add(MakeTrial(randomSubset, false, false, false, wordOrders[3][i], recallOrders[3][i], recogOrders[3][i]));
             }
-            
-            // Randomize the order of each stim type's list (of wordOrders)
-            encLists.ShuffleInPlace();
-            retLists.ShuffleInPlace();
-            encAndRetLists.ShuffleInPlace();
-            noStimLists.ShuffleInPlace();
-
-            // Only use the correct amount of lists for each stim type
-            encLists = encLists.Take(numEncListsInBlock).ToList();
-            retLists = retLists.Take(numRetListsInBlock).ToList();
-            encAndRetLists = encAndRetLists.Take(numEncAndRetListsInBlock).ToList();
-            noStimLists = noStimLists.Take(numNoStimListsInBlock).ToList();
 
             // For each potential list index:
             //      Create a list of MemMapTrial's from that index of each stim type
@@ -506,21 +526,26 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             WriteLstFile(session[i].encoding, i);
         }
 
+        session.DebugPrintAll();
         session.PrintAllWordsToDebugLog();
 
         return session;
     }
 
-    protected static List<List<bool>> GenerateUniqueBoolLists(int numElements) {
+    protected static List<List<bool>> GenerateUniqueBoolLists(int numElements, int? maxLists = null) {
         var allCombinations = new List<List<bool>>();
-        GenerateUniqueBoolListsHelper(new List<bool>(), numElements, ref allCombinations);
+        GenerateUniqueBoolListsHelper(new List<bool>(), numElements, ref allCombinations, maxLists);
         return allCombinations;
     }
-    protected static void GenerateUniqueBoolListsHelper(List<bool> current, int numElements, ref List<List<bool>> allCombinations) {
+    protected static void GenerateUniqueBoolListsHelper(List<bool> current, int numElements, ref List<List<bool>> allCombinations, int? maxLists) {
         // This function generates every combination of an even number of trues and falses for numElements
         // If numElements is odd, then it's every combination that is up to 1 different
         // Ex: numElements = 3 : TTF, TFT, FTT, TFF, FTF, FFT
         // Ex: numElements = 4 : TTFF, TFTF, FTTF, FFTT, FTFT, TFFT 
+
+        if (allCombinations.Count == maxLists) {
+            return;
+        }
 
         if (current.Count == numElements) {
             allCombinations.Add(new List<bool>(current));
@@ -533,12 +558,12 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
 
         // Add true if possible
         if (countTrue < numElements / 2 || (numElements % 2 != 0 && countTrue <= numElements / 2)) {
-            GenerateUniqueBoolListsHelper(current.Append(true).ToList(), numElements, ref allCombinations);
+            GenerateUniqueBoolListsHelper(current.Append(true).ToList(), numElements, ref allCombinations, maxLists);
         }
 
         // Add false if possible
         if (countFalse < numElements / 2 || (numElements % 2 != 0 && countFalse <= numElements / 2)) {
-            GenerateUniqueBoolListsHelper(current.Append(false).ToList(), numElements, ref allCombinations);
+            GenerateUniqueBoolListsHelper(current.Append(false).ToList(), numElements, ref allCombinations, maxLists);
         }
     }
 }
