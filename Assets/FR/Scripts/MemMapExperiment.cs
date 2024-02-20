@@ -248,12 +248,16 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         wordsPerList = wordCounts[0];
         lureWordsPerList = lureWordCounts[0];
 
-        // Read words and generate the random subset needed
-        var sourceWords = ReadWordpool<Word>();
-        var words = new WordRandomSubset<Word>(sourceWords);
+        // Read practice words and generate the random subset needed
+        var sourcePracticeWords = ReadWordpool<Word>(manager.fileManager.GetPracticeWordList());
+        var practiceWords = new WordRandomSubset<Word>(sourcePracticeWords, true);
 
+        // Read words and generate the random subset needed
+        var sourceWords = ReadWordpool<Word>(manager.fileManager.GetWordList());
+        var words = new WordRandomSubset<Word>(sourceWords);
+        
         // TODO: (feature) Load Session
-        currentSession = GenerateSession<WordRandomSubset<Word>>(words);
+        currentSession = GenerateSession<WordRandomSubset<Word>>(practiceWords, words);
     }
 
     protected MemMapTrial<PairedWord> MakeTrial<U>(U randomSubset, bool encStim, bool recallStim, bool recogStim, List<bool> wordOrders, List<int> recallOrders, List<int> recogOrders) 
@@ -321,50 +325,8 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         return new StimWordList<PairedWord>(inputWords, stimList);
     }
 
-    protected List<int> GenZigZagList(int numList1, int numList2) {
-        var list1 = Enumerable.Range(0, wordsPerList).ToList();
-        var list2 = Enumerable.Range(wordsPerList, lureWordsPerList).ToList();
-        var retList = new List<int>();
-        for (int i=0; i < Math.Max(wordsPerList, lureWordsPerList); ++i) {
-            if (i < list1.Count) { retList.Add(list1[i]); }
-            if (i < list2.Count) { retList.Add(list2[i]); }
-        }
-        return retList;
-    }
-
-    protected static List<List<int>> GenUniqueOrdersLists(int numElements, int numLists) {
-        var inputList = Enumerable.Range(0, numElements).ToList();
-        return GenUniqueRandomLists<List<int>, int>(numLists, inputList);
-    }
-
-    protected static List<T> GenUniqueRandomLists<T, U>(int numCombos, T inputList) 
-        where T : List<U>
-    {
-        var uniqueCombinations = new HashSet<int>();
-        var result = new List<T>();
-
-        int attempts = 0;
-        // The math for figuring out how many permutations should exists (due to duplicates) is annoying
-        // https://math.stackexchange.com/questions/4251947/permutations-of-elements-where-some-elements-are-of-the-same-kind
-        // if (numCombos > Statistics.Permutation(inputList.Count, inputList.Count)) {
-        //     throw new Exception("Tried to generate unique random lists, but there are less permutations possible than the number requested");
-        // }
-
-        while (result.Count < numCombos && attempts < numCombos * 10) {
-            T combination = (T) inputList.Shuffle();
-            int hash = combination.GetSequenceHashCode();
-
-            if (!uniqueCombinations.Contains(hash)) {
-                uniqueCombinations.Add(hash);
-                result.Add(combination);
-            }
-            ++attempts;
-        }
-
-        return result;
-    }
-
-    protected new MemMapSession<PairedWord> GenerateSession<T>(T randomSubset) 
+    
+    protected new MemMapSession<PairedWord> GenerateSession<T>(T practiceRandomSubset, T randomSubset) 
         where T : WordRandomSubset<Word>
     {
         var session = new MemMapSession<PairedWord>();
@@ -374,7 +336,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             var wordOrders = Enumerable.Range(0, wordsPerList).Select(i => i % 2 == 0).ToList();
             var recallOrders = Enumerable.Range(0, wordsPerList).ToList().Shuffle(InterfaceManager.stableRnd.Value);
             var recogOrders = GenZigZagList(wordsPerList, lureWordsPerList);
-            session.Add(MakeTrial(randomSubset, false, false, false, wordOrders, recallOrders, recogOrders));
+            session.Add(MakeTrial(practiceRandomSubset, false, false, false, wordOrders, recallOrders, recogOrders));
         }
 
         // Pre No-Stim Lists
@@ -566,4 +528,48 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             GenerateUniqueBoolListsHelper(current.Append(false).ToList(), numElements, ref allCombinations, maxLists);
         }
     }
+
+    protected List<int> GenZigZagList(int numList1, int numList2) {
+        var list1 = Enumerable.Range(0, wordsPerList).ToList();
+        var list2 = Enumerable.Range(wordsPerList, lureWordsPerList).ToList();
+        var retList = new List<int>();
+        for (int i=0; i < Math.Max(wordsPerList, lureWordsPerList); ++i) {
+            if (i < list1.Count) { retList.Add(list1[i]); }
+            if (i < list2.Count) { retList.Add(list2[i]); }
+        }
+        return retList;
+    }
+
+    protected static List<List<int>> GenUniqueOrdersLists(int numElements, int numLists) {
+        var inputList = Enumerable.Range(0, numElements).ToList();
+        return GenUniqueRandomLists<List<int>, int>(numLists, inputList);
+    }
+
+    protected static List<T> GenUniqueRandomLists<T, U>(int numCombos, T inputList) 
+        where T : List<U>
+    {
+        var uniqueCombinations = new HashSet<int>();
+        var result = new List<T>();
+
+        int attempts = 0;
+        // The math for figuring out how many permutations should exists (due to duplicates) is annoying
+        // https://math.stackexchange.com/questions/4251947/permutations-of-elements-where-some-elements-are-of-the-same-kind
+        // if (numCombos > Statistics.Permutation(inputList.Count, inputList.Count)) {
+        //     throw new Exception("Tried to generate unique random lists, but there are less permutations possible than the number requested");
+        // }
+
+        while (result.Count < numCombos && attempts < numCombos * 10) {
+            T combination = (T) inputList.Shuffle();
+            int hash = combination.GetSequenceHashCode();
+
+            if (!uniqueCombinations.Contains(hash)) {
+                uniqueCombinations.Add(hash);
+                result.Add(combination);
+            }
+            ++attempts;
+        }
+
+        return result;
+    }
+
 }

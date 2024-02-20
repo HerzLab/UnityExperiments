@@ -15,7 +15,7 @@ public class CatFRExperiment : FRExperimentBase<CategorizedWord, FRRun<Categoriz
 
         wordsPerList = Config.wordCounts[0];
 
-        var sourceWords = ReadWordpool<CategorizedWord>();
+        var sourceWords = ReadWordpool<CategorizedWord>(manager.fileManager.GetWordList());
         var words = new CategorizedWordRandomSubset(sourceWords);
 
         // TODO: (feature) Load Session

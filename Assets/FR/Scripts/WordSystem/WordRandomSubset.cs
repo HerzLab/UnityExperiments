@@ -10,6 +10,9 @@ public class WordRandomSubset<T>
     protected List<T> shuffled;
     protected int index;
 
+    public int Count => shuffled.Count;
+    public int Index => index;
+
     /// <summary>
     /// This is only used by inherited classes
     /// If this is used, make sure to implement handling for Config.splitWordsOverTwoSessions
@@ -18,11 +21,11 @@ public class WordRandomSubset<T>
         index = 0;
     }
 
-    public WordRandomSubset(List<T> sourceWords) {
+    public WordRandomSubset(List<T> sourceWords, bool ignoreSplit = false) {
         index = 0;
-        
+
         // Only keep the words for that session
-        if (Config.splitWordsOverTwoSessions) {
+        if (Config.splitWordsOverTwoSessions && !ignoreSplit) {
             int splitIndex = sourceWords.Count / 2;
             int lenRemove = sourceWords.Count - splitIndex;
             sourceWords.ShuffleInPlace(InterfaceManager.stableRnd.Value);

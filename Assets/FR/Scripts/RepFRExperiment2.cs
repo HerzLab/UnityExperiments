@@ -348,7 +348,7 @@ namespace UnityEPL {
             wordsPerList = repCounts.TotalWords();
             uniqueWordsPerList = repCounts.UniqueWords();
 
-            var sourceWords = ReadWordpool<Word>();
+            var sourceWords = ReadWordpool<Word>(manager.fileManager.GetWordList());
             var words = new WordRandomSubset<Word>(sourceWords);
 
             // TODO: (feature) Load Session

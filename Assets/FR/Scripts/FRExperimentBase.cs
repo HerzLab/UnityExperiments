@@ -318,7 +318,7 @@ namespace UnityEPL {
             wordsPerList = wordCounts[0];
 
             // Read words and generate the random subset needed
-            var sourceWords = ReadWordpool<WordType>();
+            var sourceWords = ReadWordpool<WordType>(manager.fileManager.GetWordList());
             var words = new WordRandomSubset<WordType>(sourceWords);
 
             // TODO: (feature) Load Session
@@ -353,7 +353,7 @@ namespace UnityEPL {
         }
 
         // Word/Stim List Generation
-        protected virtual List<T> ReadWordpool<T>() 
+        protected virtual List<T> ReadWordpool<T>(string wordpoolPath) 
             where T : Word, new() 
         {
             // wordpool is a file with 'word' as a header and one word per line.
@@ -361,11 +361,10 @@ namespace UnityEPL {
             // repeats and counts, which describe the number of presentations
             // words can have and the number of words that should be assigned to
             // each of those presentation categories.
-            string sourceList = manager.fileManager.GetWordList();
             var sourceWords = new List<T>();
 
             //skip line for tsv header
-            foreach (var line in File.ReadLines(sourceList).Skip(1)) {
+            foreach (var line in File.ReadLines(wordpoolPath).Skip(1)) {
                 T item = (T)Activator.CreateInstance(typeof(T), line);
                 sourceWords.Add(item);
             }
@@ -376,7 +375,7 @@ namespace UnityEPL {
 
             // copy original wordpool to session directory
             string origPath = System.IO.Path.Combine(manager.fileManager.SessionPath(), "original_wordpool.txt");
-            File.Copy(sourceList, origPath, true);
+            File.Copy(wordpoolPath, origPath, true);
 
             return sourceWords;
         }
