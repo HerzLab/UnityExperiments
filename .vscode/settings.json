@@ -1,0 +1,5 @@
+{
+    "dotnet.defaultSolution": "UnityTesting.sln",
+    "FSharp.suggestGitignore": false,
+    "dotnet.preferCSharpExtension": true
+}
