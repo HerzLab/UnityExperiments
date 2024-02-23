@@ -6,12 +6,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEPL;
-using System.Collections.Immutable;
 
 public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedWord>, MemMapSession<PairedWord>> {
     protected readonly List<KeyCode> skipKeys = new List<KeyCode> {KeyCode.Space};
     protected readonly List<KeyCode> ynKeyCodes = new List<KeyCode> {KeyCode.Y, KeyCode.N};
-    //protected const ImmutableList<KeyCode> ynKeys = ImmutableList<KeyCode>.Create(KeyCode.Y, KeyCode.N);
 
     protected int lureWordsPerList;
 
