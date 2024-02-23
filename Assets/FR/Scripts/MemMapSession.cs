@@ -7,12 +7,12 @@ namespace UnityEPL {
     public class MemMapTrial<T> : FRRun<T> 
         where T : PairedWord
     {
-        public StimWordList<T> recog;
-        public bool recogStim;
+        public StimWordList<T> recognition;
+        public bool recognitionStim;
 
         public override Dictionary<string, bool> GetStimValues() {
             var stimValues = base.GetStimValues();
-            stimValues.Add("recogStim", recogStim);
+            stimValues.Add("recogStim", recognitionStim);
             return stimValues;
         }
 
@@ -20,8 +20,8 @@ namespace UnityEPL {
             bool setEncodingStim = false, bool setRecallStim = false, bool setRecogStim = false) :
             base(encodingList, recallList, setEncodingStim, setRecallStim)
         {
-            recog = recogList;
-            recogStim = setRecogStim;
+            recognition = recogList;
+            recognitionStim = setRecogStim;
         }
     }
 
@@ -58,8 +58,8 @@ namespace UnityEPL {
                 output += " - ";
 
                 // Print the recog order
-                for (int i = 0; i < trial.recog.Count; ++i) {
-                    var recogWord = trial.recog[i].word;
+                for (int i = 0; i < trial.recognition.Count; ++i) {
+                    var recogWord = trial.recognition[i].word;
                     for (int j = 0; j < trial.encoding.Count; ++j) {
                         if (recogWord.word == trial.encoding[j].word.word || recogWord.word == trial.encoding[j].word.pairedWord) {
                             output += i + ",";
@@ -81,7 +81,7 @@ namespace UnityEPL {
                 }
                 output = output.Remove(output.Length-1);
                 output += "] - [";
-                foreach (var stimWord in trial.recog) {
+                foreach (var stimWord in trial.recognition) {
                     output += $"{stimWord.word.word} ";
                 }
                 output = output.Remove(output.Length-1);

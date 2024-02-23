@@ -162,7 +162,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     protected async Task Recognition() {
         int[] isiLimits = Config.interStimulusDuration;
         int[] stimEarlyOnsetMsLimits = Config.stimEarlyOnsetMs;
-        var recogStimWords = currentSession.GetState().recog;
+        var recogStimWords = currentSession.GetState().recognition;
 
         for (int i = 0; i < recogStimWords.Count; ++i) {
             var wordStim = recogStimWords[i];
