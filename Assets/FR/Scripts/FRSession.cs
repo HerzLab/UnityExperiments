@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEPL;
 
 namespace UnityEPL {
@@ -11,6 +12,9 @@ namespace UnityEPL {
         public bool encodingStim;
         public bool recallStim;
 
+        public virtual Dictionary<string, bool> GetStimValues() {
+            return new() { {"encodingStim", encodingStim}, {"recallStim", recallStim} };
+        }
 
         public FRRun(StimWordList<WordType> encodingList, StimWordList<WordType> recallList,
             bool setEncodingStim = false, bool setRecallStim = false) {

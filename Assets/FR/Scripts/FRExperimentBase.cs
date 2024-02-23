@@ -91,9 +91,12 @@ namespace UnityEPL {
         // Trial States
         protected void StartTrial() {
             // TODO: JPB: (needed) (bug) Change stim value to a real value
+
+            var currentTrialNum = inPracticeTrials ? practiceTrialNum : trialNum;
             Dictionary<string, object> data = new() {
-                { "trial", trialNum },
-                { "stim", false }
+                { "trial", currentTrialNum },
+                { "stim", currentSession.GetState().GetStimValues() },
+                { "practice", inPracticeTrials }
             };
             
             eventReporter.LogTS("start trial", data);
@@ -293,12 +296,12 @@ namespace UnityEPL {
                 EndTrials();
             }
 
-            if (practiceTrialNum > Config.practiceLists) {
+            if (practiceTrialNum >= Config.practiceLists) {
                 EndPracticeTrials();
             }
 
             int numTrials = currentSession.Count - Config.practiceLists;
-            if (trialNum > numTrials) {
+            if (trialNum >= numTrials) {
                 EndTrials();
             }
         }

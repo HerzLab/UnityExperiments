@@ -18,9 +18,9 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     protected override async Task PreTrialStates() {
         SetupWordList();
 
-        // await QuitPrompt();
-        // await Introduction();
-        // await MicrophoneTest();
+        await QuitPrompt();
+        await Introduction();
+        await MicrophoneTest();
         await ConfirmStart();
     }
     protected override async Task PostTrialStates() {
@@ -30,12 +30,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     protected override async Task PracticeTrialStates() {
         StartTrial();
         await NextPracticeListPrompt();
-        await Encoding();
-        await CuedRecall();
-        await Recognition();
-
         await CountdownVideo();
-        await Fixation();
         await Encoding();
         await MathDistractor();
         await PauseBeforeRecall();
@@ -50,7 +45,6 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         StartTrial();
         await NextListPrompt();
         await CountdownVideo();
-        await Fixation();
         await Encoding();
         await MathDistractor();
         await PauseBeforeRecall();
@@ -110,6 +104,8 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             await InterfaceManager.Delay(Config.stimulusDuration);
             eventReporter.LogTS("clear word stimulus", data);
             textDisplayer.Clear();
+
+            // manager.lowBeep.Play();
         }
     }
 
@@ -158,6 +154,8 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
 
             await inputManager.WaitForKeyTS(skipKeys, TimeSpan.FromMilliseconds(Config.recallDuration));
             var clip = manager.recorder.StopRecording();
+
+            manager.lowBeep.Play();
         }
     }
 
@@ -200,6 +198,8 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
 
             await inputManager.WaitForKeyTS(skipKeys, TimeSpan.FromMilliseconds(Config.recogDuration));
             var clip = manager.recorder.StopRecording();
+            
+            manager.lowBeep.Play();
         }
     }
 
@@ -326,7 +326,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     }
 
     
-    protected new MemMapSession<PairedWord> GenerateSession<T>(T practiceRandomSubset, T randomSubset) 
+    protected MemMapSession<PairedWord> GenerateSession<T>(T practiceRandomSubset, T randomSubset) 
         where T : WordRandomSubset<Word>
     {
         var session = new MemMapSession<PairedWord>();

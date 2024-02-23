@@ -3,7 +3,7 @@
     "experimentName": "MemMap",
     "experimentScene": "FR",
     "prefix": "any",
-    "stimMode": "none",
+    "stimMode": "OpenLoop",
 
     "wordpool": "resources/ram_wordpool_en.txt",
     "practiceWordpool": "resources/ram_practice_wordpool_en.txt",

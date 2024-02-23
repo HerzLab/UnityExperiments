@@ -10,6 +10,12 @@ namespace UnityEPL {
         public StimWordList<T> recog;
         public bool recogStim;
 
+        public override Dictionary<string, bool> GetStimValues() {
+            var stimValues = base.GetStimValues();
+            stimValues.Add("recogStim", recogStim);
+            return stimValues;
+        }
+
         public MemMapTrial(StimWordList<T> encodingList, StimWordList<T> recallList, StimWordList<T> recogList,
             bool setEncodingStim = false, bool setRecallStim = false, bool setRecogStim = false) :
             base(encodingList, recallList, setEncodingStim, setRecallStim)
