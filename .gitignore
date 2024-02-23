@@ -54,3 +54,15 @@ data/
 tags
 *.swp
 *.swo
+
+# Goldmine Assets
+Assets/Goldmine/Ultimate Gems and Coins _Vol1*
+Assets/Goldmine/Textures*
+Assets/Goldmine/Standard Assets*
+Assets/Goldmine/Sci-Fi Styled Modular Pack*
+Assets/Goldmine/Rocks and Boulders 2*
+Assets/Goldmine/New Terrain.asset*
+Assets/Goldmine/Metal textures pack*
+Assets/Goldmine/Materials*
+Assets/Goldmine/Ground textures pack*
+Assets/Goldmine/Gems pack (TinkiVinki)*
