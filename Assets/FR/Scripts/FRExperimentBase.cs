@@ -95,14 +95,12 @@ namespace UnityEPL {
             // TODO: JPB: (needed) (bug) Change stim value to a real value
 
             var currentTrialNum = inPracticeTrials ? practiceTrialNum : trialNum;
-            bool stim = false;
-            foreach (var entry in currentSession.GetState().GetStimValues()) {
-                stim |= entry.Value;
-            }
+            var stimList = currentSession.GetState().GetStimValues();
+            bool stim = stimList.Values.Aggregate((current, next) => current || next);
             Dictionary<string, object> data = new() {
                 { "trial", currentTrialNum },
                 { "stim", stim },
-                { "stimList", currentSession.GetState().GetStimValues() },
+                { "stimList", stimList },
                 { "practice", inPracticeTrials }
             };
             
