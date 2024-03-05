@@ -26,7 +26,7 @@ namespace UnityEPL {
         protected override async Task PreTrialStates() {
             SetupWordList();
 
-            if (Config.skipIntros) {
+            if (!Config.skipIntros) {
                 await QuitPrompt();
                 await Introduction();
                 await MicrophoneTest();
@@ -38,11 +38,6 @@ namespace UnityEPL {
         }
         protected override async Task PracticeTrialStates() {
             StartTrial();
-            // if (Config.skipPracticeTrials) {
-            //     EndTrials();
-            //     return;
-            // }
-
             await NextPracticeListPrompt();
             await CountdownVideo();
             await Fixation();

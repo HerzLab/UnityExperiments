@@ -5,8 +5,7 @@
     "prefix": "any",
     "stimMode": "OpenLoop",
 
-    "skipIntros": true,
-    "skipPracticeTrials": true,
+    "skipIntros": false,
 
     "wordpool": "resources/ram_wordpool_en.txt",
     "practiceWordpool": "resources/ram_practice_wordpool_en.txt",

@@ -16,7 +16,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     protected override async Task PreTrialStates() {
         SetupWordList();
 
-        if (Config.skipIntros) {
+        if (!Config.skipIntros) {
             await QuitPrompt();
             await Introduction();
             await MicrophoneTest();
@@ -29,11 +29,6 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     }
     protected override async Task PracticeTrialStates() {
         StartTrial();
-        // if (Config.skipPracticeTrials) {
-        //     EndTrials();
-        //     return;
-        // }
-
         await NextPracticeListPrompt();
         await CountdownVideo();
         await Encoding();
