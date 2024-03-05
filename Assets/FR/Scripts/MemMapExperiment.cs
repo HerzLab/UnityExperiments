@@ -16,10 +16,12 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     protected override async Task PreTrialStates() {
         SetupWordList();
 
-        await QuitPrompt();
-        await Introduction();
-        await MicrophoneTest();
-        await ConfirmStart();
+        if (Config.skipIntros) {
+            await QuitPrompt();
+            await Introduction();
+            await MicrophoneTest();
+            await ConfirmStart();
+        }
     }
     protected override async Task PostTrialStates() {
         await Questioneer();
@@ -27,6 +29,11 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     }
     protected override async Task PracticeTrialStates() {
         StartTrial();
+        // if (Config.skipPracticeTrials) {
+        //     EndTrials();
+        //     return;
+        // }
+
         await NextPracticeListPrompt();
         await CountdownVideo();
         await Encoding();
@@ -77,6 +84,8 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         var encStimWords = currentSession.GetState().encoding;
 
         for (int i = 0; i < encStimWords.Count; ++i) {
+            var wordStim = encStimWords[i];
+
             int isiDuration = InterfaceManager.rnd.Value.Next(isiLimits[0], isiLimits[1]);
             int stimEarlyDuration = InterfaceManager.rnd.Value.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
             isiDuration -= stimEarlyDuration;
@@ -84,16 +93,14 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(isiDuration));
             await InterfaceManager.Delay(isiDuration);
 
-            manager.hostPC?.SendStimMsgTS();
+            if (wordStim.stim) { manager.hostPC?.SendStimMsgTS(); }
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(stimEarlyDuration));
             await InterfaceManager.Delay(stimEarlyDuration);
 
-            var wordStim = currentSession.GetEncWord();
-            currentSession.NextWord();
             Dictionary<string, object> data = new() {
                 { "word", wordStim.word },
                 { "serialpos", i },
-                { "stim", wordStim.stim },
+                { "stimWord", wordStim.stim },
             };
 
             eventReporter.LogTS("word stimulus info", data);
@@ -120,6 +127,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
 
         for (int i = 0; i < recallStimWords.Count; ++i) {
             var wordStim = recallStimWords[i];
+
             int isiDuration = InterfaceManager.rnd.Value.Next(isiLimits[0], isiLimits[1]);
             int stimEarlyDuration = InterfaceManager.rnd.Value.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
             isiDuration -= stimEarlyDuration;
@@ -127,7 +135,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(isiDuration));
             await InterfaceManager.Delay(isiDuration);
 
-            manager.hostPC?.SendStimMsgTS();
+            if (wordStim.stim) { manager.hostPC?.SendStimMsgTS(); }
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(stimEarlyDuration));
             await InterfaceManager.Delay(stimEarlyDuration);
 
@@ -140,7 +148,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             Dictionary<string, object> data = new() {
                 { "word", wordStim.word.word },
                 { "serialpos", i },
-                { "stim", wordStim.stim },
+                { "stimWord", wordStim.stim },
             };
             eventReporter.LogTS("word stimulus info", data);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
@@ -164,6 +172,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
 
         for (int i = 0; i < recogStimWords.Count; ++i) {
             var wordStim = recogStimWords[i];
+            
             int isiDuration = InterfaceManager.rnd.Value.Next(isiLimits[0], isiLimits[1]);
             int stimEarlyDuration = InterfaceManager.rnd.Value.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
             isiDuration -= stimEarlyDuration;
@@ -171,7 +180,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(isiDuration));
             await InterfaceManager.Delay(isiDuration);
 
-            manager.hostPC?.SendStimMsgTS();
+            if (wordStim.stim) { manager.hostPC?.SendStimMsgTS(); }
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(stimEarlyDuration));
             await InterfaceManager.Delay(stimEarlyDuration);
 
@@ -184,7 +193,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             Dictionary<string, object> data = new() {
                 { "word", wordStim.word.word },
                 { "serialpos", i },
-                { "stim", wordStim.stim },
+                { "stimWord", wordStim.stim },
             };
             eventReporter.LogTS("word stimulus info", data);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);

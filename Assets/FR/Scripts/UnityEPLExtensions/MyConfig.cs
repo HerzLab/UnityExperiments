@@ -1,6 +1,10 @@
 namespace UnityEPL {
 
     public static partial class Config {
+        // Game Section Skips
+        public static bool skipIntros { get { return Config.GetSetting<bool>("skipIntros"); } }
+        public static bool skipPracticeTrials { get { return Config.GetSetting<bool>("skipPracticeTrials"); } }
+
         // FRExperiment.cs
         public static string introductionVideo { get { return Config.GetSetting<string>("introductionVideo"); } }
         public static string countdownVideo { get { return Config.GetSetting<string>("countdownVideo"); } }

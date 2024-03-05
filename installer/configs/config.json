@@ -4,13 +4,14 @@
     "eventsPerFrame": 5,
     "frameRate": 300,
     "vSync": 1,
+    "logNetworkMessages": true,
     "syncboxOn": false,
     "networkedSyncboxOn": false,
     "ramulatorOn": false,
-    "elememOn": false,
+    "elememOn": true,
     "syncBoxTestLength": 5000,
     "networkedSyncboxPort":  8903,
-    "elememServerIP": "127.0.0.1",
-    "elememServerPort": 8889,
+    "hostServerIP": "127.0.0.1",
+    "hostServerPort": 8889,
     "elememHeartbeatInterval": 1000
 }

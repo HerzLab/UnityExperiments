@@ -26,16 +26,23 @@ namespace UnityEPL {
         protected override async Task PreTrialStates() {
             SetupWordList();
 
-            await QuitPrompt();
-            await Introduction();
-            await MicrophoneTest();
-            await ConfirmStart();
+            if (Config.skipIntros) {
+                await QuitPrompt();
+                await Introduction();
+                await MicrophoneTest();
+                await ConfirmStart();
+            }
         }
         protected override async Task PostTrialStates() {
             await FinishExperiment();
         }
         protected override async Task PracticeTrialStates() {
             StartTrial();
+            // if (Config.skipPracticeTrials) {
+            //     EndTrials();
+            //     return;
+            // }
+
             await NextPracticeListPrompt();
             await CountdownVideo();
             await Fixation();
@@ -93,9 +100,14 @@ namespace UnityEPL {
             // TODO: JPB: (needed) (bug) Change stim value to a real value
 
             var currentTrialNum = inPracticeTrials ? practiceTrialNum : trialNum;
+            bool stim = false;
+            foreach (var entry in currentSession.GetState().GetStimValues()) {
+                stim |= entry.Value;
+            }
             Dictionary<string, object> data = new() {
                 { "trial", currentTrialNum },
-                { "stim", currentSession.GetState().GetStimValues() },
+                { "stim", stim },
+                { "stimList", currentSession.GetState().GetStimValues() },
                 { "practice", inPracticeTrials }
             };
             
@@ -153,8 +165,8 @@ namespace UnityEPL {
                 currentSession.NextWord();
                 Dictionary<string, object> data = new() {
                     { "word", wordStim.word },
-                    { "serialpos", i },
-                    { "stim", wordStim.stim },
+                    { "serialPos", i },
+                    { "stimWord", wordStim.stim },
                 };
 
                 eventReporter.LogTS("word stimulus info", data);

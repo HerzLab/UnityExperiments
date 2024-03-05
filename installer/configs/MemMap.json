@@ -5,6 +5,9 @@
     "prefix": "any",
     "stimMode": "OpenLoop",
 
+    "skipIntros": true,
+    "skipPracticeTrials": true,
+
     "wordpool": "resources/ram_wordpool_en.txt",
     "practiceWordpool": "resources/ram_practice_wordpool_en.txt",
     "introductionVideo": "resources/FR1_instructions.mov",
