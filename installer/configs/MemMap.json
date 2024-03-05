@@ -7,6 +7,8 @@
 
     "skipIntros": false,
 
+    "quitAnytime": true,
+
     "wordpool": "resources/ram_wordpool_en.txt",
     "practiceWordpool": "resources/ram_practice_wordpool_en.txt",
     "introductionVideo": "resources/FR1_instructions.mov",
