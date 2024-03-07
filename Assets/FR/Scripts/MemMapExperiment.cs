@@ -13,6 +13,8 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
 
     protected int lureWordsPerList;
 
+    protected WordDisplayer wordDisplayer;
+
     protected override async Task PreTrialStates() {
         SetupWordList();
 
@@ -57,19 +59,19 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     }
 
     protected new async Task Fixation() {
-            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
+        manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
 
-            int[] limits = Config.fixationDuration;
-            int duration = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
-            textDisplayer.Display("orientation stimulus", "", "+");
-            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
-            await InterfaceManager.Delay(duration);
+        int[] limits = Config.fixationDuration;
+        int duration = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
+        textDisplayer.Display("orientation stimulus", "", "+");
+        manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
+        await InterfaceManager.Delay(duration);
 
-            textDisplayer.Clear();
-            limits = Config.postFixationDelay;
-            duration = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
-            await InterfaceManager.Delay(duration);
-        }
+        textDisplayer.Clear();
+        limits = Config.postFixationDelay;
+        duration = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
+        await InterfaceManager.Delay(duration);
+    }
 
     protected new async Task Encoding() {
         manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ENCODING(), new() { { "current_trial", trialNum } });
@@ -100,10 +102,9 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
 
             eventReporter.LogTS("word stimulus info", data);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
-            textDisplayer.Display("word stimulus", "", wordStim.word.ToDisplayString());
+            wordDisplayer.DisplayPairedWord(wordStim.word.word, wordStim.word.pairedWord);
             await InterfaceManager.Delay(Config.stimulusDuration);
-            eventReporter.LogTS("clear word stimulus", data);
-            textDisplayer.Clear();
+            wordDisplayer.ClearWords();
 
             // manager.lowBeep.Play();
         }
@@ -148,10 +149,9 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             eventReporter.LogTS("word stimulus info", data);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
 
-            textDisplayer.Display("word stimulus", "", "\n"+wordStim.word.word+"\n");
+            wordDisplayer.DisplayWord(wordStim.word.word);
             await InterfaceManager.Delay(Config.stimulusDuration);
-            eventReporter.LogTS("clear word stimulus", data);
-            textDisplayer.Clear();
+            wordDisplayer.ClearWords();
 
             await inputManager.WaitForKeyTS(skipKeys, TimeSpan.FromMilliseconds(Config.recallDuration));
             var clip = manager.recorder.StopRecording();
@@ -193,10 +193,9 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             eventReporter.LogTS("word stimulus info", data);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
 
-            textDisplayer.Display("word stimulus", "", "\n"+wordStim.word.word+"\n");
+            wordDisplayer.DisplayWord(wordStim.word.word);
             await InterfaceManager.Delay(Config.stimulusDuration);
-            eventReporter.LogTS("clear word stimulus", data);
-            textDisplayer.Clear();
+            wordDisplayer.ClearWords();
 
             await inputManager.WaitForKeyTS(skipKeys, TimeSpan.FromMilliseconds(Config.recogDuration));
             var clip = manager.recorder.StopRecording();
@@ -257,9 +256,18 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         // Read words and generate the random subset needed
         var sourceWords = ReadWordpool<Word>(manager.fileManager.GetWordList());
         var words = new WordRandomSubset<Word>(sourceWords);
+
+        // Set the WordDisplay sizes
+        wordDisplayer = GameObject.FindObjectOfType<WordDisplayer>();
+        wordDisplayer.SetWordSize(sourceWords);
         
         // TODO: (feature) Load Session
         currentSession = GenerateSession<WordRandomSubset<Word>>(practiceWords, words);
+    }
+
+    private IEnumerator WaitForNextFrameCoroutine(TaskCompletionSource<bool> tcs) {
+        yield return null;
+        tcs.SetResult(true);
     }
 
     protected MemMapTrial<PairedWord> MakeTrial<U>(U randomSubset, bool encStim, bool recallStim, bool recogStim, List<bool> wordOrders, List<int> recallOrders, List<int> recogOrders) 

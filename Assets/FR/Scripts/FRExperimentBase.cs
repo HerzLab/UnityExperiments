@@ -134,6 +134,7 @@ namespace UnityEPL {
             textDisplayer.Display("orientation stimulus", "", "+");
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
             await InterfaceManager.Delay(duration);
+            textDisplayer.Clear();
 
             SendRamulatorStateMsg(HostPcStateMsg.ORIENT(), false);
         }
@@ -142,6 +143,7 @@ namespace UnityEPL {
             textDisplayer.Display("display recall text", "", "*******");
             manager.highBeep.Play();
             await InterfaceManager.Delay(duration);
+            textDisplayer.Clear();
         }
         protected async Task Encoding() {
             SendRamulatorStateMsg(HostPcStateMsg.ENCODING(), true, new() { { "current_trial", trialNum } });
@@ -245,7 +247,7 @@ namespace UnityEPL {
 
                     // End distractor or setup next math problem
                     if ((Clock.UtcNow - startTime).TotalMilliseconds > Config.distractorDuration) {
-                        textDisplayer.Clear();
+                        textDisplayer.ClearText();
                         break;
                     } else {
                         nums = new int[] { InterfaceManager.rnd.Value.Next(1, 10),
@@ -260,6 +262,7 @@ namespace UnityEPL {
                         displayTime = Clock.UtcNow;
                     }
                 }
+                textDisplayer.Clear();
             }
 
             SendRamulatorStateMsg(HostPcStateMsg.DISTRACT(), false, new() { { "current_trial", trialNum } });;
