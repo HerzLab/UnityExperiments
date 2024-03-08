@@ -1,0 +1,3 @@
+[submodule "Packages/UnityEPL"]
+	path = Packages/UnityEPL
+	url = git@github.com:BruskaTech/UnityEPL.git
