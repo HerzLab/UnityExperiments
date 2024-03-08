@@ -118,9 +118,9 @@ namespace UnityEPL {
             SendRamulatorStateMsg(HostPcStateMsg.COUNTDOWN(), true, new() { { "current_trial", trialNum } });
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.COUNTDOWN(), new() { { "current_trial", trialNum } });
 
+            manager.videoControl.SetVideo(Config.countdownVideo);
             eventReporter.LogTS("countdown");
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.COUNTDOWN());
-            manager.videoControl.SetVideo(Config.countdownVideo);
             await manager.videoControl.PlayVideo();
 
             SendRamulatorStateMsg(HostPcStateMsg.COUNTDOWN(), false, new() { { "current_trial", trialNum } });
