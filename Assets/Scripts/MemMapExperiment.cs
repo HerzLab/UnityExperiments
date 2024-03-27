@@ -20,8 +20,10 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     protected readonly List<KeyCode> ynKeyCodes = new List<KeyCode> {KeyCode.Y, KeyCode.N};
 
     protected int lureWordsPerList;
+    protected bool newIsLeftShift;
 
     protected WordDisplayer wordDisplayer;
+    protected OldNewKeys oldNewKeys;
 
     protected override async Task PreTrialStates() {
         SetupWordList();
@@ -46,6 +48,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         await PauseBeforeRecall();
         await RecallOrientation();
         await CuedRecall();
+        await RecogInstructions();
         await PauseBeforeRecall();
         await RecallOrientation();
         await Recognition();
@@ -60,10 +63,24 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         await PauseBeforeRecall();
         await RecallOrientation();
         await CuedRecall();
+        await RecogInstructions();
         await PauseBeforeRecall();
         await RecallOrientation();
         await Recognition();
         FinishTrial();
+    }
+
+    protected override async Task ConfirmStart() {
+        await textDisplayer.PressAnyKey("confirm start",
+            "Please let the experimenter know if you have any questions about the task.\n\n" +
+            "If you think you understand, please explain the task to the experimenter in your own words.\n\n" +
+            "Press any key to start.");
+    }
+
+    protected async Task RecogInstructions() {
+        await textDisplayer.PressAnyKey("recog instructions",
+            "For each word, indicate if it was shown in this list (‘old’) or not (‘new’) using the right/left shift keys.\n\n" +
+            "<size=-20>Press any key to start</size>");
     }
 
     protected new async Task Fixation() {
@@ -187,8 +204,9 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(stimEarlyDuration));
             await InterfaceManager.Delay(stimEarlyDuration);
 
+            // recording
             string wavPath = Path.Combine(manager.fileManager.SessionPath(), 
-                "cuedRecall_" + currentSession.GetListIndex() + "_" + i +".wav");
+                "recognitionRecall_" + currentSession.GetListIndex() + "_" + i +".wav");
             manager.recorder.StartRecording(wavPath);
             eventReporter.LogTS("start recall period");
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(Config.stimulusDuration+Config.recogDuration));
@@ -201,13 +219,17 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             eventReporter.LogTS("word stimulus info", data);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
 
+            // display words
+            
+            oldNewKeys.TurnOn();
             wordDisplayer.DisplayWord(wordStim.word.word);
             await InterfaceManager.Delay(Config.stimulusDuration);
             wordDisplayer.ClearWords();
 
             await inputManager.WaitForKeyTS(skipKeys, TimeSpan.FromMilliseconds(Config.recogDuration));
             var clip = manager.recorder.StopRecording();
-            
+
+            oldNewKeys.TurnOff();
             manager.lowBeep.Play();
         }
     }
@@ -268,6 +290,11 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         // Set the WordDisplay sizes
         wordDisplayer = GameObject.FindObjectOfType<WordDisplayer>();
         wordDisplayer.SetWordSize(sourceWords);
+
+        // Set the OldNewKeys sizes
+        oldNewKeys = GameObject.FindObjectOfType<OldNewKeys>();
+        oldNewKeys.SetKeySize();
+        oldNewKeys.SetupKeyPositions();
         
         // TODO: (feature) Load Session
         currentSession = GenerateSession<WordRandomSubset<Word>>(practiceWords, words);
