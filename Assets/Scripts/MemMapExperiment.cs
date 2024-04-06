@@ -288,11 +288,11 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         var words = new WordRandomSubset<Word>(sourceWords);
 
         // Set the WordDisplay sizes
-        wordDisplayer = GameObject.FindObjectOfType<WordDisplayer>();
+        wordDisplayer = GameObject.FindAnyObjectByType<WordDisplayer>();
         wordDisplayer.SetWordSize(sourceWords);
 
         // Set the OldNewKeys sizes
-        oldNewKeys = GameObject.FindObjectOfType<OldNewKeys>();
+        oldNewKeys = GameObject.FindAnyObjectByType<OldNewKeys>();
         oldNewKeys.SetKeySize();
         oldNewKeys.SetupKeyPositions();
         

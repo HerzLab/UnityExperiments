@@ -53,14 +53,14 @@ public class OldNewKeys : MonoBehaviour {
     // Update is called once per frame
     void Update() {
         if (isOn) {
-            if (InputManager.Instance.GetKeyMB(KeyCode.LeftShift)) {
+            if (InputManager.Instance.GetKey(KeyCode.LeftShift)) {
                 EventReporter.Instance.LogTS("old new keys", new() {
                     { "key", KeyCode.LeftShift.ToString() }
                 });
                 leftKey.fontSizeMax = fontSize + 6;
                 leftKey.fontSize = fontSize + 6;
                 leftKey.fontStyle |= FontStyles.Bold;
-            } else if (InputManager.Instance.GetKeyMB(KeyCode.RightShift)) {
+            } else if (InputManager.Instance.GetKey(KeyCode.RightShift)) {
                 EventReporter.Instance.LogTS("old new keys", new() {
                     { "key", KeyCode.RightShift.ToString() }
                 });

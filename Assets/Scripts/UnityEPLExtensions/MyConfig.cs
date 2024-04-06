@@ -13,10 +13,9 @@ namespace UnityEPL {
         public static bool skipIntros { get { return Config.GetSetting<bool>("skipIntros"); } }
 
         // FRExperiment.cs
-        public static string introductionVideo { get { return Config.GetSetting<string>("introductionVideo"); } }
         public static string countdownVideo { get { return Config.GetSetting<string>("countdownVideo"); } }
 
-        public static int micTestDuration { get { return Config.GetSetting<int>("micTestDuration"); } }
+
         public static int distractorDuration { get { return Config.GetSetting<int>("distractorDuration"); } }
         public static int[] fixationDuration { get { return Config.GetSetting<int[]>("fixationDuration"); } }
         public static int[] postFixationDelay { get { return Config.GetSetting<int[]>("postFixationDelay"); } }
