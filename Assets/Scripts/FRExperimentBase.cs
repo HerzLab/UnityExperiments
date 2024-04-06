@@ -100,8 +100,6 @@ namespace UnityEPL {
 
         // Trial States
         protected void StartTrial() {
-            // TODO: JPB: (needed) (bug) Change stim value to a real value
-
             var currentTrialNum = inPracticeTrials ? practiceTrialNum : trialNum;
             var stimList = currentSession.GetState().GetStimValues();
             bool stim = stimList.Values.Aggregate((current, next) => current || next);
@@ -290,6 +288,10 @@ namespace UnityEPL {
             string wavPath = Path.Combine(manager.fileManager.SessionPath(), currentSession.GetListIndex() + ".wav");
             bool stim = currentSession.GetState().recallStim;
 
+            if (stim) {
+                RecallStim();
+            }
+
             manager.recorder.StartRecording(wavPath);
             eventReporter.LogTS("start recall period");
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(Config.recallDuration));
@@ -299,10 +301,6 @@ namespace UnityEPL {
             manager.recorder.StopRecording();
             manager.lowBeep.Play();
             eventReporter.LogTS("end recall period");
-
-            if (stim) {
-                RecallStim();
-            }
 
             SendRamulatorStateMsg(HostPcStateMsg.RETRIEVAL(), false, new() { { "current_trial", trialNum } });
         }
