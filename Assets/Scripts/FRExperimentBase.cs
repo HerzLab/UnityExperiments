@@ -114,11 +114,13 @@ namespace UnityEPL {
             manager.ramulator?.BeginNewTrial((int)trialNum);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.TRIAL(), data);
         }
-        protected async Task NextListPrompt() {
-            await textDisplayer.PressAnyKey("pause before list", $"Press any key for trial {trialNum}.");
+        protected async Task<bool> NextListPrompt() {
+            var key = await textDisplayer.PressAnyKey("pause before list", $"Press any key for trial {trialNum}.");
+            return key != KeyCode.D;
         }
-        protected async Task NextPracticeListPrompt() {
-            await textDisplayer.PressAnyKey("pause before list", "Press any key for practice trial.");
+        protected async Task<bool> NextPracticeListPrompt() {
+            var key = await textDisplayer.PressAnyKey("pause before list", "Press any key for practice trial.");
+            return key != KeyCode.D;
         }
         protected async Task CountdownVideo() {
             SendRamulatorStateMsg(HostPcStateMsg.COUNTDOWN(), true, new() { { "current_trial", trialNum } });

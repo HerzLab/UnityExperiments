@@ -41,7 +41,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     }
     protected override async Task PracticeTrialStates() {
         StartTrial();
-        await NextPracticeListPrompt();
+        if (!await NextPracticeListPrompt()) { EndPracticeTrials(); return; }
         await CountdownVideo();
         await Encoding();
         await MathDistractor();
@@ -56,7 +56,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     }
     protected override async Task TrialStates() {
         StartTrial();
-        await NextListPrompt();
+        if (!await NextListPrompt()) { EndTrials(); return; }
         await CountdownVideo();
         await Encoding();
         await MathDistractor();
@@ -238,7 +238,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         var ynKeyCodes = new List<KeyCode> {KeyCode.Y, KeyCode.N};
 
         textDisplayer.Display("Question 1", "", 
-            "Can you recall any specific moments during the experiment when you knew or felt stimulation was being delivered?\n\nYes (y) or No (n)");
+            "Can you recall any specific moments during the experiment when you knew or felt stimulation was being delivered?\n\nYes (Y) or No (N)");
         KeyCode q1Resp = await inputManager.WaitForKeyTS(ynKeyCodes);
         textDisplayer.Clear();
 
