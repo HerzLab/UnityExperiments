@@ -76,7 +76,7 @@ namespace UnityEPL {
             SendRamulatorStateMsg(HostPcStateMsg.ORIENT(), true);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
 
-            int[] limits = Config.fixationDuration;
+            int[] limits = Config.fixationDurationMs;
             int duration = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
             textDisplayer.Display("orientation stimulus", "", "+");
             
@@ -87,7 +87,7 @@ namespace UnityEPL {
         protected async Task RecallPrompt() {
             manager.highBeep.Play();
             textDisplayer.Display("display recall text", "", "*******");
-            await InterfaceManager.Delay(Config.recallOrientationDuration);
+            await InterfaceManager.Delay(Config.recallOrientationDurationMs);
         }
 
         // Setup Functions

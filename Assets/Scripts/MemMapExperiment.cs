@@ -86,14 +86,14 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     protected new async Task Fixation() {
         manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
 
-        int[] limits = Config.fixationDuration;
+        int[] limits = Config.fixationDurationMs;
         int duration = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
         textDisplayer.Display("orientation stimulus", "", "+");
         manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
         await InterfaceManager.Delay(duration);
 
         textDisplayer.Clear();
-        limits = Config.postFixationDelay;
+        limits = Config.postFixationDelayMs;
         duration = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
         await InterfaceManager.Delay(duration);
     }
@@ -101,7 +101,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     protected new async Task Encoding() {
         manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ENCODING(), new() { { "current_trial", trialNum } });
 
-        int[] isiLimits = Config.interStimulusDuration;
+        int[] isiLimits = Config.interStimulusDurationMs;
         int[] stimEarlyOnsetMsLimits = Config.stimEarlyOnsetMs;
         var encStimWords = currentSession.GetState().encoding;
 
@@ -128,7 +128,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             eventReporter.LogTS("word stimulus info", data);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
             wordDisplayer.DisplayPairedWord(wordStim.word.word, wordStim.word.pairedWord);
-            await InterfaceManager.Delay(Config.stimulusDuration);
+            await InterfaceManager.Delay(Config.stimulusDurationMs);
             wordDisplayer.ClearWords();
 
             // manager.lowBeep.Play();
@@ -136,13 +136,13 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     }
 
     protected async Task PauseBeforeRecog() {
-        int[] limits = Config.recallDelay;
+        int[] limits = Config.recallDelayMs;
         int interval = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
         await InterfaceManager.Delay(interval);
     }
 
     protected async Task CuedRecall() {
-        int[] isiLimits = Config.interStimulusDuration;
+        int[] isiLimits = Config.interStimulusDurationMs;
         int[] stimEarlyOnsetMsLimits = Config.stimEarlyOnsetMs;
         var recallStimWords = currentSession.GetState().recall;
 
@@ -164,7 +164,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
                 "cuedRecall_" + currentSession.GetListIndex() + "_" + i +".wav");
             manager.recorder.StartRecording(wavPath);
             eventReporter.LogTS("start recall period");
-            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(Config.stimulusDuration+Config.recallDuration));
+            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(Config.stimulusDurationMs+Config.recallDurationMs));
 
             Dictionary<string, object> data = new() {
                 { "word", wordStim.word.word },
@@ -175,10 +175,10 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
 
             wordDisplayer.DisplayWord(wordStim.word.word);
-            await InterfaceManager.Delay(Config.stimulusDuration);
+            await InterfaceManager.Delay(Config.stimulusDurationMs);
             wordDisplayer.ClearWords();
 
-            await inputManager.WaitForKeyTS(skipKeys, TimeSpan.FromMilliseconds(Config.recallDuration));
+            await inputManager.WaitForKey(skipKeys, false, Config.recallDurationMs);
             var clip = manager.recorder.StopRecording();
 
             manager.lowBeep.Play();
@@ -186,7 +186,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     }
 
     protected async Task Recognition() {
-        int[] isiLimits = Config.interStimulusDuration;
+        int[] isiLimits = Config.interStimulusDurationMs;
         int[] stimEarlyOnsetMsLimits = Config.stimEarlyOnsetMs;
         var recogStimWords = currentSession.GetState().recognition;
 
@@ -209,7 +209,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
                 "recognitionRecall_" + currentSession.GetListIndex() + "_" + i +".wav");
             manager.recorder.StartRecording(wavPath);
             eventReporter.LogTS("start recall period");
-            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(Config.stimulusDuration+Config.recogDuration));
+            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(Config.stimulusDurationMs+Config.recogDurationMs));
 
             Dictionary<string, object> data = new() {
                 { "word", wordStim.word.word },
@@ -222,10 +222,10 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             // display words
             oldNewKeys.TurnOn();
             wordDisplayer.DisplayWord(wordStim.word.word);
-            await InterfaceManager.Delay(Config.stimulusDuration);
+            await InterfaceManager.Delay(Config.stimulusDurationMs);
             wordDisplayer.ClearWords();
 
-            await inputManager.WaitForKeyTS(skipKeys, TimeSpan.FromMilliseconds(Config.recogDuration));
+            await inputManager.WaitForKey(skipKeys, false, Config.recogDurationMs);
             var clip = manager.recorder.StopRecording();
 
             oldNewKeys.TurnOff();
@@ -238,7 +238,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
 
         textDisplayer.Display("Question 1", "", 
             "Can you recall any specific moments during the experiment when you knew or felt stimulation was being delivered?\n\nYes (Y) or No (N)");
-        KeyCode q1Resp = await inputManager.WaitForKeyTS(ynKeyCodes);
+        KeyCode q1Resp = await inputManager.WaitForKey(ynKeyCodes);
         textDisplayer.Clear();
 
         if (q1Resp == KeyCode.Y) {
@@ -249,7 +249,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             manager.recorder.StartRecording(wavPath);
             textDisplayer.Display("Question 1a recording", "", 
                 "Please describe when and why you think stimulation was delivered.\n\n<color=red>Recording...</color>\n\nPress any key when finished");
-            await inputManager.WaitForKeyTS();
+            await inputManager.WaitForKey();
             var clip = manager.recorder.StopRecording();
         }
     }

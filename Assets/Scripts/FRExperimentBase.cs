@@ -137,7 +137,7 @@ namespace UnityEPL {
             SendRamulatorStateMsg(HostPcStateMsg.ORIENT(), true);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
 
-            int[] limits = Config.fixationDuration;
+            int[] limits = Config.fixationDurationMs;
             int duration = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
             textDisplayer.Display("orientation stimulus", "", "+");
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
@@ -157,7 +157,7 @@ namespace UnityEPL {
             SendRamulatorStateMsg(HostPcStateMsg.ENCODING(), true, new() { { "current_trial", trialNum } });
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ENCODING(), new() { { "current_trial", trialNum } });
 
-            int[] isiLimits = Config.interStimulusDuration;
+            int[] isiLimits = Config.interStimulusDurationMs;
  
             for (int i = 0; i < 12; ++i) {
                 int isiDuration = InterfaceManager.rnd.Value.Next(isiLimits[0], isiLimits[1]);
@@ -175,7 +175,7 @@ namespace UnityEPL {
                 eventReporter.LogTS("word stimulus info", data);
                 manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
                 textDisplayer.Display("word stimulus", "", wordStim.word.ToDisplayString());
-                await InterfaceManager.Delay(Config.stimulusDuration);
+                await InterfaceManager.Delay(Config.stimulusDurationMs);
                 eventReporter.LogTS("clear word stimulus", data);
                 textDisplayer.Clear();
             }
@@ -187,7 +187,7 @@ namespace UnityEPL {
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.DISTRACT(), new() { { "current_trial", trialNum } });
 
             textDisplayer.Display("display distractor fixation cross", "", "+");
-            await InterfaceManager.Delay(Config.distractorDuration);
+            await InterfaceManager.Delay(Config.distractorDurationMs);
             textDisplayer.Clear();
 
             SendRamulatorStateMsg(HostPcStateMsg.DISTRACT(), false, new() { { "current_trial", trialNum } });
@@ -254,7 +254,7 @@ namespace UnityEPL {
                     manager.hostPC?.SendStateMsgTS(HostPcStateMsg.MATH(), dict);
 
                     // End distractor or setup next math problem
-                    if ((Clock.UtcNow - startTime).TotalMilliseconds > Config.distractorDuration) {
+                    if ((Clock.UtcNow - startTime).TotalMilliseconds > Config.distractorDurationMs) {
                         textDisplayer.ClearText();
                         break;
                     } else {
@@ -276,12 +276,12 @@ namespace UnityEPL {
             SendRamulatorStateMsg(HostPcStateMsg.DISTRACT(), false, new() { { "current_trial", trialNum } });;
         }
         protected async Task PauseBeforeRecall() {
-            int[] limits = Config.recallDelay;
+            int[] limits = Config.recallDelayMs;
             int interval = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
             await InterfaceManager.Delay(interval);
         }
         protected async Task RecallOrientation() {
-            await Orientation(Config.recallOrientationDuration);
+            await Orientation(Config.recallOrientationDurationMs);
         }
         protected async Task FreeRecall() {
             SendRamulatorStateMsg(HostPcStateMsg.RETRIEVAL(), true, new() { { "current_trial", trialNum } });
@@ -296,9 +296,9 @@ namespace UnityEPL {
 
             manager.recorder.StartRecording(wavPath);
             eventReporter.LogTS("start recall period");
-            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(Config.recallDuration));
+            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(Config.recallDurationMs));
 
-            await InterfaceManager.Delay(Config.recallDuration);
+            await InterfaceManager.Delay(Config.recallDurationMs);
 
             manager.recorder.StopRecording();
             manager.lowBeep.Play();
@@ -347,9 +347,9 @@ namespace UnityEPL {
         // Helper Functions
         protected void RecallStim() {
             // Uniform stim.
-            int recStimInterval = Config.recallStimInterval;
-            int stimDuration = Config.recallStimDuration;
-            int recPeriod = Config.recallDuration;
+            int recStimInterval = Config.recallStimIntervalMs;
+            int stimDuration = Config.recallStimDurationMs;
+            int recPeriod = Config.recallDurationMs;
 
             uint stimReps = (uint)(recPeriod / (stimDuration + recStimInterval));
 
