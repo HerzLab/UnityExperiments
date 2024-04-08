@@ -40,6 +40,12 @@ public class OldNewKeys : MonoBehaviour {
             leftKey.text = "new";
             rightKey.text = "old";
         }
+        leftKey.fontSizeMax = fontSize;
+        leftKey.fontSize = fontSize;
+        leftKey.fontStyle &= ~FontStyles.Bold;
+        rightKey.fontSizeMax = fontSize;
+        rightKey.fontSize = fontSize;
+        rightKey.fontStyle &= ~FontStyles.Bold;
 
         isOn = true;
     }
@@ -50,30 +56,32 @@ public class OldNewKeys : MonoBehaviour {
         isOn = false;
     }
 
-    // Update is called once per frame
     void Update() {
         if (isOn) {
-            if (InputManager.Instance.GetKey(KeyCode.LeftShift)) {
+            if (InputManager.Instance.GetKeyDown(KeyCode.LeftShift)) {
                 EventReporter.Instance.LogTS("old new keys", new() {
                     { "key", KeyCode.LeftShift.ToString() }
                 });
+                // Bold left key
                 leftKey.fontSizeMax = fontSize + 6;
                 leftKey.fontSize = fontSize + 6;
                 leftKey.fontStyle |= FontStyles.Bold;
-            } else if (InputManager.Instance.GetKey(KeyCode.RightShift)) {
+                // Unbold right key
+                rightKey.fontSizeMax = fontSize;
+                rightKey.fontSize = fontSize;
+                rightKey.fontStyle &= ~FontStyles.Bold;
+            } else if (InputManager.Instance.GetKeyDown(KeyCode.RightShift)) {
                 EventReporter.Instance.LogTS("old new keys", new() {
                     { "key", KeyCode.RightShift.ToString() }
                 });
+                // Bold right key
                 rightKey.fontSizeMax = fontSize + 6;
                 rightKey.fontSize = fontSize + 6;
                 rightKey.fontStyle |= FontStyles.Bold;
-            } else {
+                // Unbold left key
                 leftKey.fontSizeMax = fontSize;
                 leftKey.fontSize = fontSize;
-                rightKey.fontSizeMax = fontSize;
-                rightKey.fontSize = fontSize;
                 leftKey.fontStyle &= ~FontStyles.Bold;
-                rightKey.fontStyle &= ~FontStyles.Bold;
             }
         }
     }

@@ -22,8 +22,8 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     protected int lureWordsPerList;
     protected bool newIsLeftShift;
 
-    protected WordDisplayer wordDisplayer;
-    protected OldNewKeys oldNewKeys;
+    [SerializeField] protected WordDisplayer wordDisplayer;
+    [SerializeField] protected OldNewKeys oldNewKeys;
 
     protected override async Task PreTrialStates() {
         SetupWordList();
@@ -42,15 +42,15 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     protected override async Task PracticeTrialStates() {
         StartTrial();
         if (!await NextPracticeListPrompt()) { EndPracticeTrials(); return; }
-        await CountdownVideo();
-        await Encoding();
-        await MathDistractor();
-        await PauseBeforeRecall();
-        await RecallOrientation();
-        await CuedRecall();
-        await RecogInstructions();
-        await PauseBeforeRecall();
-        await RecallOrientation();
+        // await CountdownVideo();
+        // await Encoding();
+        // await MathDistractor();
+        // await PauseBeforeRecall();
+        // await RecallOrientation();
+        // await CuedRecall();
+        // await RecogInstructions();
+        // await PauseBeforeRecall();
+        // await RecallOrientation();
         await Recognition();
         FinishTrial();
     }
@@ -220,7 +220,6 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
 
             // display words
-            
             oldNewKeys.TurnOn();
             wordDisplayer.DisplayWord(wordStim.word.word);
             await InterfaceManager.Delay(Config.stimulusDuration);
@@ -288,11 +287,9 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         var words = new WordRandomSubset<Word>(sourceWords);
 
         // Set the WordDisplay sizes
-        wordDisplayer = GameObject.FindAnyObjectByType<WordDisplayer>();
         wordDisplayer.SetWordSize(sourceWords);
 
         // Set the OldNewKeys sizes
-        oldNewKeys = GameObject.FindAnyObjectByType<OldNewKeys>();
         oldNewKeys.SetKeySize();
         oldNewKeys.SetupKeyPositions();
         

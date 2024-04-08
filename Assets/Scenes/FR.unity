@@ -1407,6 +1407,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe4850c4aa9194ad4abc56a6580fb37c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  wordDisplayer: {fileID: 278883340}
+  oldNewKeys: {fileID: 278883341}
 --- !u!4 &1595924332
 Transform:
   m_ObjectHideFlags: 0
