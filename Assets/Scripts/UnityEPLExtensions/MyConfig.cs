@@ -10,51 +10,51 @@ namespace UnityEPL {
 
     public static partial class Config {
         // Game Section Skips
-        public static bool skipIntros { get { return Config.GetSetting<bool>("skipIntros"); } }
+        public static bool skipIntros { get { return GetSetting<bool>("skipIntros"); } }
 
         // FRExperiment.cs
-        public static string countdownVideo { get { return Config.GetSetting<string>("countdownVideo"); } }
+        public static string countdownVideo { get { return GetSetting<string>("countdownVideo"); } }
 
 
-        public static int distractorDurationMs { get { return Config.GetSetting<int>("distractorDurationMs"); } }
-        public static int[] fixationDurationMs { get { return Config.GetSetting<int[]>("fixationDurationMs"); } }
-        public static int[] postFixationDelayMs { get { return Config.GetSetting<int[]>("postFixationDelayMs"); } }
-        public static int stimulusDurationMs { get { return Config.GetSetting<int>("stimulusDurationMs"); } }
-        public static int[] interStimulusDurationMs { get { return Config.GetSetting<int[]>("interStimulusDurationMs"); } }
-        public static int recallDurationMs { get { return Config.GetSetting<int>("recallDurationMs"); } }
-        public static int recallOrientationDurationMs { get { return Config.GetSetting<int>("recallOrientationDurationMs"); } }
-        public static int finalRecallDuration { get { return Config.GetSetting<int>("finalRecallDuration"); } }
+        public static int distractorDurationMs { get { return GetSetting<int>("distractorDurationMs"); } }
+        public static int[] fixationDurationMs { get { return GetSetting<int[]>("fixationDurationMs"); } }
+        public static int[] postFixationDelayMs { get { return GetSetting<int[]>("postFixationDelayMs"); } }
+        public static int stimulusDurationMs { get { return GetSetting<int>("stimulusDurationMs"); } }
+        public static int[] interStimulusDurationMs { get { return GetSetting<int[]>("interStimulusDurationMs"); } }
+        public static int recallDurationMs { get { return GetSetting<int>("recallDurationMs"); } }
+        public static int recallOrientationDurationMs { get { return GetSetting<int>("recallOrientationDurationMs"); } }
+        public static int finalRecallDuration { get { return GetSetting<int>("finalRecallDuration"); } }
 
-        public static int recallStimIntervalMs { get { return Config.GetSetting<int>("recallStimIntervalMs"); } }
-        public static int recallStimDurationMs { get { return Config.GetSetting<int>("recallStimDurationMs"); } }
+        public static int recallStimIntervalMs { get { return GetSetting<int>("recallStimIntervalMs"); } }
+        public static int recallStimDurationMs { get { return GetSetting<int>("recallStimDurationMs"); } }
 
-        public static bool splitWordsOverTwoSessions { get { return Config.GetSetting<bool>("splitWordsOverTwoSessions"); } }
+        public static bool splitWordsOverTwoSessions { get { return GetSetting<bool>("splitWordsOverTwoSessions"); } }
 
 
         // RepFRExperiment.cs
-        public static int[] wordRepeats { get { return Config.GetSetting<int[]>("wordRepeats"); } }
-        public static int[] wordCounts { get { return Config.GetSetting<int[]>("wordCounts"); } }
-        public static int[] recallDelayMs { get { return Config.GetSetting<int[]>("recallDelayMs"); } }
+        public static int[] wordRepeats { get { return GetSetting<int[]>("wordRepeats"); } }
+        public static int[] wordCounts { get { return GetSetting<int[]>("wordCounts"); } }
+        public static int[] recallDelayMs { get { return GetSetting<int[]>("recallDelayMs"); } }
         
-        public static int restDurationMs { get { return Config.GetSetting<int>("restDurationMs"); } }
-        public static int practiceLists { get { return Config.GetSetting<int>("practiceLists"); } }
-        public static int preNoStimLists { get { return Config.GetSetting<int>("preNoStimLists"); } }
-        public static int encodingOnlyLists { get { return Config.GetSetting<int>("encodingOnlyLists"); } }
-        public static int retrievalOnlyLists { get { return Config.GetSetting<int>("retrievalOnlyLists"); } }
-        public static int encodingAndRetrievalLists { get { return Config.GetSetting<int>("encodingAndRetrievalLists"); } }
-        public static int noStimLists { get { return Config.GetSetting<int>("noStimLists"); } }
+        public static int restDurationMs { get { return GetSetting<int>("restDurationMs"); } }
+        public static int practiceLists { get { return GetSetting<int>("practiceLists"); } }
+        public static int preNoStimLists { get { return GetSetting<int>("preNoStimLists"); } }
+        public static int encodingOnlyLists { get { return GetSetting<int>("encodingOnlyLists"); } }
+        public static int retrievalOnlyLists { get { return GetSetting<int>("retrievalOnlyLists"); } }
+        public static int encodingAndRetrievalLists { get { return GetSetting<int>("encodingAndRetrievalLists"); } }
+        public static int noStimLists { get { return GetSetting<int>("noStimLists"); } }
 
         // ltpRepFRExperiment.cs
-        public static int[] restLists { get { return Config.GetSetting<int[]>("restLists"); } }
+        public static int[] restLists { get { return GetSetting<int[]>("restLists"); } }
 
         // CPSExperiment.cs
-        public static string video { get { return Config.GetSetting<string>("video"); } }
+        public static string video { get { return GetSetting<string>("video"); } }
 
         // MemMapExperiment.cs
-        public static int recogDurationMs { get { return Config.GetSetting<int>("recogDurationMs"); } }
-        public static int[] stimEarlyOnsetMs { get { return Config.GetSetting<int[]>("stimEarlyOnsetMs"); } }
-        public static int[] lureWordRepeats { get { return Config.GetSetting<int[]>("lureWordRepeats"); } }
-        public static int[] lureWordCounts { get { return Config.GetSetting<int[]>("lureWordCounts"); } }
+        public static int recogDurationMs { get { return GetSetting<int>("recogDurationMs"); } }
+        public static int[] stimEarlyOnsetMs { get { return GetSetting<int[]>("stimEarlyOnsetMs"); } }
+        public static int[] lureWordRepeats { get { return GetSetting<int[]>("lureWordRepeats"); } }
+        public static int[] lureWordCounts { get { return GetSetting<int[]>("lureWordCounts"); } }
     }
 
 }

@@ -39,18 +39,19 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         await Questioneer();
         await FinishExperiment();
     }
+    // TODO: JPB: (feature) Change ExperimentBase::RunHelper so that NextPracticeListPrompt can throw a custom exception to end experiment except for PostTrialStates 
     protected override async Task PracticeTrialStates() {
         StartTrial();
         if (!await NextPracticeListPrompt()) { EndPracticeTrials(); return; }
-        // await CountdownVideo();
-        // await Encoding();
-        // await MathDistractor();
-        // await PauseBeforeRecall();
-        // await RecallOrientation();
-        // await CuedRecall();
-        // await RecogInstructions();
-        // await PauseBeforeRecall();
-        // await RecallOrientation();
+        await CountdownVideo();
+        await Encoding();
+        await MathDistractor();
+        await PauseBeforeRecall();
+        await RecallOrientation();
+        await CuedRecall();
+        await RecogInstructions();
+        await PauseBeforeRecall();
+        await RecallOrientation();
         await Recognition();
         FinishTrial();
     }
@@ -178,7 +179,9 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             await InterfaceManager.Delay(Config.stimulusDurationMs);
             wordDisplayer.ClearWords();
 
-            await inputManager.WaitForKey(skipKeys, false, Config.recallDurationMs);
+            await InterfaceManager.Delay(Config.recallDurationMs);
+            // try { await inputManager.WaitForKey(skipKeys, false, Config.recallDurationMs); }
+            // catch (TimeoutException) {}
             var clip = manager.recorder.StopRecording();
 
             manager.lowBeep.Play();
@@ -225,7 +228,9 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             await InterfaceManager.Delay(Config.stimulusDurationMs);
             wordDisplayer.ClearWords();
 
-            await inputManager.WaitForKey(skipKeys, false, Config.recogDurationMs);
+            await InterfaceManager.Delay(Config.recogDurationMs);
+            // try { await inputManager.WaitForKey(skipKeys, false, Config.recogDurationMs); }
+            // catch (TimeoutException) {}
             var clip = manager.recorder.StopRecording();
 
             oldNewKeys.TurnOff();
