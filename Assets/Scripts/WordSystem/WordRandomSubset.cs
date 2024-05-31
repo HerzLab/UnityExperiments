@@ -36,7 +36,7 @@ public class WordRandomSubset<T>
         if (Config.splitWordsOverTwoSessions && !ignoreSplit) {
             int splitIndex = sourceWords.Count / 2;
             int lenRemove = sourceWords.Count - splitIndex;
-            sourceWords.ShuffleInPlace(InterfaceManager.stableRnd.Value);
+            sourceWords.ShuffleInPlace(UnityEPL.Random.StableRnd);
             if (Config.sessionNum % 2 == 0) {
                 sourceWords.RemoveRange(splitIndex, lenRemove);
             } else {

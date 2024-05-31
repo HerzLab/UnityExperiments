@@ -27,7 +27,7 @@ public class OldNewKeys : MonoBehaviour {
     }
 
     public void SetupKeyPositions() {
-        oldNewPosition = InterfaceManager.stableRnd.Value.Next(0,2) != 0;
+        oldNewPosition = UnityEPL.Random.StableRnd.Next(0,2) != 0;
         leftKey.text = "";
         rightKey.text = "";
     }

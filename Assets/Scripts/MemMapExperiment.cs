@@ -88,15 +88,15 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
 
         int[] limits = Config.fixationDurationMs;
-        int duration = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
+        int duration = UnityEPL.Random.Rnd.Next(limits[0], limits[1]);
         textDisplayer.Display("orientation stimulus", "", "+");
         manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
-        await InterfaceManager.Delay(duration);
+        await Timing.Delay(duration);
 
         textDisplayer.Clear();
         limits = Config.postFixationDelayMs;
-        duration = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
-        await InterfaceManager.Delay(duration);
+        duration = UnityEPL.Random.Rnd.Next(limits[0], limits[1]);
+        await Timing.Delay(duration);
     }
 
     protected new async Task Encoding() {
@@ -109,16 +109,16 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         for (int i = 0; i < encStimWords.Count; ++i) {
             var wordStim = encStimWords[i];
 
-            int isiDuration = InterfaceManager.rnd.Value.Next(isiLimits[0], isiLimits[1]);
-            int stimEarlyDuration = InterfaceManager.rnd.Value.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
+            int isiDuration = UnityEPL.Random.Rnd.Next(isiLimits[0], isiLimits[1]);
+            int stimEarlyDuration = UnityEPL.Random.Rnd.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
             isiDuration -= stimEarlyDuration;
 
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(isiDuration));
-            await InterfaceManager.Delay(isiDuration);
+            await Timing.Delay(isiDuration);
 
             if (wordStim.stim) { manager.hostPC?.SendStimMsgTS(); }
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(stimEarlyDuration));
-            await InterfaceManager.Delay(stimEarlyDuration);
+            await Timing.Delay(stimEarlyDuration);
 
             Dictionary<string, object> data = new() {
                 { "word", wordStim.word },
@@ -129,7 +129,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             eventReporter.LogTS("word stimulus info", data);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
             wordDisplayer.DisplayPairedWord(wordStim.word.word, wordStim.word.pairedWord);
-            await InterfaceManager.Delay(Config.stimulusDurationMs);
+            await Timing.Delay(Config.stimulusDurationMs);
             wordDisplayer.ClearWords();
 
             // manager.lowBeep.Play();
@@ -138,8 +138,8 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
 
     protected async Task PauseBeforeRecog() {
         int[] limits = Config.recallDelayMs;
-        int interval = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
-        await InterfaceManager.Delay(interval);
+        int interval = UnityEPL.Random.Rnd.Next(limits[0], limits[1]);
+        await Timing.Delay(interval);
     }
 
     protected async Task CuedRecall() {
@@ -150,16 +150,16 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         for (int i = 0; i < recallStimWords.Count; ++i) {
             var wordStim = recallStimWords[i];
 
-            int isiDuration = InterfaceManager.rnd.Value.Next(isiLimits[0], isiLimits[1]);
-            int stimEarlyDuration = InterfaceManager.rnd.Value.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
+            int isiDuration = UnityEPL.Random.Rnd.Next(isiLimits[0], isiLimits[1]);
+            int stimEarlyDuration = UnityEPL.Random.Rnd.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
             isiDuration -= stimEarlyDuration;
 
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(isiDuration));
-            await InterfaceManager.Delay(isiDuration);
+            await Timing.Delay(isiDuration);
 
             if (wordStim.stim) { manager.hostPC?.SendStimMsgTS(); }
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(stimEarlyDuration));
-            await InterfaceManager.Delay(stimEarlyDuration);
+            await Timing.Delay(stimEarlyDuration);
 
             string wavPath = Path.Combine(manager.fileManager.SessionPath(), 
                 "cuedRecall_" + currentSession.GetListIndex() + "_" + i +".wav");
@@ -176,10 +176,10 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
 
             wordDisplayer.DisplayWord(wordStim.word.word);
-            await InterfaceManager.Delay(Config.stimulusDurationMs);
+            await Timing.Delay(Config.stimulusDurationMs);
             wordDisplayer.ClearWords();
 
-            await InterfaceManager.Delay(Config.recallDurationMs);
+            await Timing.Delay(Config.recallDurationMs);
             // try { await inputManager.WaitForKey(skipKeys, false, Config.recallDurationMs); }
             // catch (TimeoutException) {}
             var clip = manager.recorder.StopRecording();
@@ -196,16 +196,16 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         for (int i = 0; i < recogStimWords.Count; ++i) {
             var wordStim = recogStimWords[i];
             
-            int isiDuration = InterfaceManager.rnd.Value.Next(isiLimits[0], isiLimits[1]);
-            int stimEarlyDuration = InterfaceManager.rnd.Value.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
+            int isiDuration = UnityEPL.Random.Rnd.Next(isiLimits[0], isiLimits[1]);
+            int stimEarlyDuration = UnityEPL.Random.Rnd.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
             isiDuration -= stimEarlyDuration;
 
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(isiDuration));
-            await InterfaceManager.Delay(isiDuration);
+            await Timing.Delay(isiDuration);
 
             if (wordStim.stim) { manager.hostPC?.SendStimMsgTS(); }
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(stimEarlyDuration));
-            await InterfaceManager.Delay(stimEarlyDuration);
+            await Timing.Delay(stimEarlyDuration);
 
             // recording
             string wavPath = Path.Combine(manager.fileManager.SessionPath(), 
@@ -225,10 +225,10 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             // display words
             oldNewKeys.TurnOn();
             wordDisplayer.DisplayWord(wordStim.word.word);
-            await InterfaceManager.Delay(Config.stimulusDurationMs);
+            await Timing.Delay(Config.stimulusDurationMs);
             wordDisplayer.ClearWords();
 
-            await InterfaceManager.Delay(Config.recogDurationMs);
+            await Timing.Delay(Config.recogDurationMs);
             // try { await inputManager.WaitForKey(skipKeys, false, Config.recogDurationMs); }
             // catch (TimeoutException) {}
             var clip = manager.recorder.StopRecording();
@@ -381,7 +381,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         // Practice Lists
         for (int i = 0; i < Config.practiceLists; i++) {
             var wordOrders = Enumerable.Range(0, wordsPerList).Select(i => i % 2 == 0).ToList();
-            var recallOrders = Enumerable.Range(0, wordsPerList).ToList().Shuffle(InterfaceManager.stableRnd.Value);
+            var recallOrders = Enumerable.Range(0, wordsPerList).ToList().Shuffle(UnityEPL.Random.StableRnd);
             var recogOrders = GenZigZagList(wordsPerList, lureWordsPerList);
             session.Add(MakeTrial(practiceRandomSubset, false, false, false, wordOrders, recallOrders, recogOrders));
         }

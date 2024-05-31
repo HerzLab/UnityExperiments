@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -60,15 +61,15 @@ namespace UnityEPL {
 
         // Pre-Trial States
         protected override async Task Introduction() {
-            await RepeatUntilNo(async () => {
+            SendRamulatorStateMsg(HostPcStateMsg.INSTRUCT(), true);
+            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.INSTRUCT());
+            await RepeatUntilYes(async (CancellationToken ct) => {
                 await textDisplayer.PressAnyKey("show instruction video", "Press any key to show instruction video");
 
                 manager.videoControl.SetVideo(Config.introductionVideo, true);
-                SendRamulatorStateMsg(HostPcStateMsg.INSTRUCT(), true);
-                manager.hostPC?.SendStateMsgTS(HostPcStateMsg.INSTRUCT());
                 await manager.videoControl.PlayVideo();
-                SendRamulatorStateMsg(HostPcStateMsg.INSTRUCT(), false);
-            }, "repeat introduction video", "Press Y to continue to practice list, \n Press N to replay instructional video.");
+            }, "repeat introduction video", "Press Y to continue, \n Press N to replay instructional video.", new());
+            SendRamulatorStateMsg(HostPcStateMsg.INSTRUCT(), false);
         }
 
         // Trial States
@@ -77,17 +78,17 @@ namespace UnityEPL {
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
 
             int[] limits = Config.fixationDurationMs;
-            int duration = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
+            int duration = Random.Rnd.Next(limits[0], limits[1]);
             textDisplayer.Display("orientation stimulus", "", "+");
             
-            await InterfaceManager.Delay(duration);
+            await Timing.Delay(duration);
 
             SendRamulatorStateMsg(HostPcStateMsg.ORIENT(), false);
         }
         protected async Task RecallPrompt() {
             manager.highBeep.Play();
             textDisplayer.Display("display recall text", "", "*******");
-            await InterfaceManager.Delay(Config.recallOrientationDurationMs);
+            await Timing.Delay(Config.recallOrientationDurationMs);
         }
 
         // Setup Functions

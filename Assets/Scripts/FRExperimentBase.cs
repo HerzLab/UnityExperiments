@@ -87,7 +87,7 @@ namespace UnityEPL {
             eventReporter.LogTS("start final recall period");
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.FINAL_RECALL(Config.finalRecallDuration));
 
-            await InterfaceManager.Delay(Config.finalRecallDuration);
+            await Timing.Delay(Config.finalRecallDuration);
 
             eventReporter.LogTS("end final recall period");
             manager.recorder.StopRecording();
@@ -95,16 +95,15 @@ namespace UnityEPL {
         }
         protected async Task FinishExperiment() {
             textDisplayer.Display("session end", "", "Yay! Session Complete.");
-            await InterfaceManager.Delay(10000);
+            await Timing.Delay(10000);
         }
 
         // Trial States
         protected void StartTrial() {
-            var currentTrialNum = inPracticeTrials ? practiceTrialNum : trialNum;
             var stimList = currentSession.GetState().GetStimValues();
             bool stim = stimList.Values.Aggregate((current, next) => current || next);
             Dictionary<string, object> data = new() {
-                { "trial", currentTrialNum },
+                { "trial", trialNum },
                 { "stim", stim },
                 { "stimList", stimList },
                 { "practice", inPracticeTrials }
@@ -138,10 +137,10 @@ namespace UnityEPL {
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
 
             int[] limits = Config.fixationDurationMs;
-            int duration = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
+            int duration = UnityEPL.Random.Rnd.Next(limits[0], limits[1]);
             textDisplayer.Display("orientation stimulus", "", "+");
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
-            await InterfaceManager.Delay(duration);
+            await Timing.Delay(duration);
             textDisplayer.Clear();
 
             SendRamulatorStateMsg(HostPcStateMsg.ORIENT(), false);
@@ -150,7 +149,7 @@ namespace UnityEPL {
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
             textDisplayer.Display("display recall text", "", "*******");
             manager.highBeep.Play();
-            await InterfaceManager.Delay(duration);
+            await Timing.Delay(duration);
             textDisplayer.Clear();
         }
         protected async Task Encoding() {
@@ -160,9 +159,9 @@ namespace UnityEPL {
             int[] isiLimits = Config.interStimulusDurationMs;
  
             for (int i = 0; i < 12; ++i) {
-                int isiDuration = InterfaceManager.rnd.Value.Next(isiLimits[0], isiLimits[1]);
+                int isiDuration = UnityEPL.Random.Rnd.Next(isiLimits[0], isiLimits[1]);
                 manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(isiDuration));
-                await InterfaceManager.Delay(isiDuration);
+                await Timing.Delay(isiDuration);
 
                 var wordStim = currentSession.GetEncWord();
                 currentSession.NextWord();
@@ -175,7 +174,7 @@ namespace UnityEPL {
                 eventReporter.LogTS("word stimulus info", data);
                 manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
                 textDisplayer.Display("word stimulus", "", wordStim.word.ToDisplayString());
-                await InterfaceManager.Delay(Config.stimulusDurationMs);
+                await Timing.Delay(Config.stimulusDurationMs);
                 eventReporter.LogTS("clear word stimulus", data);
                 textDisplayer.Clear();
             }
@@ -187,7 +186,7 @@ namespace UnityEPL {
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.DISTRACT(), new() { { "current_trial", trialNum } });
 
             textDisplayer.Display("display distractor fixation cross", "", "+");
-            await InterfaceManager.Delay(Config.distractorDurationMs);
+            await Timing.Delay(Config.distractorDurationMs);
             textDisplayer.Clear();
 
             SendRamulatorStateMsg(HostPcStateMsg.DISTRACT(), false, new() { { "current_trial", trialNum } });
@@ -197,9 +196,9 @@ namespace UnityEPL {
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.DISTRACT(), new() { { "current_trial", trialNum } });
 
             int[] nums = new int[] {
-                InterfaceManager.rnd.Value.Next(1, 10),
-                InterfaceManager.rnd.Value.Next(1, 10),
-                InterfaceManager.rnd.Value.Next(1, 10) };
+                UnityEPL.Random.Rnd.Next(1, 10),
+                UnityEPL.Random.Rnd.Next(1, 10),
+                UnityEPL.Random.Rnd.Next(1, 10) };
             string message = "display distractor problem";
             string problem = nums[0].ToString() + " + " +
                              nums[1].ToString() + " + " +
@@ -258,9 +257,9 @@ namespace UnityEPL {
                         textDisplayer.ClearText();
                         break;
                     } else {
-                        nums = new int[] { InterfaceManager.rnd.Value.Next(1, 10),
-                                           InterfaceManager.rnd.Value.Next(1, 10),
-                                           InterfaceManager.rnd.Value.Next(1, 10) };
+                        nums = new int[] { UnityEPL.Random.Rnd.Next(1, 10),
+                                           UnityEPL.Random.Rnd.Next(1, 10),
+                                           UnityEPL.Random.Rnd.Next(1, 10) };
                         message = "display distractor problem";
                         problem = nums[0].ToString() + " + " +
                                   nums[1].ToString() + " + " +
@@ -277,8 +276,8 @@ namespace UnityEPL {
         }
         protected async Task PauseBeforeRecall() {
             int[] limits = Config.recallDelayMs;
-            int interval = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
-            await InterfaceManager.Delay(interval);
+            int interval = UnityEPL.Random.Rnd.Next(limits[0], limits[1]);
+            await Timing.Delay(interval);
         }
         protected async Task RecallOrientation() {
             await Orientation(Config.recallOrientationDurationMs);
@@ -298,7 +297,7 @@ namespace UnityEPL {
             eventReporter.LogTS("start recall period");
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(Config.recallDurationMs));
 
-            await InterfaceManager.Delay(Config.recallDurationMs);
+            await Timing.Delay(Config.recallDurationMs);
 
             manager.recorder.StopRecording();
             manager.lowBeep.Play();
@@ -312,12 +311,12 @@ namespace UnityEPL {
                 EndTrials();
             }
 
-            if (practiceTrialNum >= Config.practiceLists) {
+            if (trialNum >= Config.practiceLists && inPracticeTrials) {
                 EndPracticeTrials();
             }
 
             int numTrials = currentSession.Count - Config.practiceLists;
-            if (trialNum >= numTrials) {
+            if (trialNum >= numTrials && !inPracticeTrials) {
                 EndTrials();
             }
         }
@@ -415,7 +414,7 @@ namespace UnityEPL {
                 // var trues = Enumerable.Range(1, wordsPerList-halfNumWords).Select(i => true).ToList();
                 // var stimList = falses.Concat(trues).ToList().Shuffle();
                 var stimList = Enumerable.Range(1, wordsPerList)
-                                .Select(i => InterfaceManager.rnd.Value.NextDouble() >= 0.5)
+                                .Select(i => UnityEPL.Random.Rnd.NextDouble() >= 0.5)
                                 .ToList();
                 return new StimWordList<WordType>(inputWords, stimList);
             } else {

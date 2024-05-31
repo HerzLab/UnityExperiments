@@ -160,7 +160,7 @@ namespace UnityEPL {
 
         public static void AssignRandomStim(RepWordList rw) {
             for (int i = 0; i < rw.Count; i++) {
-                bool stim = Convert.ToBoolean(InterfaceManager.rnd.Value.Next(2));
+                bool stim = Convert.ToBoolean(UnityEPL.Random.Rnd.Next(2));
                 rw.SetStim(i, stim);
             }
         }
@@ -184,7 +184,7 @@ namespace UnityEPL {
             StimWordList<Word> preparedWords = SpreadWords(repeats, topPercentSpaced);
 
             foreach (var word_stim in singles) {
-                int insert_at = InterfaceManager.rnd.Value.Next(preparedWords.Count + 1);
+                int insert_at = UnityEPL.Random.Rnd.Next(preparedWords.Count + 1);
                 preparedWords.Insert(insert_at, word_stim);
             }
 
