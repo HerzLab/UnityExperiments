@@ -36,7 +36,7 @@ public class CPSExperiment : ExperimentBase<CPSExperiment> {
     protected override async Task TrialStates() {
         await SetupExp();
         await ShowVideo();
-        await FinishExp();
+        await FinishExperiment();
     }
 
     protected override Task PreTrialStates() { return Task.CompletedTask; }
@@ -50,9 +50,8 @@ public class CPSExperiment : ExperimentBase<CPSExperiment> {
         await manager.hostPC.SendTrialMsgTS(0, true);
     }
 
-    protected async Task FinishExp() {
-        await manager.hostPC.SendExitMsgTS();
-        await manager.textDisplayer.PressAnyKey("display end message", "Woo!  The experiment is over.\n\n Press any key to quit.");
+    protected async Task FinishExperiment() {
+        await manager.textDisplayer.PressAnyKey("display end message", LangStrings.SessionEnd());
     }
 
     protected async Task ShowVideo() {
@@ -71,7 +70,7 @@ public class CPSExperiment : ExperimentBase<CPSExperiment> {
         };
         eventReporter.LogTS("movie", movieInfo);
 
-        await manager.textDisplayer.PressAnyKey("instructions", "In this experiment, you will watch a short educational film lasting about twenty-five minutes. Please pay attention to the film to the best of your ability. You will be asked a series of questions about the video after its completion. After the questionnaire, you will have the opportunity to take a break.\n\n Press any key to begin watching.");
+        await manager.textDisplayer.PressAnyKey("instructions", LangStrings.CPSInstructions());
 
         UnityEngine.Debug.Log(1);
         await manager.hostPC.SendStateMsgTS(HostPcStateMsg.ENCODING(), movieInfo);

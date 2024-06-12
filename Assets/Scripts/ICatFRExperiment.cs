@@ -14,7 +14,7 @@ public class ICatFRExperiment : CatFRExperiment {
 
     protected override async Task PracticeTrialStates() {
         StartTrial();
-        await NextPracticeListPrompt();
+        await NextPracticeTrialPrompt();
         await CountdownVideo();
         await Fixation();
         await Encoding();
@@ -26,7 +26,7 @@ public class ICatFRExperiment : CatFRExperiment {
     }
     protected override async Task TrialStates() {
         StartTrial();
-        await NextListPrompt();
+        await NextTrialPrompt();
         await CountdownVideo();
         await Fixation();
         await Encoding();

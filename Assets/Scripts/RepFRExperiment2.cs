@@ -36,7 +36,7 @@ namespace UnityEPL {
         }
         protected override async Task PracticeTrialStates() {
             StartTrial();
-            await NextPracticeListPrompt();
+            await NextPracticeTrialPrompt();
             await CountdownVideo();
             await Orientation();
             await Encoding();
@@ -48,7 +48,7 @@ namespace UnityEPL {
         }
         protected override async Task TrialStates() {
             StartTrial();
-            await NextListPrompt();
+            await NextTrialPrompt();
             await CountdownVideo();
             await Orientation();
             await Encoding();
@@ -64,11 +64,11 @@ namespace UnityEPL {
             SendRamulatorStateMsg(HostPcStateMsg.INSTRUCT(), true);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.INSTRUCT());
             await RepeatUntilYes(async (CancellationToken ct) => {
-                await textDisplayer.PressAnyKey("show instruction video", "Press any key to show instruction video");
+                await textDisplayer.PressAnyKey("show instruction video", LangStrings.ShowInstructionVideo());
 
                 manager.videoControl.SetVideo(Config.introductionVideo, true);
                 await manager.videoControl.PlayVideo();
-            }, "repeat introduction video", "Press Y to continue, \n Press N to replay instructional video.", new());
+            }, "repeat introduction video", LangStrings.RepeatIntroductionVideo(), new());
             SendRamulatorStateMsg(HostPcStateMsg.INSTRUCT(), false);
         }
 
@@ -79,7 +79,7 @@ namespace UnityEPL {
 
             int[] limits = Config.fixationDurationMs;
             int duration = Random.Rnd.Next(limits[0], limits[1]);
-            textDisplayer.Display("orientation stimulus", "", "+");
+            textDisplayer.Display("orientation stimulus", LangStrings.Blank(), LangStrings.GenForCurrLang("+"));
             
             await Timing.Delay(duration);
 
@@ -87,7 +87,7 @@ namespace UnityEPL {
         }
         protected async Task RecallPrompt() {
             manager.highBeep.Play();
-            textDisplayer.Display("display recall text", "", "*******");
+            textDisplayer.Display("display recall text", LangStrings.Blank(), LangStrings.GenForCurrLang("*******"));
             await Timing.Delay(Config.recallOrientationDurationMs);
         }
 

@@ -42,7 +42,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     // TODO: JPB: (feature) Change ExperimentBase::RunHelper so that NextPracticeListPrompt can throw a custom exception to end experiment except for PostTrialStates 
     protected override async Task PracticeTrialStates() {
         StartTrial();
-        if (!await NextPracticeListPrompt()) { EndPracticeTrials(); return; }
+        await NextPracticeTrialPrompt();
         await CountdownVideo();
         await Encoding();
         await MathDistractor();
@@ -57,7 +57,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     }
     protected override async Task TrialStates() {
         StartTrial();
-        if (!await NextListPrompt()) { EndTrials(); return; }
+        await NextTrialPrompt();
         await CountdownVideo();
         await Encoding();
         await MathDistractor();
@@ -71,17 +71,8 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         FinishTrial();
     }
 
-    protected override async Task ConfirmStart() {
-        await textDisplayer.PressAnyKey("confirm start",
-            "Please let the experimenter know if you have any questions about the task.\n\n" +
-            "If you think you understand, please explain the task to the experimenter in your own words.\n\n" +
-            "Press any key to start.");
-    }
-
     protected async Task RecogInstructions() {
-        await textDisplayer.PressAnyKey("recog instructions",
-            "For each word, indicate if it was shown in this list (‘old’) or not (‘new’) using the right/left shift keys.\n\n" +
-            "<size=-20>Press any key to start</size>");
+        await textDisplayer.PressAnyKey("recog instructions", LangStrings.RecognitionInstructions());
     }
 
     protected new async Task Fixation() {
@@ -89,7 +80,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
 
         int[] limits = Config.fixationDurationMs;
         int duration = UnityEPL.Random.Rnd.Next(limits[0], limits[1]);
-        textDisplayer.Display("orientation stimulus", "", "+");
+        textDisplayer.Display("orientation stimulus", LangStrings.Blank(), LangStrings.GenForCurrLang("+"));
         manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
         await Timing.Delay(duration);
 
@@ -100,7 +91,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     }
 
     protected new async Task Encoding() {
-        manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ENCODING(), new() { { "current_trial", trialNum } });
+        manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ENCODING(), new() { { "current_trial", TrialNum } });
 
         int[] isiLimits = Config.interStimulusDurationMs;
         int[] stimEarlyOnsetMsLimits = Config.stimEarlyOnsetMs;
@@ -241,19 +232,16 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     protected async Task Questioneer() {
         var ynKeyCodes = new List<KeyCode> {KeyCode.Y, KeyCode.N};
 
-        textDisplayer.Display("Question 1", "", 
-            "Can you recall any specific moments during the experiment when you knew or felt stimulation was being delivered?\n\nYes (Y) or No (N)");
+        textDisplayer.Display("Question 1", LangStrings.Blank(), LangStrings.QuestioneerQ1());
         KeyCode q1Resp = await inputManager.WaitForKey(ynKeyCodes);
         textDisplayer.Clear();
 
         if (q1Resp == KeyCode.Y) {
-            await textDisplayer.PressAnyKey("Question 1a", "", 
-                "Please describe when and why you think stimulation was delivered.\n\nPress any key to continue to the recording.");
+            await textDisplayer.PressAnyKey("Question 1a", LangStrings.Blank(), LangStrings.QuestioneerQ1a());
 
             string wavPath = System.IO.Path.Combine(manager.fileManager.SessionPath(), "q1a.wav");
             manager.recorder.StartRecording(wavPath);
-            textDisplayer.Display("Question 1a recording", "", 
-                "Please describe when and why you think stimulation was delivered.\n\n<color=red>Recording...</color>\n\nPress any key when finished");
+            textDisplayer.Display("Question 1a recording", LangStrings.Blank(), LangStrings.QuestioneerQ1b());
             await inputManager.WaitForKey();
             var clip = manager.recorder.StopRecording();
         }
@@ -287,7 +275,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         var sourcePracticeWords = ReadWordpool<Word>(manager.fileManager.GetPracticeWordList());
         var practiceWords = new WordRandomSubset<Word>(sourcePracticeWords, true);
 
-        // Read words and generate the random subset needed
+        // Read words, remove any practice words, and generate the random subset needed
         var sourceWords = ReadWordpool<Word>(manager.fileManager.GetWordList());
         var words = new WordRandomSubset<Word>(sourceWords);
 
