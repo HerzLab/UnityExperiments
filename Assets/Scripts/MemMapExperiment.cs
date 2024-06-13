@@ -78,12 +78,14 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     protected new async Task Fixation() {
         manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
 
+        // Delay for random time within fixation duration limits and show orientation stimulus
         int[] limits = Config.fixationDurationMs;
         int duration = UnityEPL.Random.Rnd.Next(limits[0], limits[1]);
         textDisplayer.Display("orientation stimulus", LangStrings.Blank(), LangStrings.GenForCurrLang("+"));
         manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
         await Timing.Delay(duration);
 
+        // Delay for random time within post-fixation delay limits
         textDisplayer.Clear();
         limits = Config.postFixationDelayMs;
         duration = UnityEPL.Random.Rnd.Next(limits[0], limits[1]);
@@ -93,6 +95,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     protected new async Task Encoding() {
         manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ENCODING(), new() { { "current_trial", TrialNum } });
 
+        // Get encoding state variables
         int[] isiLimits = Config.interStimulusDurationMs;
         int[] stimEarlyOnsetMsLimits = Config.stimEarlyOnsetMs;
         var encStimWords = currentSession.GetState().encoding;
@@ -100,23 +103,26 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         for (int i = 0; i < encStimWords.Count; ++i) {
             var wordStim = encStimWords[i];
 
+            // Determine the Inter Stimulus Interval (ISI), when stim should start, and adjust ISI
             int isiDuration = UnityEPL.Random.Rnd.Next(isiLimits[0], isiLimits[1]);
             int stimEarlyDuration = UnityEPL.Random.Rnd.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
             isiDuration -= stimEarlyDuration;
 
+            // Do the ISI
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(isiDuration));
             await Timing.Delay(isiDuration);
 
+            // Do the stim and wait the rest of the ISI
             if (wordStim.stim) { manager.hostPC?.SendStimMsgTS(); }
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(stimEarlyDuration));
             await Timing.Delay(stimEarlyDuration);
 
+            // Do the encoding and log it
             Dictionary<string, object> data = new() {
                 { "word", wordStim.word },
                 { "serialpos", i },
                 { "stimWord", wordStim.stim },
             };
-
             eventReporter.LogTS("word stimulus info", data);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
             wordDisplayer.DisplayPairedWord(wordStim.word.word, wordStim.word.pairedWord);
@@ -134,6 +140,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     }
 
     protected async Task CuedRecall() {
+        // Get cued recall state variables
         int[] isiLimits = Config.interStimulusDurationMs;
         int[] stimEarlyOnsetMsLimits = Config.stimEarlyOnsetMs;
         var recallStimWords = currentSession.GetState().recall;
@@ -141,23 +148,28 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         for (int i = 0; i < recallStimWords.Count; ++i) {
             var wordStim = recallStimWords[i];
 
+            // Determine the Inter Stimulus Interval (ISI), when stim should start, and adjust ISI
             int isiDuration = UnityEPL.Random.Rnd.Next(isiLimits[0], isiLimits[1]);
             int stimEarlyDuration = UnityEPL.Random.Rnd.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
             isiDuration -= stimEarlyDuration;
 
+            // Do the ISI
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(isiDuration));
             await Timing.Delay(isiDuration);
 
+            // Do the stim and wait the rest of the ISI
             if (wordStim.stim) { manager.hostPC?.SendStimMsgTS(); }
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(stimEarlyDuration));
             await Timing.Delay(stimEarlyDuration);
 
+            // Start recording for the cued recall
             string wavPath = Path.Combine(manager.fileManager.SessionPath(), 
                 "cuedRecall_" + currentSession.GetListIndex() + "_" + i +".wav");
             manager.recorder.StartRecording(wavPath);
             eventReporter.LogTS("start recall period");
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(Config.stimulusDurationMs+Config.recallDurationMs));
 
+            // Do the cued recall and log it
             Dictionary<string, object> data = new() {
                 { "word", wordStim.word.word },
                 { "serialpos", i },
@@ -165,21 +177,24 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             };
             eventReporter.LogTS("word stimulus info", data);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
-
             wordDisplayer.DisplayWord(wordStim.word.word);
             await Timing.Delay(Config.stimulusDurationMs);
-            wordDisplayer.ClearWords();
 
+            // Clear the word and wait for the rest of the recall duration
+            wordDisplayer.ClearWords();
             await Timing.Delay(Config.recallDurationMs);
             // try { await inputManager.WaitForKey(skipKeys, false, Config.recallDurationMs); }
             // catch (TimeoutException) {}
-            var clip = manager.recorder.StopRecording();
 
+            // Stop recording and recall period
+            manager.recorder.StopRecording();
+            eventReporter.LogTS("stop recall period");
             manager.lowBeep.Play();
         }
     }
 
     protected async Task Recognition() {
+        // Get recognition state variables
         int[] isiLimits = Config.interStimulusDurationMs;
         int[] stimEarlyOnsetMsLimits = Config.stimEarlyOnsetMs;
         var recogStimWords = currentSession.GetState().recognition;
@@ -187,24 +202,28 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         for (int i = 0; i < recogStimWords.Count; ++i) {
             var wordStim = recogStimWords[i];
             
+            // Determine the Inter Stimulus Interval (ISI), when stim should start, and adjust ISI
             int isiDuration = UnityEPL.Random.Rnd.Next(isiLimits[0], isiLimits[1]);
             int stimEarlyDuration = UnityEPL.Random.Rnd.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
             isiDuration -= stimEarlyDuration;
 
+            // Do the ISI
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(isiDuration));
             await Timing.Delay(isiDuration);
 
+            // Do the stim and wait the rest of the ISI
             if (wordStim.stim) { manager.hostPC?.SendStimMsgTS(); }
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(stimEarlyDuration));
             await Timing.Delay(stimEarlyDuration);
 
-            // recording
+            // Start recording for the cued recall
             string wavPath = Path.Combine(manager.fileManager.SessionPath(), 
                 "recognitionRecall_" + currentSession.GetListIndex() + "_" + i +".wav");
             manager.recorder.StartRecording(wavPath);
             eventReporter.LogTS("start recall period");
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(Config.stimulusDurationMs+Config.recogDurationMs));
 
+            // Do the recognition and log it
             Dictionary<string, object> data = new() {
                 { "word", wordStim.word.word },
                 { "serialpos", i },
@@ -212,18 +231,19 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             };
             eventReporter.LogTS("word stimulus info", data);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
-
-            // display words
             oldNewKeys.TurnOn();
             wordDisplayer.DisplayWord(wordStim.word.word);
             await Timing.Delay(Config.stimulusDurationMs);
-            wordDisplayer.ClearWords();
 
+            // Clear the word and wait for the rest of the recognition duration
+            wordDisplayer.ClearWords();
             await Timing.Delay(Config.recogDurationMs);
             // try { await inputManager.WaitForKey(skipKeys, false, Config.recogDurationMs); }
             // catch (TimeoutException) {}
-            var clip = manager.recorder.StopRecording();
 
+            // Stop recording and recognition period
+            manager.recorder.StopRecording();
+            eventReporter.LogTS("stop recall period");
             oldNewKeys.TurnOff();
             manager.lowBeep.Play();
         }
@@ -232,10 +252,12 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     protected async Task Questioneer() {
         var ynKeyCodes = new List<KeyCode> {KeyCode.Y, KeyCode.N};
 
+        // Question 1
         textDisplayer.Display("Question 1", LangStrings.Blank(), LangStrings.QuestioneerQ1());
         KeyCode q1Resp = await inputManager.WaitForKey(ynKeyCodes);
         textDisplayer.Clear();
 
+        // Question 1 sub questions
         if (q1Resp == KeyCode.Y) {
             await textDisplayer.PressAnyKey("Question 1a", LangStrings.Blank(), LangStrings.QuestioneerQ1a());
 
@@ -288,11 +310,6 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         
         // TODO: (feature) Load Session
         currentSession = GenerateSession<WordRandomSubset<Word>>(practiceWords, words);
-    }
-
-    private IEnumerator WaitForNextFrameCoroutine(TaskCompletionSource<bool> tcs) {
-        yield return null;
-        tcs.SetResult(true);
     }
 
     protected MemMapTrial<PairedWord> MakeTrial<U>(U randomSubset, bool encStim, bool recallStim, bool recogStim, List<bool> wordOrders, List<int> recallOrders, List<int> recogOrders) 
@@ -519,10 +536,12 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             }
         }
 
+        // Write the lists to file
         for (int i = 0; i < session.Count; i++) {
             WriteLstFile(session[i].encoding, i);
         }
 
+        // Debugging
         session.DebugPrintAll();
         session.PrintAllWordsToDebugLog();
 
@@ -542,9 +561,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
 
         if (allCombinations.Count == maxLists) {
             return;
-        }
-
-        if (current.Count == numElements) {
+        } else if (current.Count == numElements) {
             allCombinations.Add(new List<bool>(current));
             return;
         }
@@ -564,11 +581,21 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         }
     }
 
+    /// <summary>
+    /// Generates a list of zigzagged indices by interleaving the indices of two already concatenated lists.
+    /// If there are any leftover indices in the longer list, they are appended to the end of the new list.
+    /// </summary>
+    /// <param name="numList1">The number of elements in the first list (pre-concatenation).</param>
+    /// <param name="numList2">The number of elements in the second list (pre-concatenation).</param>
+    /// <returns>A list containing the indices of the original list interleaved in a zigzag pattern.</returns>
+    /// ex: GenZigZagList(2, 2) -> [0, 2, 1, 3]
+    /// ex: GenZigZagList(2, 4) -> [0, 2, 1, 3, 4, 5]
+    /// ex: GenZigZagList(4, 2) -> [0, 4, 1, 5, 2, 3]
     protected List<int> GenZigZagList(int numList1, int numList2) {
-        var list1 = Enumerable.Range(0, wordsPerList).ToList();
-        var list2 = Enumerable.Range(wordsPerList, lureWordsPerList).ToList();
+        var list1 = Enumerable.Range(0, numList1).ToList();
+        var list2 = Enumerable.Range(numList1, numList2).ToList();
         var retList = new List<int>();
-        for (int i=0; i < Math.Max(wordsPerList, lureWordsPerList); ++i) {
+        for (int i=0; i < Math.Max(numList1, numList2); ++i) {
             if (i < list1.Count) { retList.Add(list1[i]); }
             if (i < list2.Count) { retList.Add(list2[i]); }
         }
@@ -580,6 +607,16 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         return GenUniqueRandomLists<List<int>, int>(numLists, inputList);
     }
 
+    
+    /// <summary>
+    /// Generates a specified number of unique random lists from the input list.
+    /// </summary>
+    /// <typeparam name="T">The type of the input list.</typeparam>
+    /// <typeparam name="U">The type of the elements in the input list.</typeparam>
+    /// <param name="numCombos">The number of unique random lists to generate.</param>
+    /// <param name="inputList">The input list from which to generate the unique random lists.</param>
+    /// <returns>A list of unique random lists.</returns>
+    /// <exception cref="System.Exception">Thrown when the number of requested combinations is greater than the number of possible permutations.</exception>
     protected static List<T> GenUniqueRandomLists<T, U>(int numCombos, T inputList) 
         where T : List<U>
     {
@@ -602,6 +639,10 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
                 result.Add(combination);
             }
             ++attempts;
+        }
+
+        if (result.Count < numCombos) {
+            throw new Exception("Tried to generate unique random lists, but there are less permutations possible than the number requested (or you are REALLY unlucky).");
         }
 
         return result;

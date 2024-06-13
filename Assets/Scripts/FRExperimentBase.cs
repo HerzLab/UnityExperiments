@@ -212,7 +212,7 @@ namespace UnityEPL {
             var displayTime = startTime;
             while (true) {
                 textDisplayer.Display(message, LangStrings.Blank(), LangStrings.GenForCurrLang(problem + answer));
-                var keyCode = await inputManager.GetKeyTS();
+                var keyCode = await inputManager.WaitForKey();
                 var key = keyCode.ToString();
 
                 // Enter only numbers
