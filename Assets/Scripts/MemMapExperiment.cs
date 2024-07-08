@@ -30,8 +30,8 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
 
         if (!Config.skipIntros) {
             await QuitPrompt();
-            await Introduction();
             await MicrophoneTest();
+            await Introduction();
             await ConfirmStart();
         }
     }
@@ -39,7 +39,6 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         await Questioneer();
         await FinishExperiment();
     }
-    // TODO: JPB: (feature) Change ExperimentBase::RunHelper so that NextPracticeListPrompt can throw a custom exception to end experiment except for PostTrialStates 
     protected override async Task PracticeTrialStates() {
         StartTrial();
         await NextPracticeTrialPrompt();
