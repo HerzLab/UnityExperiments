@@ -40,7 +40,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         await FinishExperiment();
     }
     protected override async Task PracticeTrialStates() {
-        StartTrial();
+        await StartTrial();
         await NextPracticeTrialPrompt();
         await CountdownVideo();
         await Encoding();
@@ -52,10 +52,9 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         await PauseBeforeRecall();
         await RecallOrientation();
         await Recognition();
-        FinishTrial();
     }
     protected override async Task TrialStates() {
-        StartTrial();
+        await StartTrial();
         await NextTrialPrompt();
         await CountdownVideo();
         await Encoding();
@@ -67,7 +66,6 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         await PauseBeforeRecall();
         await RecallOrientation();
         await Recognition();
-        FinishTrial();
     }
 
     protected async Task RecogInstructions() {

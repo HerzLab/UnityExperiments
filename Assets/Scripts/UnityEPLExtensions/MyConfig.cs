@@ -29,7 +29,8 @@ namespace UnityEPL {
         public static int recallStimDurationMs { get { return GetSetting<int>("recallStimDurationMs"); } }
 
         public static bool splitWordsOverTwoSessions { get { return GetSetting<bool>("splitWordsOverTwoSessions"); } }
-
+        public static bool optionalExtraPracticeTrials { get { return GetSetting<bool>("optionalExtraPracticeTrials"); } }
+        public static bool onlyPracticeOnFirstSession { get { return GetSetting<bool>("onlyPracticeOnFirstSession"); } }
 
         // RepFRExperiment.cs
         public static int[] wordRepeats { get { return GetSetting<int[]>("wordRepeats"); } }

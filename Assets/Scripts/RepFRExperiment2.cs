@@ -35,7 +35,7 @@ namespace UnityEPL {
             await FinishExperiment();
         }
         protected override async Task PracticeTrialStates() {
-            StartTrial();
+            await StartTrial();
             await NextPracticeTrialPrompt();
             await CountdownVideo();
             await Orientation();
@@ -44,10 +44,9 @@ namespace UnityEPL {
             await PauseBeforeRecall();
             await RecallPrompt();
             await FreeRecall();
-            FinishTrial();
         }
         protected override async Task TrialStates() {
-            StartTrial();
+            await StartTrial();
             await NextTrialPrompt();
             await CountdownVideo();
             await Orientation();
@@ -56,7 +55,6 @@ namespace UnityEPL {
             await PauseBeforeRecall();
             await RecallPrompt();
             await FreeRecall();
-            FinishTrial();
         }
 
         // Pre-Trial States

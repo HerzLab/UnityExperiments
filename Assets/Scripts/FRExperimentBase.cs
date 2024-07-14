@@ -45,7 +45,7 @@ namespace UnityEPL {
             await FinishExperiment();
         }
         protected override async Task PracticeTrialStates() {
-            StartTrial();
+            await StartTrial();
             await NextPracticeTrialPrompt();
             await CountdownVideo();
             await Fixation();
@@ -54,10 +54,9 @@ namespace UnityEPL {
             await PauseBeforeRecall();
             await RecallOrientation();
             await FreeRecall();
-            FinishTrial();
         }
         protected override async Task TrialStates() {
-            StartTrial();
+            await StartTrial();
             await NextTrialPrompt();
             await CountdownVideo();
             await Fixation();
@@ -66,7 +65,6 @@ namespace UnityEPL {
             await PauseBeforeRecall();
             await RecallOrientation();
             await FreeRecall();
-            FinishTrial();
         }
         protected override void SendRamulatorStateMsg(HostPcStateMsg state, bool stateToggle, Dictionary<string, object> extraData = null) {
             var dict = (extraData != null) ? new Dictionary<string, object>(extraData) : new();
@@ -98,7 +96,29 @@ namespace UnityEPL {
         }
 
         // Trial States
-        protected void StartTrial() {
+        protected async Task StartTrial() {
+            int numPracticeTrials = Config.practiceLists;
+            int numTrials = currentSession.Count - numPracticeTrials;
+
+            // Control when the trials end
+            if (!currentSession.NextList()) {
+                EndCurrentTrials();
+            } else if (InPracticeTrials) {
+                if (Config.onlyPracticeOnFirstSession && Config.sessionNum > 1) {
+                    EndCurrentTrials();
+                } else if (Config.optionalExtraPracticeTrials && (Config.sessionNum > 1 || TrialNum > numPracticeTrials)) {
+                    // Only do practice trials on first session or upon request from participant
+                    var practiceQ = TrialNum == 1 ? LangStrings.DoPracticeQuestion() : LangStrings.RepeatPracticeQuestion();
+                    textDisplayer.Display("repeat practice question", LangStrings.Blank(), practiceQ);
+                    var keyCode = await inputManager.WaitForKey(new List<KeyCode>() { KeyCode.Y, KeyCode.N });
+                    if (keyCode == KeyCode.N) { EndCurrentTrials(); }
+                } else if (TrialNum > numPracticeTrials) {
+                    EndCurrentTrials();
+                }
+            } else if (!InPracticeTrials && TrialNum > numTrials) {
+                EndCurrentTrials();
+            }
+
             var stimList = currentSession.GetState().GetStimValues();
             bool stim = stimList.Values.Aggregate((current, next) => current || next);
             Dictionary<string, object> data = new() {
@@ -307,20 +327,6 @@ namespace UnityEPL {
             eventReporter.LogTS("end recall period");
 
             SendRamulatorStateMsg(HostPcStateMsg.RETRIEVAL(), false, new() { { "current_trial", TrialNum } });
-        }
-        protected void FinishTrial() {
-            if(!currentSession.NextList()) {
-                EndCurrentTrials();
-            }
-
-            if (TrialNum >= Config.practiceLists && InPracticeTrials) {
-                EndCurrentTrials();
-            }
-
-            int numTrials = currentSession.Count - Config.practiceLists;
-            if (TrialNum >= numTrials && !InPracticeTrials) {
-                EndCurrentTrials();
-            }
         }
 
         // Setup Functions

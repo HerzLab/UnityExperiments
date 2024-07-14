@@ -20,6 +20,16 @@ namespace UnityEPL {
         }); }
         
         // MemMapExperiment
+        public static LangString DoPracticeQuestion() { return new( new() {
+            { Language.English, "Would you like to do a practice round?"
+                + "\n\nPress Y to do a practice round."
+                + "\nPress N to continue to the real task." },
+        }); }
+        public static LangString RepeatPracticeQuestion() { return new( new() {
+            { Language.English, "Would you like to do another practice round?"
+                + "\n\nPress Y to do another practice round."
+                + "\nPress N to continue to the real task." },
+        }); }
         public static LangString RecognitionInstructions() { return new( new() {
             { Language.English, "For each word, indicate if it was shown in this list (‘old’) or not (‘new’) using the right/left shift keys.\n\n" +
             "<size=-20>Press any key to start</size>" },
