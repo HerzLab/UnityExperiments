@@ -13,7 +13,9 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.UIElements;
 
 namespace UnityEPL {
@@ -100,18 +102,23 @@ namespace UnityEPL {
             int numPracticeTrials = Config.practiceLists;
             int numTrials = currentSession.Count - numPracticeTrials;
 
+            Func<Task> optionalPracticeTrialQuestion = async () => {
+                var practiceQ = TrialNum == 1 ? LangStrings.DoPracticeQuestion() : LangStrings.RepeatPracticeQuestion();
+                textDisplayer.Display("repeat practice question", LangStrings.Blank(), practiceQ);
+                var keyCode = await inputManager.WaitForKey(new List<KeyCode>() { KeyCode.Y, KeyCode.N });
+                if (keyCode == KeyCode.N) { EndCurrentTrials(); }
+            };
+
             // Control when the trials end
             if (!currentSession.NextList()) {
                 EndCurrentTrials();
             } else if (InPracticeTrials) {
-                if (Config.onlyPracticeOnFirstSession && Config.sessionNum > 1) {
+                if (Config.optionalExtraPracticeTrials && Config.onlyPracticeOnFirstSession && Config.sessionNum > 1) {
+                    await optionalPracticeTrialQuestion();
+                } else if (Config.onlyPracticeOnFirstSession && Config.sessionNum > 1) {
                     EndCurrentTrials();
-                } else if (Config.optionalExtraPracticeTrials && (Config.sessionNum > 1 || TrialNum > numPracticeTrials)) {
-                    // Only do practice trials on first session or upon request from participant
-                    var practiceQ = TrialNum == 1 ? LangStrings.DoPracticeQuestion() : LangStrings.RepeatPracticeQuestion();
-                    textDisplayer.Display("repeat practice question", LangStrings.Blank(), practiceQ);
-                    var keyCode = await inputManager.WaitForKey(new List<KeyCode>() { KeyCode.Y, KeyCode.N });
-                    if (keyCode == KeyCode.N) { EndCurrentTrials(); }
+                } else if (Config.optionalExtraPracticeTrials && TrialNum > numPracticeTrials) {
+                    await optionalPracticeTrialQuestion();
                 } else if (TrialNum > numPracticeTrials) {
                     EndCurrentTrials();
                 }
