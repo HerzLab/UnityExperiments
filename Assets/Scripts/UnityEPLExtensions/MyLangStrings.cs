@@ -34,6 +34,9 @@ namespace UnityEPL {
             { Language.English, "For each word, indicate if it was shown in this list (‘old’) or not (‘new’) using the right/left shift keys.\n\n" +
             "<size=-20>Press any key to start</size>" },
         }); }
+        public static LangString RanOutOfUnusedWords() { return new( new() {
+            { Language.English, "Please show this screen to the experimenter.\n\nThis session ran out of unused words. Would you like to reset the word list and reuse words?\n\nYes (Y) or No (N)" },
+        }); }
         public static LangString QuestioneerQ1() { return new( new() {
             { Language.English, "Can you recall any specific moments during the experiment when you knew or felt stimulation was being delivered?\n\nYes (Y) or No (N)" },
         }); }

@@ -32,7 +32,7 @@ namespace UnityEPL {
         protected SessionType currentSession;
 
         protected override async Task PreTrialStates() {
-            SetupWordList();
+            await SetupWordList();
 
             if (!Config.skipIntros) {
                 await QuitPrompt();
@@ -330,7 +330,7 @@ namespace UnityEPL {
         }
 
         // Setup Functions
-        protected virtual void SetupWordList() {
+        protected virtual Task SetupWordList() {
             // Validate word repeats and counts
             var wordRepeats = Config.wordRepeats;
             var wordCounts = Config.wordCounts;
@@ -344,11 +344,14 @@ namespace UnityEPL {
             wordsPerList = wordCounts[0];
 
             // Read words and generate the random subset needed
+            SaveOriginalWordPool();
             var sourceWords = ReadWordpool<WordType>(manager.fileManager.GetWordList());
             var words = new WordRandomSubset<WordType>(sourceWords);
 
             // TODO: (feature) Load Session
-            currentSession = GenerateSession<WordRandomSubset<WordType>>(words);
+            currentSession = GenerateSession(words);
+
+            return Task.CompletedTask;
         }
 
         // Helper Functions
@@ -379,6 +382,12 @@ namespace UnityEPL {
         }
 
         // Word/Stim List Generation
+        protected virtual void SaveOriginalWordPool() {
+            // copy original wordpool to session directory
+            string wordpoolPath = manager.fileManager.GetWordList();
+            string origPath = Path.Combine(manager.fileManager.SessionPath(), "original_wordpool.txt");
+            File.Copy(wordpoolPath, origPath, true);
+        }
         protected virtual List<T> ReadWordpool<T>(string wordpoolPath) 
             where T : Word, new() 
         {
@@ -395,13 +404,9 @@ namespace UnityEPL {
                 sourceWords.Add(item);
             }
 
-            // copy full wordpool to session directory
-            string path = System.IO.Path.Combine(manager.fileManager.SessionPath(), "wordpool.txt");
-            File.WriteAllText(path, String.Join("\n", sourceWords));
-
-            // copy original wordpool to session directory
-            string origPath = System.IO.Path.Combine(manager.fileManager.SessionPath(), "original_wordpool.txt");
-            File.Copy(wordpoolPath, origPath, true);
+            // // copy full wordpool to session directory
+            // string path = System.IO.Path.Combine(manager.fileManager.SessionPath(), "wordpool.txt");
+            // File.WriteAllText(path, String.Join("\n", sourceWords));
 
             return sourceWords;
         }

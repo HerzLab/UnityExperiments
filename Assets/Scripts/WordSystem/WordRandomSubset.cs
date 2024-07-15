@@ -8,7 +8,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using UnityEditor;
 using UnityEPL;
 
 // Provides random subsets of a word pool without replacement.
@@ -17,6 +19,7 @@ public class WordRandomSubset<T>
 {
     protected List<T> shuffled;
     protected int index;
+    protected string usedWordsPath;
 
     public int Count => shuffled.Count;
     public int Index => index;
@@ -29,8 +32,9 @@ public class WordRandomSubset<T>
         index = 0;
     }
 
-    public WordRandomSubset(List<T> sourceWords, bool ignoreSplit = false) {
+    public WordRandomSubset(List<T> sourceWords, bool ignoreSplit = false, string usedWordsPath = null) {
         index = 0;
+        this.usedWordsPath = usedWordsPath;
 
         // Only keep the words for that session
         if (Config.splitWordsOverTwoSessions && !ignoreSplit) {
@@ -56,6 +60,11 @@ public class WordRandomSubset<T>
         int indexNow = index;
         index += amount;
 
-        return shuffled.GetRange(indexNow, amount);
+        var words = shuffled.GetRange(indexNow, amount);
+        if (usedWordsPath != null) {
+            File.AppendAllLines(usedWordsPath, words.ConvertAll(w => w.ToTSV()));
+        }
+
+        return words;
     }
 }

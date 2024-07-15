@@ -24,7 +24,7 @@ namespace UnityEPL {
         protected int uniqueWordsPerList;
 
         protected override async Task PreTrialStates() {
-            SetupWordList();
+            await SetupWordList();
 
             await QuitPrompt();
             await Introduction();
@@ -107,17 +107,20 @@ namespace UnityEPL {
                 }
             }
         }
-        protected override void SetupWordList() {
+        protected override Task SetupWordList() {
             SetupRepetitions();
 
             wordsPerList = repCounts.TotalWords();
             uniqueWordsPerList = repCounts.UniqueWords();
 
+            SaveOriginalWordPool();
             var sourceWords = ReadWordpool<Word>(manager.fileManager.GetWordList());
             var words = new WordRandomSubset<Word>(sourceWords);
 
             // TODO: (feature) Load Session
             currentSession = GenerateSession(words);
+
+            return Task.CompletedTask;
         }
 
         // Word/Stim List Generation

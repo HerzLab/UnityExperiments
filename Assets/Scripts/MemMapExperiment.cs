@@ -26,7 +26,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     [SerializeField] protected OldNewKeys oldNewKeys;
 
     protected override async Task PreTrialStates() {
-        SetupWordList();
+        await SetupWordList();
 
         if (!Config.skipIntros) {
             await QuitPrompt();
@@ -258,7 +258,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         if (q1Resp == KeyCode.Y) {
             await textDisplayer.PressAnyKey("Question 1a", LangStrings.Blank(), LangStrings.QuestioneerQ1a());
 
-            string wavPath = System.IO.Path.Combine(manager.fileManager.SessionPath(), "q1a.wav");
+            string wavPath = Path.Combine(manager.fileManager.SessionPath(), "q1a.wav");
             manager.recorder.StartRecording(wavPath);
             textDisplayer.Display("Question 1a recording", LangStrings.Blank(), LangStrings.QuestioneerQ1b());
             await inputManager.WaitForKey();
@@ -267,7 +267,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     }
 
     // Word/Stim List Generation
-    protected override void SetupWordList() {
+    protected override async Task SetupWordList() {
         // Validate word repeats and counts
         var wordRepeats = Config.wordRepeats;
         var wordCounts = Config.wordCounts;
@@ -290,23 +290,52 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         wordsPerList = wordCounts[0];
         lureWordsPerList = lureWordCounts[0];
 
-        // Read practice words and generate the random subset needed
-        var sourcePracticeWords = ReadWordpool<Word>(manager.fileManager.GetPracticeWordList());
-        var practiceWords = new WordRandomSubset<Word>(sourcePracticeWords, true);
-
-        // Read words, remove any practice words, and generate the random subset needed
-        var sourceWords = ReadWordpool<Word>(manager.fileManager.GetWordList());
-        var words = new WordRandomSubset<Word>(sourceWords);
-
-        // Set the WordDisplay sizes
-        wordDisplayer.SetWordSize(sourceWords);
-
         // Set the OldNewKeys sizes
         oldNewKeys.SetKeySize();
         oldNewKeys.SetupKeyPositions();
-        
-        // TODO: (feature) Load Session
-        currentSession = GenerateSession<WordRandomSubset<Word>>(practiceWords, words);
+
+        // Read practice words
+        var sourcePracticeWords = ReadWordpool<Word>(manager.fileManager.GetPracticeWordList());
+
+        // Read words, save the original words, and set the WordDisplay sizes
+        SaveOriginalWordPool();
+        var sourceWords = ReadWordpool<Word>(manager.fileManager.GetWordList());
+        wordDisplayer.SetWordSize(sourceWords);
+
+        // Allow for splitting over multiple sessions
+        var usedWordsPath = Path.Combine(manager.fileManager.SessionPath(), "usedWords.txt");
+        var unusedWords = new List<Word>(sourceWords);
+        var priorSessionPath = manager.fileManager.PriorSessionPath();
+        if (priorSessionPath != null) {
+            var priorUsedWordsPath = Path.Combine(priorSessionPath, "usedWords.txt");
+            File.Copy(priorUsedWordsPath, usedWordsPath, true);
+            var usedWords = ReadWordpool<Word>(priorUsedWordsPath);
+            unusedWords.RemoveAll(uw => usedWords.Any(w => w.word == uw.word));
+        }
+
+        // Generate the random subset needed
+        // If the number of words is less than the words needed, then ask the user if they want to reset word usage and resuse words, and do it again
+        // TODO: JPB: (feature) Move the GenerateSession word reuse to WordRandomSubset (or something)
+        // TODO: JPB: (feature) Load Session
+        var practiceWords = new WordRandomSubset<Word>(sourcePracticeWords, true);
+        var words = new WordRandomSubset<Word>(unusedWords, usedWordsPath: usedWordsPath);
+        try {
+            currentSession = GenerateSession(practiceWords, words);
+        } catch (Exception e) {
+            textDisplayer.Display("ran out of words", LangStrings.Blank(), LangStrings.RanOutOfUnusedWords());
+            KeyCode keyCode = await inputManager.WaitForKey(ynKeyCodes);
+            textDisplayer.Clear();
+            if (keyCode == KeyCode.Y) {
+                // Reset the used words
+                File.Delete(usedWordsPath);
+                unusedWords = new List<Word>(sourceWords);
+            } else {
+                ErrorNotifier.ErrorTS(new Exception($"The number of unused words {unusedWords.Count}/{sourceWords.Count} is less than the words needed", e));
+            }
+            practiceWords = new WordRandomSubset<Word>(sourcePracticeWords, true);
+            words = new WordRandomSubset<Word>(unusedWords, usedWordsPath: usedWordsPath);
+            currentSession = GenerateSession(practiceWords, words);
+        }
     }
 
     protected MemMapTrial<PairedWord> MakeTrial<U>(U randomSubset, bool encStim, bool recallStim, bool recogStim, List<bool> wordOrders, List<int> recallOrders, List<int> recogOrders) 
