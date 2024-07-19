@@ -54,69 +54,6 @@ Testing Setup
 
 
 
-*************
-Making an Experiment
-*************
-It's really easy to start making a basic experiment.
-
-=============
-Basic Instructions
-=============
-
-#. git submodule add git@github.com:pennmem/UnityEPL.git Assets/
-#. Add asmref for UnityEPL in Scripts
-#. Inherit ExperimentBase on your main experiment class
-#. Implement the abstract methods PreTrials, TrialStates, and PostTrials
-
-=============
-Adding Config variables
-=============
-
-#. Add asmref for UnityEPL in Scripts
-#. Create a partial class named Config
-#. Implement each item in your config, so that it looks like this
-
-.. code:: csharp
-
-    public static bool elememOn { get { return Config.GetSetting<bool>("elememOn"); } }
-
-
-=============
-Types of Experiments and Components Available
-=============
-There are many types of experiments, but here are a few common ones and the useful components for them.
-There is also a list of generally useful componenets
-
--------------
-Word List Experiments
--------------
-TextDsplayer
-SoundRecorder
-VideoPlayer
-
--------------
-Spacial Experiments
--------------
-SpawnItems
-PickupItems
-
--------------
-Closed-Loop Experiments
--------------
-EventLoop
-ElememInterface
-
--------------
-General Components
--------------
-Config
-Logging
-ErrorNotifier
-NetworkInterface
-InputManager
-List/Array shuffling (including ones that are consistent per participant)
-Random values that are consistent per participant
-
 
 *************
 FAQ
@@ -127,4 +64,4 @@ See the FAQ Document
 *************
 Authors
 *************
-James Bruska, Connor Keane, Ryan Colyer
+James Bruska
