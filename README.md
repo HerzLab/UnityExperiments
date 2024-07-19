@@ -6,7 +6,7 @@ The program containing all Unity Experiments for the Herz lab.
 
 This holds some basic information about getting started with the experiments.
 
-For more information than what is in this document (or to see information about specific experiments), please see the [Documentation folder](/Documentation/).
+For more information than what is in this document (or to see information about specific experiments), please see the [Documentation](/Documentation) folder.
 
 ## Development Setup
 

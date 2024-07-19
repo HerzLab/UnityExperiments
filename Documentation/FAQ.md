@@ -10,9 +10,9 @@ These are general questions often asked.
     - Because we support a lot of tasks.
 
 
-## Common Unity Errors
+## Common Errors
 
-These are general questions often asked.
+These are common errors when running the project in unity and how to fix them. Please also check the [UnityEPL FAQ](/Packages/UnityEPL/Documentation/FAQ.rst#CommonErrors) documentation.
 
 1. #### You start the experiment, but all you see is the empty background (looks like the sky)
 
@@ -24,7 +24,7 @@ These are general questions often asked.
         }
         ```
 
-    - Or you need to make sure that there is a configs folder defined on your Desktop (when running from the Unity Editor). Just copy the configs folder from the UnityEPL repo to your Desktop and anywhere that the executable is located.
+    - Or you need to make sure that there is a configs folder defined on your Desktop (when running from the Unity Editor). Just copy the [configs folder](/installer/configs/) from the repo to your Desktop and anywhere that the executable is located.
 
 1. #### You start the experiment and it hangs
 
