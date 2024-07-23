@@ -8,22 +8,27 @@ public class OldNewKeys : MonoBehaviour {
     public TextMeshProUGUI rightKey;
     public TextMeshProUGUI leftKey;
 
-    protected float fontSize = 0;
+    protected float smallFontSize = 0;
+    protected float largeFontSize = 0;
     protected bool oldNewPosition = false;
     protected bool isOn = false;
+    
 
     public void SetKeySize() {
         var strList = new List<string>() { "old", "new" };
-        fontSize = (int)UnityUtilities.FindMaxFittingFontSize(strList, rightKey);
-        fontSize -= 10; // decrease font size for enabling enlargment
+        rightKey.Bold(true);
+        largeFontSize = (int)rightKey.FindMaxFittingFontSize(strList);
+        smallFontSize = largeFontSize - 6; // decrease font size for enabling enlargment
 
         rightKey.enableAutoSizing = false;
-        rightKey.fontSizeMax = fontSize;
-        rightKey.fontSize = fontSize;
+        rightKey.fontSizeMax = largeFontSize;
+        rightKey.fontSize = smallFontSize;
+        rightKey.Bold(false);
 
         leftKey.enableAutoSizing = false;
-        leftKey.fontSizeMax = fontSize;
-        leftKey.fontSize = fontSize;
+        leftKey.fontSizeMax = largeFontSize;
+        leftKey.fontSize = smallFontSize;
+        leftKey.Bold(false);
     }
 
     public void SetupKeyPositions() {
@@ -40,12 +45,12 @@ public class OldNewKeys : MonoBehaviour {
             leftKey.text = "new";
             rightKey.text = "old";
         }
-        leftKey.fontSizeMax = fontSize;
-        leftKey.fontSize = fontSize;
-        leftKey.fontStyle &= ~FontStyles.Bold;
-        rightKey.fontSizeMax = fontSize;
-        rightKey.fontSize = fontSize;
-        rightKey.fontStyle &= ~FontStyles.Bold;
+        leftKey.fontSizeMax = largeFontSize;
+        leftKey.fontSize = smallFontSize;
+        leftKey.Bold(false);
+        rightKey.fontSizeMax = largeFontSize;
+        rightKey.fontSize = smallFontSize;
+        rightKey.Bold(false);
 
         isOn = true;
     }
@@ -63,25 +68,21 @@ public class OldNewKeys : MonoBehaviour {
                     { "key", KeyCode.LeftShift.ToString() }
                 });
                 // Bold left key
-                leftKey.fontSizeMax = fontSize + 6;
-                leftKey.fontSize = fontSize + 6;
-                leftKey.fontStyle |= FontStyles.Bold;
+                leftKey.fontSize = largeFontSize;
+                leftKey.Bold(true);
                 // Unbold right key
-                rightKey.fontSizeMax = fontSize;
-                rightKey.fontSize = fontSize;
-                rightKey.fontStyle &= ~FontStyles.Bold;
+                rightKey.fontSize = smallFontSize;
+                rightKey.Bold(false);
             } else if (InputManager.Instance.GetKeyDown(KeyCode.RightShift)) {
                 EventReporter.Instance.LogTS("old new keys", new() {
                     { "key", KeyCode.RightShift.ToString() }
                 });
                 // Bold right key
-                rightKey.fontSizeMax = fontSize + 6;
-                rightKey.fontSize = fontSize + 6;
-                rightKey.fontStyle |= FontStyles.Bold;
+                rightKey.fontSize = largeFontSize;
+                rightKey.Bold(true);
                 // Unbold left key
-                leftKey.fontSizeMax = fontSize;
-                leftKey.fontSize = fontSize;
-                leftKey.fontStyle &= ~FontStyles.Bold;
+                leftKey.fontSize = smallFontSize;
+                leftKey.Bold(false);
             }
         }
     }
