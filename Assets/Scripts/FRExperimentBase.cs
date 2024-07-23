@@ -71,7 +71,7 @@ namespace UnityEPL {
         protected override void SendRamulatorStateMsg(HostPcStateMsg state, bool stateToggle, Dictionary<string, object> extraData = null) {
             var dict = (extraData != null) ? new Dictionary<string, object>(extraData) : new();
             if (state != HostPcStateMsg.WORD()) {
-                dict["phase_type"] = currentSession.GetState().encodingStim;
+                dict["phase_type"] = currentSession?.GetState().encodingStim ?? false;
             }
             manager.ramulator?.SendStateMsg(state, stateToggle, dict);
         }
