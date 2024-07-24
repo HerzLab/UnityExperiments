@@ -94,7 +94,7 @@ namespace UnityEPL {
             manager.lowBeep.Play();
         }
         protected async Task FinishExperiment() {
-            await manager.textDisplayer.PressAnyKey("display end message", LangStrings.SessionEnd());
+            await textDisplayer.PressAnyKey("display end message", LangStrings.SessionEnd());
         }
 
         // Trial States
@@ -110,9 +110,8 @@ namespace UnityEPL {
             };
 
             // Control when the trials end
-            if (!currentSession.NextList()) {
-                EndCurrentTrials();
-            } else if (InPracticeTrials) {
+            // TODO: JPB: (needed) (bug) OptionalExtraPracticeTrails fails hard with GenSessions....
+            if (InPracticeTrials) {
                 if (Config.optionalExtraPracticeTrials && Config.onlyPracticeOnFirstSession && Config.sessionNum > 1) {
                     await optionalPracticeTrialQuestion();
                 } else if (Config.onlyPracticeOnFirstSession && Config.sessionNum > 1) {
@@ -122,7 +121,10 @@ namespace UnityEPL {
                 } else if (TrialNum > numPracticeTrials) {
                     EndCurrentTrials();
                 }
-            } else if (!InPracticeTrials && TrialNum > numTrials) {
+            } else if (TrialNum > numTrials) {
+                EndCurrentTrials();
+            } else if (TrialNum != 1 && !currentSession.NextList()) {
+                // The TrialNum is used because NextList updates the list index, but the first trial that shouldn't happen
                 EndCurrentTrials();
             }
 

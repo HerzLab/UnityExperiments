@@ -410,7 +410,9 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         var session = new MemMapSession<PairedWord>();
 
         // Practice Lists
-        for (int i = 0; i < Config.practiceLists; i++) {
+        bool noPractice = Config.onlyPracticeOnFirstSession && Config.sessionNum > 1;
+        int numPracticeLists = noPractice ? 0 : Config.practiceLists;
+        for (int i = 0; i < numPracticeLists; i++) {
             var wordOrders = Enumerable.Range(0, wordsPerList).Select(i => i % 2 == 0).ToList();
             var recallOrders = Enumerable.Range(0, wordsPerList).ToList().Shuffle(UnityEPL.Random.StableRnd);
             var recogOrders = GenZigZagList(wordsPerList, lureWordsPerList);

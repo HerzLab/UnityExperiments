@@ -60,11 +60,13 @@ namespace UnityEPL {
         public StimWordList(List<T> word_list, List<bool> stim_list = null, double score = Double.NaN) {
             words_ = new List<T>(word_list);
             score_ = score;
-            if (stims_ == null) {
+            if (stim_list == null) {
                 stims_ = new();
                 for (int i = 0; i < words_.Count; i++) {
                     stims_.Add(false);
                 }
+            } else {
+                stims_ = new List<bool>(stim_list);
             }
 
             if (words_.Count != stims_.Count) {

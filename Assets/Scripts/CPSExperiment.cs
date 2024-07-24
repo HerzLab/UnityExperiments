@@ -51,7 +51,7 @@ public class CPSExperiment : ExperimentBase<CPSExperiment> {
     }
 
     protected async Task FinishExperiment() {
-        await manager.textDisplayer.PressAnyKey("display end message", LangStrings.SessionEnd());
+        await textDisplayer.PressAnyKey("display end message", LangStrings.SessionEnd());
     }
 
     protected async Task ShowVideo() {
@@ -70,7 +70,7 @@ public class CPSExperiment : ExperimentBase<CPSExperiment> {
         };
         eventReporter.LogTS("movie", movieInfo);
 
-        await manager.textDisplayer.PressAnyKey("instructions", LangStrings.CPSInstructions());
+        await textDisplayer.PressAnyKey("instructions", LangStrings.CPSInstructions());
 
         UnityEngine.Debug.Log(1);
         await manager.hostPC.SendStateMsgTS(HostPcStateMsg.ENCODING(), movieInfo);
