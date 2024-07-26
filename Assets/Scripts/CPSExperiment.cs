@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEPL;
 
-public class CPSExperiment : ExperimentBase<CPSExperiment> {
+public class CPSExperiment : ExperimentBase<CPSExperiment, CPSSession, CPSTrial> {
     protected override void AwakeOverride() { }
 
     protected void Start() {

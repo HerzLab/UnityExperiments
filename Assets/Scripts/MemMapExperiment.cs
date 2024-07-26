@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEPL;
 
-public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedWord>, MemMapSession<PairedWord>> {
+public class MemMapExperiment : WordListExperiment<PairedWord, MemMapTrial<PairedWord>, MemMapSession<PairedWord>> {
     protected readonly List<KeyCode> skipKeys = new List<KeyCode> {KeyCode.Space};
     protected readonly List<KeyCode> ynKeyCodes = new List<KeyCode> {KeyCode.Y, KeyCode.N};
 
@@ -90,12 +90,12 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     }
 
     protected new async Task Encoding() {
-        manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ENCODING(), new() { { "current_trial", TrialNum } });
+        manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ENCODING(), new() { { "current_trial", session.TrialNum } });
 
         // Get encoding state variables
         int[] isiLimits = Config.interStimulusDurationMs;
         int[] stimEarlyOnsetMsLimits = Config.stimEarlyOnsetMs;
-        var encStimWords = currentSession.GetState().encoding;
+        var encStimWords = session.Trial.encoding;
 
         for (int i = 0; i < encStimWords.Count; ++i) {
             var wordStim = encStimWords[i];
@@ -141,7 +141,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         // Get cued recall state variables
         int[] isiLimits = Config.interStimulusDurationMs;
         int[] stimEarlyOnsetMsLimits = Config.stimEarlyOnsetMs;
-        var recallStimWords = currentSession.GetState().recall;
+        var recallStimWords = session.Trial.recall;
 
         for (int i = 0; i < recallStimWords.Count; ++i) {
             var wordStim = recallStimWords[i];
@@ -162,7 +162,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
 
             // Start recording for the cued recall
             string wavPath = Path.Combine(manager.fileManager.SessionPath(), 
-                "cuedRecall_" + currentSession.GetListIndex() + "_" + i +".wav");
+                "cuedRecall_" + session.TrialNum + "_" + i +".wav");
             manager.recorder.StartRecording(wavPath);
             eventReporter.LogTS("start recall period");
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(Config.stimulusDurationMs+Config.recallDurationMs));
@@ -196,7 +196,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         // Get recognition state variables
         int[] isiLimits = Config.interStimulusDurationMs;
         int[] stimEarlyOnsetMsLimits = Config.stimEarlyOnsetMs;
-        var recogStimWords = currentSession.GetState().recognition;
+        var recogStimWords = session.Trial.recognition;
 
         for (int i = 0; i < recogStimWords.Count; ++i) {
             var wordStim = recogStimWords[i];
@@ -217,7 +217,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
 
             // Start recording for the cued recall
             string wavPath = Path.Combine(manager.fileManager.SessionPath(), 
-                "recognitionRecall_" + currentSession.GetListIndex() + "_" + i +".wav");
+                "recognitionRecall_" + session.TrialNum + "_" + i +".wav");
             manager.recorder.StartRecording(wavPath);
             eventReporter.LogTS("start recall period");
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(Config.stimulusDurationMs+Config.recogDurationMs));
@@ -297,33 +297,37 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         oldNewKeys.SetKeySize();
         oldNewKeys.SetupKeyPositions();
 
-        // Read practice words
-        var sourcePracticeWords = ReadWordpool<Word>(manager.fileManager.GetPracticeWordList());
+        // Read practice words and generate practice session
+        var sourcePracticeWords = ReadWordpool<Word>(manager.fileManager.GetPracticeWordList(), "practice_wordpool");
+        var practiceWords = new WordRandomSubset<Word>(sourcePracticeWords, true);
+        practiceSession = GeneratePracticeSession(practiceWords);
 
         // Read words, save the original words, and set the WordDisplay sizes
-        SaveOriginalWordPool();
-        var sourceWords = ReadWordpool<Word>(manager.fileManager.GetWordList());
+        var sourceWords = ReadWordpool<Word>(manager.fileManager.GetWordList(), "wordpool");
         wordDisplayer.SetWordSize(sourceWords);
 
         // Allow for splitting over multiple sessions
-        var usedWordsPath = Path.Combine(manager.fileManager.SessionPath(), "usedWords.txt");
+        var usedWordsPath = Path.Combine(manager.fileManager.SessionPath(), "usedWords.tsv");
         var unusedWords = new List<Word>(sourceWords);
         var priorSessionPath = manager.fileManager.PriorSessionPath();
         if (priorSessionPath != null) {
-            var priorUsedWordsPath = Path.Combine(priorSessionPath, "usedWords.txt");
+            var priorUsedWordsPath = Path.Combine(priorSessionPath, "usedWords.tsv");
             File.Copy(priorUsedWordsPath, usedWordsPath, true);
             var usedWords = ReadWordpool<Word>(priorUsedWordsPath);
             unusedWords.RemoveAll(uw => usedWords.Any(w => w.word == uw.word));
+        } else {
+            var titleLine = File.ReadLines(manager.fileManager.GetWordList()).First();
+            File.WriteAllLines(usedWordsPath, new string[1]{titleLine});
         }
+
 
         // Generate the random subset needed
         // If the number of words is less than the words needed, then ask the user if they want to reset word usage and resuse words, and do it again
         // TODO: JPB: (feature) Move the GenerateSession word reuse to WordRandomSubset (or something)
         // TODO: JPB: (feature) Load Session
-        var practiceWords = new WordRandomSubset<Word>(sourcePracticeWords, true);
         var words = new WordRandomSubset<Word>(unusedWords, usedWordsPath: usedWordsPath);
         try {
-            currentSession = GenerateSession(practiceWords, words);
+            normalSession = GenerateSession(words);
         } catch (Exception e) {
             textDisplayer.Display("ran out of words", LangStrings.Blank(), LangStrings.RanOutOfUnusedWords());
             KeyCode keyCode = await inputManager.WaitForKey(ynKeyCodes);
@@ -337,7 +341,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             }
             practiceWords = new WordRandomSubset<Word>(sourcePracticeWords, true);
             words = new WordRandomSubset<Word>(unusedWords, usedWordsPath: usedWordsPath);
-            currentSession = GenerateSession(practiceWords, words);
+            normalSession = GenerateSession(words);
         }
     }
 
@@ -407,10 +411,12 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     }
 
     
-    protected MemMapSession<PairedWord> GenerateSession<T>(T practiceRandomSubset, T randomSubset) 
+    protected MemMapSession<PairedWord> GeneratePracticeSession<T>(T randomSubset) 
         where T : WordRandomSubset<Word>
     {
-        var session = new MemMapSession<PairedWord>();
+        var session = new MemMapSession<PairedWord> {
+            isPractice = true
+        };
 
         // Practice Lists
         bool noPractice = Config.onlyPracticeOnFirstSession && Config.sessionNum > 1;
@@ -419,15 +425,32 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             var wordOrders = Enumerable.Range(0, wordsPerList).Select(i => i % 2 == 0).ToList();
             var recallOrders = Enumerable.Range(0, wordsPerList).ToList().Shuffle(UnityEPL.Random.StableRnd);
             var recogOrders = GenZigZagList(wordsPerList, lureWordsPerList);
-            session.Add(MakeTrial(practiceRandomSubset, false, false, false, wordOrders, recallOrders, recogOrders));
+            session.AddTrial(MakeTrial(randomSubset, false, false, false, wordOrders, recallOrders, recogOrders));
         }
+
+        // Write the lists to file
+        for (int i = 0; i < session.trials.Count; i++) {
+            WriteLstFile(session.trials[i].encoding, i, session.isPractice);
+        }
+
+        // Debugging
+        session.DebugPrintAll();
+        session.PrintAllWordsToDebugLog();
+
+        return session;
+    }
+
+    protected new MemMapSession<PairedWord> GenerateSession<T>(T randomSubset) 
+        where T : WordRandomSubset<Word>
+    {
+        var session = new MemMapSession<PairedWord>();
 
         // Pre No-Stim Lists
         for (int i = 0; i < Config.preNoStimLists; i++) {
             var wordOrders = Enumerable.Range(0, wordsPerList).Select(i => i % 2 == 0).ToList();
             var recallOrders = Enumerable.Range(0, wordsPerList).ToList().Shuffle();
             var recogOrders = Enumerable.Range(0, wordsPerList+lureWordsPerList).ToList().Shuffle();
-            session.Add(MakeTrial(randomSubset, false, false, false, wordOrders, recallOrders, recogOrders));
+            session.AddTrial(MakeTrial(randomSubset, false, false, false, wordOrders, recallOrders, recogOrders));
         }
 
         // Check for invalid list types
@@ -552,24 +575,24 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             for (int i=0; i < numListsPerBlock; ++i) {
                 var randomizedList = new MemMapSession<PairedWord>();
                 if (i < numEncListsInBlock) {
-                    randomizedList.Add(encLists[i]);
+                    randomizedList.AddTrial(encLists[i]);
                 }
                 if (i < numRetListsInBlock) {
-                    randomizedList.Add(retLists[i]);
+                    randomizedList.AddTrial(retLists[i]);
                 }
                 if (i < numEncAndRetListsInBlock) {
-                    randomizedList.Add(encAndRetLists[i]);
+                    randomizedList.AddTrial(encAndRetLists[i]);
                 }
                 if (i < numNoStimListsInBlock) {
-                    randomizedList.Add(noStimLists[i]);
+                    randomizedList.AddTrial(noStimLists[i]);
                 }
-                session.AddRange(randomizedList.Shuffle());
+                session.AddTrials(randomizedList.trials.Shuffle());
             }
         }
 
         // Write the lists to file
-        for (int i = 0; i < session.Count; i++) {
-            WriteLstFile(session[i].encoding, i);
+        for (int i = 0; i < session.NumTrials; i++) {
+            WriteLstFile(session.trials[i].encoding, i, session.isPractice);
         }
 
         // Debugging

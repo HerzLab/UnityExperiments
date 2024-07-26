@@ -5,7 +5,7 @@
     "prefix": "any",
     "stimMode": "none",
 
-    "wordpool": "resources/ram_wordpool_en.txt",
+    "wordpool": "resources/ram_wordpool_en.tsv",
     "introductionVideo": "resources/FR1_instructions.mov",
     "countdownVideo": "resources/countdown_10s.mov",
 

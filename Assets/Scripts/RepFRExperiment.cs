@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEPL;
 
-public class RepFRExperiment : ExperimentBase<RepFRExperiment> {
+public class RepFRExperiment : ExperimentBase<RepFRExperiment, FRSession<Word>, FRTrial<Word>> {
     protected override void AwakeOverride() { }
 
     protected void Start() {
@@ -36,7 +36,7 @@ public class RepFRExperiment : ExperimentBase<RepFRExperiment> {
         await RecordTest();
         //SetVideo();
         //await manager.videoControl.PlayVideo();
-        EndCurrentTrials();
+        EndCurrentSession();
     }
 
     protected override Task PreTrialStates() { return Task.CompletedTask; }

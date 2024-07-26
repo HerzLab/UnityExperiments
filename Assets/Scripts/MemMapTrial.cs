@@ -6,8 +6,28 @@
 //UnityExperiments is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 //You should have received a copy of the GNU General Public License along with UnityExperiments. If not, see <https://www.gnu.org/licenses/>. 
 
+using System;
+using System.Collections.Generic;
 using UnityEPL;
 
-public class FRExperiment : WordListExperiment<Word, FRTrial<Word>, FRSession<Word>> {
-    // This is here to make a template completed version of the FRExperimentBase class
+
+public class MemMapTrial<T> : FRTrial<T> 
+    where T : PairedWord
+{
+    public StimWordList<T> recognition;
+    public bool recognitionStim;
+
+    public override Dictionary<string, bool> GetStimValues() {
+        var stimValues = base.GetStimValues();
+        stimValues.Add("recogStim", recognitionStim);
+        return stimValues;
+    }
+
+    public MemMapTrial(StimWordList<T> encodingList, StimWordList<T> recallList, StimWordList<T> recogList,
+        bool setEncodingStim = false, bool setRecallStim = false, bool setRecogStim = false) :
+        base(encodingList, recallList, setEncodingStim, setRecallStim)
+    {
+        recognition = recogList;
+        recognitionStim = setRecogStim;
+    }
 }

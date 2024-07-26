@@ -78,8 +78,6 @@ public class MathDiplayer : MonoBehaviour {
             { "equation", equation.text },
         };
         EventReporter.Instance.LogTS("math distractor new problem", dataDict);
-
-        
     }
 
     /// <summary>

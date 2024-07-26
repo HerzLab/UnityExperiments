@@ -19,7 +19,7 @@ using UnityEngine.UIElements;
 
 namespace UnityEPL {
 
-    public class RepFRExperiment2 : FRExperimentBase<Word, FRRun<Word>, FRSession<Word>> {
+    public class RepFRExperiment2 : WordListExperiment<Word, FRTrial<Word>, FRSession<Word>> {
         protected RepCounts repCounts = null;
         protected int uniqueWordsPerList;
 
@@ -113,23 +113,22 @@ namespace UnityEPL {
             wordsPerList = repCounts.TotalWords();
             uniqueWordsPerList = repCounts.UniqueWords();
 
-            SaveOriginalWordPool();
-            var sourceWords = ReadWordpool<Word>(manager.fileManager.GetWordList());
+            var sourceWords = ReadWordpool<Word>(manager.fileManager.GetWordList(), "wordpool");
             var words = new WordRandomSubset<Word>(sourceWords);
 
             // TODO: (feature) Load Session
-            currentSession = GenerateSession(words);
+            session = GenerateSession(words);
 
             return Task.CompletedTask;
         }
 
         // Word/Stim List Generation
-        protected override FRRun<Word> MakeRun<U>(U randomSubset, bool encStim, bool recStim) {
+        protected override FRTrial<Word> MakeRun<U>(U randomSubset, bool encStim, bool recStim) {
             var inputWords = randomSubset.Get(uniqueWordsPerList).ToList();
             var blankWords = new List<Word>(Enumerable.Range(1, wordsPerList).Select(i => new Word("")).ToList());
             var encList = RepWordGenerator.Generate(repCounts, inputWords, encStim);
             var recList = RepWordGenerator.Generate(repCounts, blankWords, recStim);
-            return new FRRun<Word>(encList, recList, encStim, recStim);
+            return new FRTrial<Word>(encList, recList, encStim, recStim);
         }
     }
 
