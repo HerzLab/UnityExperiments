@@ -29,10 +29,10 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         await SetupWordList();
 
         if (!Config.skipIntros) {
-            await QuitPrompt();
-            await MicrophoneTest();
-            await Introduction();
-            await ConfirmStart();
+            // await QuitPrompt();
+            // await MicrophoneTest();
+            // await Introduction();
+            // await ConfirmStart();
         }
     }
     protected override async Task PostTrialStates() {
@@ -55,9 +55,9 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     }
     protected override async Task TrialStates() {
         await StartTrial();
-        await NextTrialPrompt();
-        await CountdownVideo();
-        await Encoding();
+        // await NextTrialPrompt();
+        // await CountdownVideo();
+        // await Encoding();
         await MathDistractor();
         await PauseBeforeRecall();
         await RecallOrientation();
@@ -128,6 +128,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
 
             // manager.lowBeep.Play();
         }
+        wordDisplayer.TurnOff();
     }
 
     protected async Task PauseBeforeRecog() {
@@ -188,6 +189,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             eventReporter.LogTS("stop recall period");
             manager.lowBeep.Play();
         }
+        wordDisplayer.TurnOff();
     }
 
     protected async Task Recognition() {
@@ -244,6 +246,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             oldNewKeys.TurnOff();
             manager.lowBeep.Play();
         }
+        wordDisplayer.TurnOff();
     }
 
     protected async Task Questioneer() {
@@ -262,7 +265,7 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
             manager.recorder.StartRecording(wavPath);
             textDisplayer.Display("Question 1a recording", LangStrings.Blank(), LangStrings.QuestioneerQ1b());
             await inputManager.WaitForKey();
-            var clip = manager.recorder.StopRecording();
+            manager.recorder.StopRecording();
         }
     }
 

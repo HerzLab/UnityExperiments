@@ -14,6 +14,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using TMPro;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UIElements;
@@ -32,6 +33,8 @@ namespace UnityEPL {
 
         protected int wordsPerList;
         protected SessionType currentSession;
+
+        [SerializeField] protected MathDistractorDiplayer mathDiplayer;
 
         protected override async Task PreTrialStates() {
             await SetupWordList();
@@ -227,41 +230,26 @@ namespace UnityEPL {
             SendRamulatorStateMsg(HostPcStateMsg.DISTRACT(), true, new() { { "current_trial", TrialNum } });
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.DISTRACT(), new() { { "current_trial", TrialNum } });
 
-            int[] nums = new int[] {
-                UnityEPL.Random.Rnd.Next(1, 10),
-                UnityEPL.Random.Rnd.Next(1, 10),
-                UnityEPL.Random.Rnd.Next(1, 10) };
-            string message = "display distractor problem";
-            string problem = nums[0].ToString() + " + " +
-                             nums[1].ToString() + " + " +
-                             nums[2].ToString() + " = ";
-            string answer = "";
+            const int numValuesInEquation = 3;
+            mathDiplayer.SetNewRandomEquation(numValuesInEquation);
 
             var startTime = Clock.UtcNow;
-            var displayTime = startTime;
             while (true) {
-                textDisplayer.Display(message, LangStrings.Blank(), LangStrings.GenForCurrLang(problem + answer));
                 var keyCode = await inputManager.WaitForKey();
                 var key = keyCode.ToString();
 
                 // Enter only numbers
                 if (IsNumericKeyCode(keyCode)) {
                     key = key[key.Length - 1].ToString(); // Unity gives numbers as Alpha# or Keypad#
-                    if (answer.Length < 3) {
-                        answer += key;
-                    }
-                    message = "modify distractor answer";
+                    mathDiplayer.AddDigitToAnswer(int.Parse(key));
                 }
                 // Delete key removes last character from answer
                 else if (keyCode == KeyCode.Backspace || keyCode == KeyCode.Delete) {
-                    if (answer != "") {
-                        answer = answer.Substring(0, answer.Length - 1);
-                    }
-                    message = "modify distractor answer";
+                    mathDiplayer.RemoveDigitFromAnswer();
                 }
                 // Submit answer
                 else if (keyCode == KeyCode.Return || keyCode == KeyCode.KeypadEnter) {
-                    bool correct = int.Parse(answer) == nums.Sum();
+                    (bool correct, int responseTimeMs) = mathDiplayer.SubmitAnswer();
 
                     // Play tone depending on right or wrong answer
                     if (correct) {
@@ -271,37 +259,16 @@ namespace UnityEPL {
                     }
 
                     // Report results
-                    message = "distractor answered";
-                    textDisplayer.Display(message, LangStrings.Blank(),LangStrings.GenForCurrLang(problem + answer));
-                    int responseTimeMs = (int)(Clock.UtcNow - displayTime).TotalMilliseconds;
-                    Dictionary<string, object> dict = new() {
-                        { "correct", correct },
-                        { "problem", problem },
-                        { "answer", answer },
-                        { "responseTime", responseTimeMs }
-                    };
-                    eventReporter.LogTS(message, dict);
-                    manager.ramulator?.SendMathMsg(problem, answer, responseTimeMs, correct);
-                    manager.hostPC?.SendStateMsgTS(HostPcStateMsg.MATH(), dict);
+                    manager.ramulator?.SendMathMsg(mathDiplayer.Problem, mathDiplayer.Answer, responseTimeMs, correct);
 
                     // End distractor or setup next math problem
                     if ((Clock.UtcNow - startTime).TotalMilliseconds > Config.distractorDurationMs) {
-                        textDisplayer.ClearText();
+                        mathDiplayer.TurnOff();
                         break;
                     } else {
-                        nums = new int[] { UnityEPL.Random.Rnd.Next(1, 10),
-                                           UnityEPL.Random.Rnd.Next(1, 10),
-                                           UnityEPL.Random.Rnd.Next(1, 10) };
-                        message = "display distractor problem";
-                        problem = nums[0].ToString() + " + " +
-                                  nums[1].ToString() + " + " +
-                                  nums[2].ToString() + " = ";
-                        answer = "";
-                        textDisplayer.Display(message, LangStrings.Blank(), LangStrings.GenForCurrLang(problem + answer));
-                        displayTime = Clock.UtcNow;
+                        mathDiplayer.SetNewRandomEquation(numValuesInEquation);
                     }
                 }
-                textDisplayer.Clear();
             }
 
             SendRamulatorStateMsg(HostPcStateMsg.DISTRACT(), false, new() { { "current_trial", TrialNum } });;

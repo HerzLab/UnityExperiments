@@ -17,6 +17,14 @@ public class WordDisplayer : MonoBehaviour {
     public TextMeshProUGUI pairedWord1;
     public TextMeshProUGUI pairedWord2;
 
+    public void Awake() {
+        TurnOff();
+    }
+
+    public void TurnOff() {
+        gameObject.SetActive(false);
+    }
+
     public void SetWordSize(List<Word> words) {
         var strList = words.Select(x => x.word).ToList();
         int fontSize = (int)pairedWord1.FindMaxFittingFontSize(strList);
@@ -35,6 +43,7 @@ public class WordDisplayer : MonoBehaviour {
     }
 
     public void DisplayWord(string word) {
+        gameObject.SetActive(true);
         Dictionary<string, object> dataDict = new() {
             { "words", new string[1] { word } },
         };
@@ -43,6 +52,7 @@ public class WordDisplayer : MonoBehaviour {
     }
 
     public void DisplayPairedWord(string word1, string word2) {
+        gameObject.SetActive(true);
         Dictionary<string, object> dataDict = new() {
             { "words", new string[2] { word1, word2 } },
         };
