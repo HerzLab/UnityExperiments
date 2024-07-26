@@ -34,7 +34,7 @@ namespace UnityEPL {
         protected int wordsPerList;
         protected SessionType currentSession;
 
-        [SerializeField] protected MathDistractorDiplayer mathDiplayer;
+        [SerializeField] protected MathDiplayer mathDiplayer;
 
         protected override async Task PreTrialStates() {
             await SetupWordList();

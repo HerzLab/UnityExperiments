@@ -13,13 +13,17 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEPL;
 
-public class MathDistractorDiplayer : MonoBehaviour {
-    public TextMeshProUGUI equation;
+public class MathDiplayer : MonoBehaviour {
+    [SerializeField] protected TextMeshProUGUI equation;
+
+    const int MAX_NUM_ANSWER_DIGITS = 3;
+
     protected int[] problemValues;
+    protected DateTime startTime;
+
     public string Problem { get; protected set;} = "";
     public string Answer { get; protected set;} = "";
-
-    protected DateTime startTime;
+    
 
     public void Awake() {
         int fontSize = (int)equation.FindMaxFittingFontSize(new(){ "5 + 5 + 5 = 555" });
@@ -79,8 +83,37 @@ public class MathDistractorDiplayer : MonoBehaviour {
     }
 
     /// <summary>
+    /// Set the answer to the current equation.
+    /// The number of digits in the number must be less than or equal to MAX_NUM_ANSWER_DIGITS.
+    /// </summary>
+    /// <param name="answer"></param>
+    /// <exception cref="ArgumentException"></exception>
+    public void SetAnswer(string answer) {
+        if (answer == null) {
+            throw new ArgumentException("Math distractor SetAnswer answer must not be null.");
+        } else if (answer != "") {
+            if (int.TryParse(answer, out int ans)) {
+                throw new ArgumentException($"Math distractor SetAnswer answer ({answer}) must be a number.");
+            }
+            if (ans > (int)Math.Pow(10, MAX_NUM_ANSWER_DIGITS) - 1) {
+                throw new ArgumentException($"Math distractor SetAnswer answer ({answer}) has too many digits (max {MAX_NUM_ANSWER_DIGITS}).");
+            }
+        }
+
+        Answer = answer;
+        equation.text = Problem + Answer;
+
+        Dictionary<string, object> dataDict = new() {
+            { "problemValues", problemValues },
+            { "answer", Answer },
+            { "equation", equation.text },
+        };
+        EventReporter.Instance.LogTS("math distractor update answer", dataDict);
+    }
+
+    /// <summary>
     /// Add a digit to the answer.
-    /// Currently only diplays 3 digits in an answer.
+    /// Currently only diplays MAX_NUM_ANSWER_DIGITS digits in an answer.
     /// </summary>
     /// <param name="digit"></param>
     /// <exception cref="ArgumentException"></exception>
@@ -89,7 +122,7 @@ public class MathDistractorDiplayer : MonoBehaviour {
             throw new ArgumentException($"Math distractor AddDigitToAnswer value {digit} must be a digit.");
         } 
         
-        if (Answer.Length < 3) {
+        if (Answer.Length < MAX_NUM_ANSWER_DIGITS) {
             Answer += digit;
         }
         equation.text = Problem + Answer;

@@ -13,9 +13,9 @@ using System.Linq;
 using UnityEPL;
 
 public class WordDisplayer : MonoBehaviour {
-    public TextMeshProUGUI singleWord;
-    public TextMeshProUGUI pairedWord1;
-    public TextMeshProUGUI pairedWord2;
+    [SerializeField] protected TextMeshProUGUI singleWord;
+    [SerializeField] protected TextMeshProUGUI pairedWord1;
+    [SerializeField] protected TextMeshProUGUI pairedWord2;
 
     public void Awake() {
         TurnOff();
