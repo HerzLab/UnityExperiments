@@ -312,6 +312,11 @@ public class MemMapExperiment : WordListExperiment<PairedWord, MemMapTrial<Paire
         var priorSessionPath = manager.fileManager.PriorSessionPath();
         if (priorSessionPath != null) {
             var priorUsedWordsPath = Path.Combine(priorSessionPath, "usedWords.tsv");
+            if (!File.Exists(priorUsedWordsPath)) {
+                throw new Exception($"The prior session's usedWords file doesn't exist\n{priorUsedWordsPath}"
+                    + "\n\nIf the prior session ended before the experiment really started, then you should delete this session and the last session and try again."
+                    + "\n\nIf you have good data collected from the last session, contact your experiment developer.");
+            }
             File.Copy(priorUsedWordsPath, usedWordsPath, true);
             var usedWords = ReadWordpool<Word>(priorUsedWordsPath);
             unusedWords.RemoveAll(uw => usedWords.Any(w => w.word == uw.word));
