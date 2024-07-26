@@ -29,10 +29,10 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
         await SetupWordList();
 
         if (!Config.skipIntros) {
-            // await QuitPrompt();
-            // await MicrophoneTest();
-            // await Introduction();
-            // await ConfirmStart();
+            await QuitPrompt();
+            await MicrophoneTest();
+            await Introduction();
+            await ConfirmStart();
         }
     }
     protected override async Task PostTrialStates() {
@@ -55,9 +55,9 @@ public class MemMapExperiment : FRExperimentBase<PairedWord, MemMapTrial<PairedW
     }
     protected override async Task TrialStates() {
         await StartTrial();
-        // await NextTrialPrompt();
-        // await CountdownVideo();
-        // await Encoding();
+        await NextTrialPrompt();
+        await CountdownVideo();
+        await Encoding();
         await MathDistractor();
         await PauseBeforeRecall();
         await RecallOrientation();
