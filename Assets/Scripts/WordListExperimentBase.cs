@@ -20,10 +20,10 @@ using UnityEngine.AI;
 using UnityEngine.UIElements;
 
 using UnityEPL;
-public class WordListExperiment<WordType, TrialType, SessionType> : ExperimentBase<WordListExperiment<WordType, TrialType, SessionType>, SessionType, TrialType> 
+public abstract class WordListExperimentBase<WordType, TrialType, SessionType> : ExperimentBase<WordListExperimentBase<WordType, TrialType, SessionType>, SessionType, TrialType> 
     where WordType : Word, new()
     where TrialType : FRTrial<WordType>
-    where SessionType : WordListSession<WordType, TrialType>, new()
+    where SessionType : WordListSessionBase<WordType, TrialType>, new()
 {
     protected override void AwakeOverride() { }
 

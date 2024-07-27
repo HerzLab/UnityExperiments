@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using UnityEPL;
 
 [Serializable]
-public class MemMapSession<T> : WordListSession<T, MemMapTrial<T>> 
+public class MemMapSession<T> : WordListSessionBase<T, MemMapTrial<T>> 
     where T : PairedWord 
 {
     public void DebugPrintAll() {

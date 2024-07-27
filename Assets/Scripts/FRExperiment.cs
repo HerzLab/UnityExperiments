@@ -8,6 +8,6 @@
 
 using UnityEPL;
 
-public class FRExperiment : WordListExperiment<Word, FRTrial<Word>, FRSession<Word>> {
+public class FRExperiment : WordListExperimentBase<Word, FRTrial<Word>, FRSession<Word>> {
     // This is here to make a template completed version of the FRExperimentBase class
 }

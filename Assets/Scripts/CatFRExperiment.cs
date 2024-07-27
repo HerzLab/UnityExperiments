@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEPL;
 
-public class CatFRExperiment : WordListExperiment<CategorizedWord, FRTrial<CategorizedWord>, FRSession<CategorizedWord>> {
+public class CatFRExperiment : WordListExperimentBase<CategorizedWord, FRTrial<CategorizedWord>, FRSession<CategorizedWord>> {
     protected override Task SetupWordList() {
         var wordRepeats = Config.wordRepeats;
         if (wordRepeats.Count() != 1 && wordRepeats[0] != 1) {

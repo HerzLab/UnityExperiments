@@ -12,7 +12,7 @@ using System.Linq;
 using UnityEPL;
 
 [Serializable]
-public class WordListSession<WordType, TrialType> : ExperimentSession<TrialType>
+public abstract class WordListSessionBase<WordType, TrialType> : ExperimentSession<TrialType>
     where WordType : Word
     where TrialType : FRTrial<WordType>
 {

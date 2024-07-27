@@ -19,7 +19,7 @@ using UnityEngine.UIElements;
 
 namespace UnityEPL {
 
-    public class RepFRExperiment2 : WordListExperiment<Word, FRTrial<Word>, FRSession<Word>> {
+    public class RepFRExperiment2 : WordListExperimentBase<Word, FRTrial<Word>, FRSession<Word>> {
         protected RepCounts repCounts = null;
         protected int uniqueWordsPerList;
 

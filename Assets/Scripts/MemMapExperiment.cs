@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEPL;
 
-public class MemMapExperiment : WordListExperiment<PairedWord, MemMapTrial<PairedWord>, MemMapSession<PairedWord>> {
+public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<PairedWord>, MemMapSession<PairedWord>> {
     protected readonly List<KeyCode> skipKeys = new List<KeyCode> {KeyCode.Space};
     protected readonly List<KeyCode> ynKeyCodes = new List<KeyCode> {KeyCode.Y, KeyCode.N};
 
