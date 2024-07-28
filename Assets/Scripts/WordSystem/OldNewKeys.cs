@@ -17,7 +17,9 @@ public class OldNewKeys : MonoBehaviour {
     public void SetKeySize() {
         var strList = new List<string>() { "old", "new" };
         rightKey.Bold(true);
+        gameObject.SetActive(true);
         largeFontSize = (int)rightKey.FindMaxFittingFontSize(strList);
+        gameObject.SetActive(false);
         smallFontSize = largeFontSize - 6; // decrease font size for enabling enlargment
 
         rightKey.enableAutoSizing = false;
