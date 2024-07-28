@@ -26,8 +26,10 @@ public class WordDisplayer : MonoBehaviour {
     }
 
     public void SetWordSize(List<Word> words) {
+        gameObject.SetActive(true);
         var strList = words.Select(x => x.word).ToList();
         int fontSize = (int)pairedWord1.FindMaxFittingFontSize(strList);
+        gameObject.SetActive(false);
 
         singleWord.enableAutoSizing = false;
         singleWord.fontSizeMax = fontSize;
