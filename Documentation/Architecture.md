@@ -1,6 +1,6 @@
 # Architecture
 
-This is the overall architecture and components in UnityExperiments. I will reference many things from UnityEPL, so if something is not explained here, check that library [here](/Packages/UnityEPL/README.md). 
+This is the overall architecture and components in UnityExperiments. I will reference many things from UnityEPL, so if something is not explained here, check that library [here](/Packages/UnityEPL/README.md).
 
 ## Overview
 
@@ -13,6 +13,7 @@ These are the important structures within the code.
 ### MainManager
 
 The MainManager has two main jobs:
+
 1. Hold the objects for all EventLoops
 1. Allow other event loops to interact with unity objects/functions
 

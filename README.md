@@ -13,6 +13,7 @@ For more information than what is in this document (or to see information about 
 How to set up everything to develop for Unity.
 
 ### Getting VS Code (Visual Studio Code) Setup
+
 1. Install VS Code
 1. Setup the Unity extension
     1. Click "View" in the top bar of your computer and then click the "Extensions" option
