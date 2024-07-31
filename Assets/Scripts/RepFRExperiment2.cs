@@ -79,14 +79,14 @@ namespace UnityEPL {
             int duration = Random.Rnd.Next(limits[0], limits[1]);
             textDisplayer.Display("orientation stimulus", LangStrings.Blank(), LangStrings.GenForCurrLang("+"));
             
-            await Timing.Delay(duration);
+            await manager.Delay(duration);
 
             SendRamulatorStateMsg(HostPcStateMsg.ORIENT(), false);
         }
         protected async Task RecallPrompt() {
             manager.highBeep.Play();
             textDisplayer.Display("display recall text", LangStrings.Blank(), LangStrings.GenForCurrLang("*******"));
-            await Timing.Delay(Config.recallOrientationDurationMs);
+            await manager.Delay(Config.recallOrientationDurationMs);
         }
 
         // Setup Functions

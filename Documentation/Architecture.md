@@ -47,7 +47,7 @@ This is the main experiment developed by the Herz lab.
 
 These are the important practices that are critical for all coders to understand and follow:
 
-- Do NOT use *Task.Delay()*. Instead, use *Timing.Delay()*. They act exactly the same, but Timing.Delay knows how to handle the single-threaded nature of WebGL.
+- Do NOT use *Task.Delay()*. Instead, use *manager.Delay()*. They act exactly the same, but manager.Delay knows how to handle the single-threaded nature of WebGL.
 
 ## Acronyms and Terms
 

@@ -53,14 +53,14 @@ public class RepFRExperiment : ExperimentBase<RepFRExperiment, FRSession<Word>, 
 
         manager.lowBeep.Play();
         await DoWaitWhile(() => manager.lowBeep.isPlaying);
-        //await Timing.Delay((int)(manager.lowBeep.clip.length * 1000) + 100)
+        //await manager.Delay((int)(manager.lowBeep.clip.length * 1000) + 100)
         manager.recorder.StartRecording(wavPath);
         textDisplayer.DisplayText("microphone test recording", LangStrings.MicrophoneTestRecording().Color("red"));
-        await Timing.Delay(Config.micTestDurationMs);
+        await manager.Delay(Config.micTestDurationMs);
 
         textDisplayer.DisplayText("microphone test playing", LangStrings.MicrophoneTestPlaying().Color("green"));
         var clip = manager.recorder.StopRecording();
         manager.playback.Play(clip);
-        await Timing.Delay(Config.micTestDurationMs);
+        await manager.Delay(Config.micTestDurationMs);
     }
 }

@@ -80,13 +80,13 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
         int duration = UnityEPL.Random.Rnd.Next(limits[0], limits[1]);
         textDisplayer.Display("orientation stimulus", LangStrings.Blank(), LangStrings.GenForCurrLang("+"));
         manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
-        await Timing.Delay(duration);
+        await manager.Delay(duration);
 
         // Delay for random time within post-fixation delay limits
         textDisplayer.Clear();
         limits = Config.postFixationDelayMs;
         duration = UnityEPL.Random.Rnd.Next(limits[0], limits[1]);
-        await Timing.Delay(duration);
+        await manager.Delay(duration);
     }
 
     protected new async Task Encoding() {
@@ -107,12 +107,12 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
 
             // Do the ISI
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(isiDuration));
-            await Timing.Delay(isiDuration);
+            await manager.Delay(isiDuration);
 
             // Do the stim and wait the rest of the ISI
             if (wordStim.stim) { manager.hostPC?.SendStimMsgTS(); }
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(stimEarlyDuration));
-            await Timing.Delay(stimEarlyDuration);
+            await manager.Delay(stimEarlyDuration);
 
             // Do the encoding and log it
             Dictionary<string, object> data = new() {
@@ -123,7 +123,7 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
             eventReporter.LogTS("word stimulus info", data);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
             wordDisplayer.DisplayPairedWord(wordStim.word.word, wordStim.word.pairedWord);
-            await Timing.Delay(Config.stimulusDurationMs);
+            await manager.Delay(Config.stimulusDurationMs);
             wordDisplayer.ClearWords();
 
             // manager.lowBeep.Play();
@@ -134,7 +134,7 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
     protected async Task PauseBeforeRecog() {
         int[] limits = Config.recallDelayMs;
         int interval = UnityEPL.Random.Rnd.Next(limits[0], limits[1]);
-        await Timing.Delay(interval);
+        await manager.Delay(interval);
     }
 
     protected async Task CuedRecall() {
@@ -153,12 +153,12 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
 
             // Do the ISI
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(isiDuration));
-            await Timing.Delay(isiDuration);
+            await manager.Delay(isiDuration);
 
             // Do the stim and wait the rest of the ISI
             if (wordStim.stim) { manager.hostPC?.SendStimMsgTS(); }
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(stimEarlyDuration));
-            await Timing.Delay(stimEarlyDuration);
+            await manager.Delay(stimEarlyDuration);
 
             // Start recording for the cued recall
             string wavPath = Path.Combine(manager.fileManager.SessionPath(), 
@@ -176,11 +176,11 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
             eventReporter.LogTS("word stimulus info", data);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
             wordDisplayer.DisplayWord(wordStim.word.word);
-            await Timing.Delay(Config.stimulusDurationMs);
+            await manager.Delay(Config.stimulusDurationMs);
 
             // Clear the word and wait for the rest of the recall duration
             wordDisplayer.ClearWords();
-            await Timing.Delay(Config.recallDurationMs);
+            await manager.Delay(Config.recallDurationMs);
             // try { await inputManager.WaitForKey(skipKeys, false, Config.recallDurationMs); }
             // catch (TimeoutException) {}
 
@@ -208,12 +208,12 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
 
             // Do the ISI
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(isiDuration));
-            await Timing.Delay(isiDuration);
+            await manager.Delay(isiDuration);
 
             // Do the stim and wait the rest of the ISI
             if (wordStim.stim) { manager.hostPC?.SendStimMsgTS(); }
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(stimEarlyDuration));
-            await Timing.Delay(stimEarlyDuration);
+            await manager.Delay(stimEarlyDuration);
 
             // Start recording for the cued recall
             string wavPath = Path.Combine(manager.fileManager.SessionPath(), 
@@ -232,11 +232,11 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
             oldNewKeys.TurnOn();
             wordDisplayer.DisplayWord(wordStim.word.word);
-            await Timing.Delay(Config.stimulusDurationMs);
+            await manager.Delay(Config.stimulusDurationMs);
 
             // Clear the word and wait for the rest of the recognition duration
             wordDisplayer.ClearWords();
-            await Timing.Delay(Config.recogDurationMs);
+            await manager.Delay(Config.recogDurationMs);
             // try { await inputManager.WaitForKey(skipKeys, false, Config.recogDurationMs); }
             // catch (TimeoutException) {}
 
