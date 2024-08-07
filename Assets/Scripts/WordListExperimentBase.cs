@@ -7,19 +7,18 @@
 //You should have received a copy of the GNU General Public License along with UnityExperiments. If not, see <https://www.gnu.org/licenses/>. 
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using TMPro;
-using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.AI;
-using UnityEngine.UIElements;
 
 using UnityEPL;
+using UnityEPL.Utilities;
+using UnityEPL.ExternalDevices;
+using UnityEPL.Extensions;
+using UnityEPL.Experiment;
+
 public abstract class WordListExperimentBase<WordType, TrialType, SessionType> : ExperimentBase<WordListExperimentBase<WordType, TrialType, SessionType>, SessionType, TrialType> 
     where WordType : Word, new()
     where TrialType : FRTrial<WordType>
@@ -83,7 +82,7 @@ public abstract class WordListExperimentBase<WordType, TrialType, SessionType> :
     // Post-Trial States
     protected async Task FinalRecall() {
         // TODO: JPB: (needed) (bug) Change final recall wav file name
-        string wavPath = Path.Combine(manager.fileManager.SessionPath(),
+        string wavPath = Path.Combine(FileManager.SessionPath(),
                                             "final_recall" + ".wav");
 
         manager.recorder.StartRecording(wavPath);
@@ -172,7 +171,7 @@ public abstract class WordListExperimentBase<WordType, TrialType, SessionType> :
         manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
 
         int[] limits = Config.fixationDurationMs;
-        int duration = UnityEPL.Random.Rnd.Next(limits[0], limits[1]);
+        int duration = UnityEPL.Utilities.Random.Rnd.Next(limits[0], limits[1]);
         textDisplayer.Display("orientation stimulus", LangStrings.Blank(), LangStrings.GenForCurrLang("+"));
         manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
         await manager.Delay(duration);
@@ -195,7 +194,7 @@ public abstract class WordListExperimentBase<WordType, TrialType, SessionType> :
         var encStimWords = session.Trial.encoding;
 
         for (int i = 0; i < 12; ++i) {
-            int isiDuration = UnityEPL.Random.Rnd.Next(isiLimits[0], isiLimits[1]);
+            int isiDuration = UnityEPL.Utilities.Random.Rnd.Next(isiLimits[0], isiLimits[1]);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(isiDuration));
             await manager.Delay(isiDuration);
 
@@ -275,7 +274,7 @@ public abstract class WordListExperimentBase<WordType, TrialType, SessionType> :
     }
     protected async Task PauseBeforeRecall() {
         int[] limits = Config.recallDelayMs;
-        int interval = UnityEPL.Random.Rnd.Next(limits[0], limits[1]);
+        int interval = UnityEPL.Utilities.Random.Rnd.Next(limits[0], limits[1]);
         await manager.Delay(interval);
     }
     protected async Task RecallOrientation() {
@@ -285,7 +284,7 @@ public abstract class WordListExperimentBase<WordType, TrialType, SessionType> :
         SendRamulatorStateMsg(HostPcStateMsg.RETRIEVAL(), true, new() { { "current_trial", session.TrialNum } });
         manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RETRIEVAL(), new() { { "current_trial", session.TrialNum } });
 
-        string wavPath = Path.Combine(manager.fileManager.SessionPath(), session.TrialNum + ".wav");
+        string wavPath = Path.Combine(FileManager.SessionPath(), session.TrialNum + ".wav");
         bool stim = session.Trial.recallStim;
 
         if (stim) {
@@ -320,7 +319,7 @@ public abstract class WordListExperimentBase<WordType, TrialType, SessionType> :
         wordsPerList = wordCounts[0];
 
         // Read words and generate the random subset needed
-        var sourceWords = ReadWordpool<WordType>(manager.fileManager.GetWordList(), "wordpool");
+        var sourceWords = ReadWordpool<WordType>(FileManager.GetWordList(), "wordpool");
         var words = new WordRandomSubset<WordType>(sourceWords);
 
         // TODO: (feature) Load Session
@@ -353,7 +352,7 @@ public abstract class WordListExperimentBase<WordType, TrialType, SessionType> :
         // create .lst files for annotation scripts
         string practiceStr = practice ? "practice_" : "";
         string fileName = practiceStr + index.ToString() + ".lst";
-        string lstfile = Path.Combine(manager.fileManager.SessionPath(), fileName);
+        string lstfile = Path.Combine(FileManager.SessionPath(), fileName);
         IList<string> noRepeats = new HashSet<string>(list.words.Select(wordStim => wordStim.word)).ToList();
         File.WriteAllLines(lstfile, noRepeats, System.Text.Encoding.UTF8);
     }
@@ -377,7 +376,7 @@ public abstract class WordListExperimentBase<WordType, TrialType, SessionType> :
 
         // copy full wordpool to session directory
         if (copyPathName != null) {
-            string copyPath = Path.Combine(manager.fileManager.SessionPath(), copyPathName + ".tsv");
+            string copyPath = Path.Combine(FileManager.SessionPath(), copyPathName + ".tsv");
             File.Copy(wordpoolPath, copyPath, true);
         }
 
@@ -400,7 +399,7 @@ public abstract class WordListExperimentBase<WordType, TrialType, SessionType> :
             // var trues = Enumerable.Range(1, wordsPerList-halfNumWords).Select(i => true).ToList();
             // var stimList = falses.Concat(trues).ToList().Shuffle();
             var stimList = Enumerable.Range(1, wordsPerList)
-                            .Select(i => UnityEPL.Random.Rnd.NextDouble() >= 0.5)
+                            .Select(i => UnityEPL.Utilities.Random.Rnd.NextDouble() >= 0.5)
                             .ToList();
             return new StimWordList<WordType>(inputWords, stimList);
         } else {

@@ -7,13 +7,16 @@
 //You should have received a copy of the GNU General Public License along with UnityExperiments. If not, see <https://www.gnu.org/licenses/>. 
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
+
 using UnityEPL;
+using UnityEPL.Utilities;
+using UnityEPL.ExternalDevices;
+using UnityEPL.Extensions;
 
 public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<PairedWord>, MemMapSession<PairedWord>> {
     protected readonly List<KeyCode> skipKeys = new List<KeyCode> {KeyCode.Space};
@@ -77,7 +80,7 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
 
         // Delay for random time within fixation duration limits and show orientation stimulus
         int[] limits = Config.fixationDurationMs;
-        int duration = UnityEPL.Random.Rnd.Next(limits[0], limits[1]);
+        int duration = UnityEPL.Utilities.Random.Rnd.Next(limits[0], limits[1]);
         textDisplayer.Display("orientation stimulus", LangStrings.Blank(), LangStrings.GenForCurrLang("+"));
         manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
         await manager.Delay(duration);
@@ -85,7 +88,7 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
         // Delay for random time within post-fixation delay limits
         textDisplayer.Clear();
         limits = Config.postFixationDelayMs;
-        duration = UnityEPL.Random.Rnd.Next(limits[0], limits[1]);
+        duration = UnityEPL.Utilities.Random.Rnd.Next(limits[0], limits[1]);
         await manager.Delay(duration);
     }
 
@@ -101,8 +104,8 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
             var wordStim = encStimWords[i];
 
             // Determine the Inter Stimulus Interval (ISI), when stim should start, and adjust ISI
-            int isiDuration = UnityEPL.Random.Rnd.Next(isiLimits[0], isiLimits[1]);
-            int stimEarlyDuration = UnityEPL.Random.Rnd.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
+            int isiDuration = UnityEPL.Utilities.Random.Rnd.Next(isiLimits[0], isiLimits[1]);
+            int stimEarlyDuration = UnityEPL.Utilities.Random.Rnd.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
             isiDuration -= stimEarlyDuration;
 
             // Do the ISI
@@ -133,7 +136,7 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
 
     protected async Task PauseBeforeRecog() {
         int[] limits = Config.recallDelayMs;
-        int interval = UnityEPL.Random.Rnd.Next(limits[0], limits[1]);
+        int interval = UnityEPL.Utilities.Random.Rnd.Next(limits[0], limits[1]);
         await manager.Delay(interval);
     }
 
@@ -147,8 +150,8 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
             var wordStim = recallStimWords[i];
 
             // Determine the Inter Stimulus Interval (ISI), when stim should start, and adjust ISI
-            int isiDuration = UnityEPL.Random.Rnd.Next(isiLimits[0], isiLimits[1]);
-            int stimEarlyDuration = UnityEPL.Random.Rnd.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
+            int isiDuration = UnityEPL.Utilities.Random.Rnd.Next(isiLimits[0], isiLimits[1]);
+            int stimEarlyDuration = UnityEPL.Utilities.Random.Rnd.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
             isiDuration -= stimEarlyDuration;
 
             // Do the ISI
@@ -161,8 +164,9 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
             await manager.Delay(stimEarlyDuration);
 
             // Start recording for the cued recall
-            string wavPath = Path.Combine(manager.fileManager.SessionPath(), 
-                "cuedRecall_" + session.TrialNum + "_" + i +".wav");
+            string practiceStr = session.isPractice ? "practice_" : "";
+            string wavPath = Path.Combine(FileManager.SessionPath(), 
+                practiceStr + "cuedRecall_" + session.TrialNum + "_" + i +".wav");
             manager.recorder.StartRecording(wavPath);
             eventReporter.LogTS("start recall period");
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(Config.stimulusDurationMs+Config.recallDurationMs));
@@ -202,8 +206,8 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
             var wordStim = recogStimWords[i];
             
             // Determine the Inter Stimulus Interval (ISI), when stim should start, and adjust ISI
-            int isiDuration = UnityEPL.Random.Rnd.Next(isiLimits[0], isiLimits[1]);
-            int stimEarlyDuration = UnityEPL.Random.Rnd.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
+            int isiDuration = UnityEPL.Utilities.Random.Rnd.Next(isiLimits[0], isiLimits[1]);
+            int stimEarlyDuration = UnityEPL.Utilities.Random.Rnd.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
             isiDuration -= stimEarlyDuration;
 
             // Do the ISI
@@ -216,8 +220,9 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
             await manager.Delay(stimEarlyDuration);
 
             // Start recording for the cued recall
-            string wavPath = Path.Combine(manager.fileManager.SessionPath(), 
-                "recognitionRecall_" + session.TrialNum + "_" + i +".wav");
+            string practiceStr = session.isPractice ? "practice_" : "";
+            string wavPath = Path.Combine(FileManager.SessionPath(), 
+                practiceStr + "recognitionRecall_" + session.TrialNum + "_" + i +".wav");
             manager.recorder.StartRecording(wavPath);
             eventReporter.LogTS("start recall period");
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(Config.stimulusDurationMs+Config.recogDurationMs));
@@ -261,7 +266,7 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
         if (q1Resp == KeyCode.Y) {
             await textDisplayer.PressAnyKey("Question 1a", LangStrings.Blank(), LangStrings.QuestioneerQ1a());
 
-            string wavPath = Path.Combine(manager.fileManager.SessionPath(), "q1a.wav");
+            string wavPath = Path.Combine(FileManager.SessionPath(), "q1a.wav");
             manager.recorder.StartRecording(wavPath);
             textDisplayer.Display("Question 1a recording", LangStrings.Blank(), LangStrings.QuestioneerQ1b());
             await inputManager.WaitForKey();
@@ -298,18 +303,18 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
         oldNewKeys.SetupKeyPositions();
 
         // Read practice words and generate practice session
-        var sourcePracticeWords = ReadWordpool<Word>(manager.fileManager.GetPracticeWordList(), "practice_wordpool");
+        var sourcePracticeWords = ReadWordpool<Word>(FileManager.GetPracticeWordList(), "practice_wordpool");
         var practiceWords = new WordRandomSubset<Word>(sourcePracticeWords, true);
         practiceSession = GeneratePracticeSession(practiceWords);
 
         // Read words, save the original words, and set the WordDisplay sizes
-        var sourceWords = ReadWordpool<Word>(manager.fileManager.GetWordList(), "wordpool");
+        var sourceWords = ReadWordpool<Word>(FileManager.GetWordList(), "wordpool");
         wordDisplayer.SetWordSize(sourceWords);
 
         // Allow for splitting over multiple sessions
-        var usedWordsPath = Path.Combine(manager.fileManager.SessionPath(), "usedWords.tsv");
+        var usedWordsPath = Path.Combine(FileManager.SessionPath(), "usedWords.tsv");
         var unusedWords = new List<Word>(sourceWords);
-        var priorSessionPath = manager.fileManager.PriorSessionPath();
+        var priorSessionPath = FileManager.PriorSessionPath();
         if (priorSessionPath != null) {
             var priorUsedWordsPath = Path.Combine(priorSessionPath, "usedWords.tsv");
             if (!File.Exists(priorUsedWordsPath)) {
@@ -321,7 +326,7 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
             var usedWords = ReadWordpool<Word>(priorUsedWordsPath);
             unusedWords.RemoveAll(uw => usedWords.Any(w => w.word == uw.word));
         } else {
-            var titleLine = File.ReadLines(manager.fileManager.GetWordList()).First();
+            var titleLine = File.ReadLines(FileManager.GetWordList()).First();
             File.WriteAllLines(usedWordsPath, new string[1]{titleLine});
         }
 
@@ -428,7 +433,7 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
         int numPracticeLists = noPractice ? 0 : Config.practiceLists;
         for (int i = 0; i < numPracticeLists; i++) {
             var wordOrders = Enumerable.Range(0, wordsPerList).Select(i => i % 2 == 0).ToList();
-            var recallOrders = Enumerable.Range(0, wordsPerList).ToList().Shuffle(UnityEPL.Random.StableRnd);
+            var recallOrders = Enumerable.Range(0, wordsPerList).ToList().Shuffle(UnityEPL.Utilities.Random.StableRnd);
             var recogOrders = GenZigZagList(wordsPerList, lureWordsPerList);
             session.AddTrial(MakeTrial(randomSubset, false, false, false, wordOrders, recallOrders, recogOrders));
         }

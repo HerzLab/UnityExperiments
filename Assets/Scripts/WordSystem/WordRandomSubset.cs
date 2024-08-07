@@ -9,9 +9,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using UnityEditor;
+
 using UnityEPL;
+using UnityEPL.Extensions;
 
 // Provides random subsets of a word pool without replacement.
 public class WordRandomSubset<T> 
@@ -40,7 +40,7 @@ public class WordRandomSubset<T>
         if (Config.splitWordsOverTwoSessions && !ignoreSplit) {
             int splitIndex = sourceWords.Count / 2;
             int lenRemove = sourceWords.Count - splitIndex;
-            sourceWords.ShuffleInPlace(UnityEPL.Random.StableRnd);
+            sourceWords.ShuffleInPlace(UnityEPL.Utilities.Random.StableRnd);
             if (Config.sessionNum % 2 == 0) {
                 sourceWords.RemoveRange(splitIndex, lenRemove);
             } else {

@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
+
 using UnityEPL;
 
 public class CatFRExperiment : WordListExperimentBase<CategorizedWord, FRTrial<CategorizedWord>, FRSession<CategorizedWord>> {
@@ -24,7 +25,7 @@ public class CatFRExperiment : WordListExperimentBase<CategorizedWord, FRTrial<C
 
         wordsPerList = Config.wordCounts[0];
 
-        var sourceWords = ReadWordpool<CategorizedWord>(manager.fileManager.GetWordList(), "wordpool");
+        var sourceWords = ReadWordpool<CategorizedWord>(FileManager.GetWordList(), "wordpool");
         var words = new CategorizedWordRandomSubset(sourceWords);
 
         // TODO: (feature) Load Session

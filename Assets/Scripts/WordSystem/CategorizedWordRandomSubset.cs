@@ -9,7 +9,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using UnityEPL;
+using UnityEPL.Extensions;
 
 public class CategorizedWordRandomSubset : WordRandomSubset<CategorizedWord> {
     protected new Dictionary<string, List<CategorizedWord>> shuffled = new();
@@ -39,7 +41,7 @@ public class CategorizedWordRandomSubset : WordRandomSubset<CategorizedWord> {
             stableShuffledCategories.Sort((x, y) => {
                 return x.Key.CompareTo(y.Key);
             });
-            stableShuffledCategories.ShuffleInPlace(UnityEPL.Random.StableRnd);
+            stableShuffledCategories.ShuffleInPlace(UnityEPL.Utilities.Random.StableRnd);
             int count = stableShuffledCategories.Count / 2;
             if (Config.sessionNum % 2 == 0) {
                 shuffled = stableShuffledCategories.Take(count).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
@@ -133,7 +135,7 @@ public class CategorizedWordRandomSubset : WordRandomSubset<CategorizedWord> {
 
         var groupsSecondHalf = Enumerable.Range(0, numCategoriesPerList).ToList().ShuffleInPlace();
         groupsSecondHalf.Remove(firstHalfLastItem);
-        groupsSecondHalf.Insert(UnityEPL.Random.Rnd.Next(1, numCategoriesPerList), firstHalfLastItem);
+        groupsSecondHalf.Insert(UnityEPL.Utilities.Random.Rnd.Next(1, numCategoriesPerList), firstHalfLastItem);
         groups.Add(groupsSecondHalf);
 
         // Make the final word list

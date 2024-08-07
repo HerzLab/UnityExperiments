@@ -10,12 +10,16 @@ using TMPro;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+
 using UnityEPL;
+using UnityEPL.Extensions;
 
 public class WordDisplayer : MonoBehaviour {
     [SerializeField] protected TextMeshProUGUI singleWord;
     [SerializeField] protected TextMeshProUGUI pairedWord1;
     [SerializeField] protected TextMeshProUGUI pairedWord2;
+
+    protected Dictionary<string, object> wordStimulusData = null;
 
     public void Awake() {
         TurnOff();
@@ -46,25 +50,27 @@ public class WordDisplayer : MonoBehaviour {
 
     public void DisplayWord(string word) {
         gameObject.SetActive(true);
-        Dictionary<string, object> dataDict = new() {
+
+        wordStimulusData = new() {
             { "words", new string[1] { word } },
         };
-        EventReporter.Instance.LogTS("word stimulus", dataDict);
+        EventReporter.Instance.LogTS("word stimulus", wordStimulusData);
         singleWord.text = word;
     }
 
     public void DisplayPairedWord(string word1, string word2) {
         gameObject.SetActive(true);
-        Dictionary<string, object> dataDict = new() {
+        wordStimulusData = new() {
             { "words", new string[2] { word1, word2 } },
         };
-        EventReporter.Instance.LogTS("word stimulus", dataDict);
+        EventReporter.Instance.LogTS("word stimulus", wordStimulusData);
         pairedWord1.text = word1;
         pairedWord2.text = word2;
     }
 
     public void ClearWords() {
-        EventReporter.Instance.LogTS("clear word stimulus");
+        EventReporter.Instance.LogTS("clear word stimulus", wordStimulusData);
+        wordStimulusData = null;
         singleWord.text = "";
         pairedWord1.text = "";
         pairedWord2.text = "";

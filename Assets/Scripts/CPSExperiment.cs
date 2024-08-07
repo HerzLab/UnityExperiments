@@ -13,7 +13,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
+
 using UnityEPL;
+using UnityEPL.Utilities;
+using UnityEPL.ExternalDevices;
+using UnityEPL.Experiment;
 
 public class CPSExperiment : ExperimentBase<CPSExperiment, CPSSession, CPSTrial> {
     protected override void AwakeOverride() { }
@@ -23,14 +27,7 @@ public class CPSExperiment : ExperimentBase<CPSExperiment, CPSSession, CPSTrial>
     }
 
     protected void SetVideo() {
-        // absolute video path
-        string videoPath = Path.Combine(manager.fileManager.ExperimentRoot(), Config.video);
-
-        if (videoPath == null) {
-            throw new Exception("Video resource not found");
-        }
-
-        manager.videoControl.SetVideo(videoPath, true);
+        manager.videoControl.SetVideo(Config.video);
     }
 
     protected override async Task TrialStates() {
@@ -55,7 +52,7 @@ public class CPSExperiment : ExperimentBase<CPSExperiment, CPSSession, CPSTrial>
     }
 
     protected async Task ShowVideo() {
-        string startingPath = Path.Combine(manager.fileManager.ParticipantPath(), "..", "..", "CPS_Movies");
+        string startingPath = Path.Combine(FileManager.ParticipantPath(), "..", "..", "CPS_Movies");
         var extensions = new[] {
             new SFB.ExtensionFilter("Videos", "mp4", "mov"),
             new SFB.ExtensionFilter("All Files", "*" ),

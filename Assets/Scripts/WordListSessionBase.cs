@@ -9,7 +9,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEPL;
+
+using UnityEPL.Utilities;
+using UnityEPL.Experiment;
 
 [Serializable]
 public abstract class WordListSessionBase<WordType, TrialType> : ExperimentSession<TrialType>

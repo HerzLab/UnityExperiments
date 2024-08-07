@@ -1,8 +1,9 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+
 using UnityEPL;
+using UnityEPL.Extensions;
 
 public class OldNewKeys : MonoBehaviour {
     public TextMeshProUGUI rightKey;
@@ -34,7 +35,7 @@ public class OldNewKeys : MonoBehaviour {
     }
 
     public void SetupKeyPositions() {
-        oldNewPosition = UnityEPL.Random.StableRnd.Next(0,2) != 0;
+        oldNewPosition = UnityEPL.Utilities.Random.StableRnd.Next(0,2) != 0;
         leftKey.text = "";
         rightKey.text = "";
     }

@@ -12,7 +12,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using UnityEngine;
+
 using UnityEPL;
+using UnityEPL.Extensions;
+using UnityEPL.Utilities;
+using UnityEPL.Experiment;
 
 public class RepFRExperiment : ExperimentBase<RepFRExperiment, FRSession<Word>, FRTrial<Word>> {
     protected override void AwakeOverride() { }
@@ -22,14 +26,7 @@ public class RepFRExperiment : ExperimentBase<RepFRExperiment, FRSession<Word>, 
     }
 
     protected void SetVideo() {
-        // absolute video path
-        string videoPath = System.IO.Path.Combine(manager.fileManager.ExperimentRoot(), Config.introductionVideo);
-
-        if (videoPath == null) {
-            throw new Exception("Video resource not found");
-        }
-
-        manager.videoControl.SetVideo(videoPath, true);
+        manager.videoControl.SetVideo(Config.introductionVideo);
     }
 
     protected override async Task TrialStates() {
@@ -48,7 +45,7 @@ public class RepFRExperiment : ExperimentBase<RepFRExperiment, FRSession<Word>, 
     // is really a hack that lets us get through the mic test unscathed. More time critical
     // applications need a different approach
     protected async Task RecordTest() {
-        string wavPath = System.IO.Path.Combine(manager.fileManager.SessionPath(), "microphone_test_"
+        string wavPath = System.IO.Path.Combine(FileManager.SessionPath(), "microphone_test_"
                     + Clock.UtcNow.ToString("yyyy-MM-dd_HH_mm_ss") + ".wav");
 
         manager.lowBeep.Play();

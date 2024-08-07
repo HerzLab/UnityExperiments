@@ -8,7 +8,6 @@
 
 using System;
 using System.Collections.Generic;
-using UnityEPL;
 
 [Serializable]
 public class MemMapSession<T> : WordListSessionBase<T, MemMapTrial<T>> 

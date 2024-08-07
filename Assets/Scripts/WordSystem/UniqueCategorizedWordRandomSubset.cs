@@ -9,7 +9,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEPL;
+
+using UnityEPL.Extensions;
 
 public class UniqueCategorizedWordRandomSubset : CategorizedWordRandomSubset {
 
