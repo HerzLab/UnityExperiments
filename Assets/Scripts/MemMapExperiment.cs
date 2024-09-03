@@ -450,6 +450,7 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
         return session;
     }
 
+    // TODO: JPB: (feature) Move all session generation to MemMapSession
     protected new MemMapSession<PairedWord> GenerateSession<T>(T randomSubset) 
         where T : WordRandomSubset<Word>
     {
