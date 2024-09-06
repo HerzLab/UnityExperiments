@@ -258,19 +258,21 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
         var ynKeyCodes = new List<KeyCode> {KeyCode.Y, KeyCode.N};
 
         // Question 1
-        textDisplayer.Display("Question 1", LangStrings.Blank(), LangStrings.QuestioneerQ1());
-        KeyCode q1Resp = await inputManager.WaitForKey(ynKeyCodes);
-        textDisplayer.Clear();
+        if (Config.stimMode != "ReadOnly") {
+            textDisplayer.Display("Question 1", LangStrings.Blank(), LangStrings.QuestioneerQ1());
+            KeyCode q1Resp = await inputManager.WaitForKey(ynKeyCodes);
+            textDisplayer.Clear();
 
-        // Question 1 sub questions
-        if (q1Resp == KeyCode.Y) {
-            await textDisplayer.PressAnyKey("Question 1a", LangStrings.Blank(), LangStrings.QuestioneerQ1a());
+            // Question 1 sub questions
+            if (q1Resp == KeyCode.Y) {
+                await textDisplayer.PressAnyKey("Question 1a", LangStrings.Blank(), LangStrings.QuestioneerQ1a());
 
-            string wavPath = Path.Combine(FileManager.SessionPath(), "q1a.wav");
-            manager.recorder.StartRecording(wavPath);
-            textDisplayer.Display("Question 1a recording", LangStrings.Blank(), LangStrings.QuestioneerQ1b());
-            await inputManager.WaitForKey();
-            manager.recorder.StopRecording();
+                string wavPath = Path.Combine(FileManager.SessionPath(), "q1a.wav");
+                manager.recorder.StartRecording(wavPath);
+                textDisplayer.Display("Question 1a recording", LangStrings.Blank(), LangStrings.QuestioneerQ1b());
+                await inputManager.WaitForKey();
+                manager.recorder.StopRecording();
+            }
         }
     }
 
