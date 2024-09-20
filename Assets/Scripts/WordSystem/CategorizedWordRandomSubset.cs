@@ -8,15 +8,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 using UnityEPL;
+using UnityEPL.Experiment;
 using UnityEPL.Extensions;
 
 public class CategorizedWordRandomSubset : WordRandomSubset<CategorizedWord> {
     protected new Dictionary<string, List<CategorizedWord>> shuffled = new();
 
-    public CategorizedWordRandomSubset(List<CategorizedWord> sourceWords) {
+    public CategorizedWordRandomSubset(List<CategorizedWord> sourceWords, bool splitWordsOverTwoSessions = false) {
         Dictionary<string, List<CategorizedWord>> catWords = new();
 
         foreach (var word in sourceWords) {
@@ -31,7 +33,7 @@ public class CategorizedWordRandomSubset : WordRandomSubset<CategorizedWord> {
             shuffled[words.Key] = words.Value.Shuffle();
         }
 
-        if (Config.splitWordsOverTwoSessions) {
+        if (splitWordsOverTwoSessions) {
             var stableShuffledCategories = shuffled.ToList();
 
             if (stableShuffledCategories.Count % 2 != 0) {

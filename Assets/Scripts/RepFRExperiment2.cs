@@ -21,7 +21,7 @@ using UnityEPL;
 using UnityEPL.Utilities;
 using UnityEPL.ExternalDevices;
 
-public class RepFRExperiment2 : WordListExperimentBase<Word, FRTrial<Word>, FRSession<Word>> {
+public class RepFRExperiment2 : WordListExperimentBase<RepFRExperiment2, FRSession<Word>, FRTrial<Word>, RepFRConstants, Word> {
     protected RepCounts repCounts = null;
     protected int uniqueWordsPerList;
 
@@ -77,7 +77,7 @@ public class RepFRExperiment2 : WordListExperimentBase<Word, FRTrial<Word>, FRSe
         SendRamulatorStateMsg(HostPcStateMsg.ORIENT(), true);
         manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
 
-        int[] limits = Config.fixationDurationMs;
+        int[] limits = CONSTANTS.fixationDurationMs;
         int duration = UnityEPL.Utilities.Random.Rnd.Next(limits[0], limits[1]);
         textDisplayer.Display("orientation stimulus", LangStrings.Blank(), LangStrings.GenForCurrLang("+"));
         
@@ -88,7 +88,7 @@ public class RepFRExperiment2 : WordListExperimentBase<Word, FRTrial<Word>, FRSe
     protected async Task RecallPrompt() {
         manager.highBeep.Play();
         textDisplayer.Display("display recall text", LangStrings.Blank(), LangStrings.GenForCurrLang("*******"));
-        await manager.Delay(Config.recallOrientationDurationMs);
+        await manager.Delay(CONSTANTS.recallOrientationDurationMs);
     }
 
     // Setup Functions
@@ -116,7 +116,7 @@ public class RepFRExperiment2 : WordListExperimentBase<Word, FRTrial<Word>, FRSe
         uniqueWordsPerList = repCounts.UniqueWords();
 
         var sourceWords = ReadWordpool<Word>(FileManager.GetWordList(), "wordpool");
-        var words = new WordRandomSubset<Word>(sourceWords);
+        var words = new WordRandomSubset<Word>(sourceWords, CONSTANTS.splitWordsOverTwoSessions);
 
         // TODO: (feature) Load Session
         session = GenerateSession(words);

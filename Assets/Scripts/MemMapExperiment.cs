@@ -18,7 +18,9 @@ using UnityEPL.Utilities;
 using UnityEPL.ExternalDevices;
 using UnityEPL.Extensions;
 
-public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<PairedWord>, MemMapSession<PairedWord>> {
+public class MemMapExperiment 
+    : WordListExperimentBase<MemMapExperiment, MemMapSession<PairedWord>, MemMapTrial<PairedWord>, MemMapConstants, PairedWord> 
+{
     protected readonly List<KeyCode> skipKeys = new List<KeyCode> {KeyCode.Space};
     protected readonly List<KeyCode> ynKeyCodes = new List<KeyCode> {KeyCode.Y, KeyCode.N};
 
@@ -79,7 +81,7 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
         manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
 
         // Delay for random time within fixation duration limits and show orientation stimulus
-        int[] limits = Config.fixationDurationMs;
+        int[] limits = CONSTANTS.fixationDurationMs;
         int duration = UnityEPL.Utilities.Random.Rnd.Next(limits[0], limits[1]);
         textDisplayer.Display("orientation stimulus", LangStrings.Blank(), LangStrings.GenForCurrLang("+"));
         manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
@@ -87,7 +89,7 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
 
         // Delay for random time within post-fixation delay limits
         textDisplayer.Clear();
-        limits = Config.postFixationDelayMs;
+        limits = CONSTANTS.postFixationDelayMs;
         duration = UnityEPL.Utilities.Random.Rnd.Next(limits[0], limits[1]);
         await manager.Delay(duration);
     }
@@ -96,8 +98,8 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
         manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ENCODING(), new() { { "current_trial", session.TrialNum } });
 
         // Get encoding state variables
-        int[] isiLimits = Config.interStimulusDurationMs;
-        int[] stimEarlyOnsetMsLimits = Config.stimEarlyOnsetMs;
+        int[] isiLimits = CONSTANTS.interStimulusDurationMs;
+        int[] stimEarlyOnsetMsLimits = CONSTANTS.stimEarlyOnsetMs;
         var encStimWords = session.Trial.encoding;
 
         for (int i = 0; i < encStimWords.Count; ++i) {
@@ -123,10 +125,10 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
                 { "serialpos", i },
                 { "stimWord", wordStim.stim },
             };
-            eventReporter.LogTS("word stimulus info", data);
+            eventReporter.LogTS("encoding word stimulus info", data);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
             wordDisplayer.DisplayPairedWord(wordStim.word.word, wordStim.word.pairedWord);
-            await manager.Delay(Config.stimulusDurationMs);
+            await manager.Delay(CONSTANTS.stimulusDurationMs);
             wordDisplayer.ClearWords();
 
             // manager.lowBeep.Play();
@@ -135,15 +137,15 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
     }
 
     protected async Task PauseBeforeRecog() {
-        int[] limits = Config.recallDelayMs;
+        int[] limits = CONSTANTS.recallDelayMs;
         int interval = UnityEPL.Utilities.Random.Rnd.Next(limits[0], limits[1]);
         await manager.Delay(interval);
     }
 
     protected async Task CuedRecall() {
         // Get cued recall state variables
-        int[] isiLimits = Config.interStimulusDurationMs;
-        int[] stimEarlyOnsetMsLimits = Config.stimEarlyOnsetMs;
+        int[] isiLimits = CONSTANTS.interStimulusDurationMs;
+        int[] stimEarlyOnsetMsLimits = CONSTANTS.stimEarlyOnsetMs;
         var recallStimWords = session.Trial.recall;
 
         for (int i = 0; i < recallStimWords.Count; ++i) {
@@ -169,7 +171,7 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
                 practiceStr + "cuedRecall_" + session.TrialNum + "_" + i +".wav");
             manager.recorder.StartRecording(wavPath);
             eventReporter.LogTS("start recall period");
-            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(Config.stimulusDurationMs+Config.recallDurationMs));
+            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(CONSTANTS.stimulusDurationMs+CONSTANTS.recallDurationMs));
 
             // Do the cued recall and log it
             Dictionary<string, object> data = new() {
@@ -177,14 +179,14 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
                 { "serialpos", i },
                 { "stimWord", wordStim.stim },
             };
-            eventReporter.LogTS("word stimulus info", data);
+            eventReporter.LogTS("cued recall word stimulus info", data);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
             wordDisplayer.DisplayWord(wordStim.word.word);
-            await manager.Delay(Config.stimulusDurationMs);
+            await manager.Delay(CONSTANTS.stimulusDurationMs);
 
             // Clear the word and wait for the rest of the recall duration
             wordDisplayer.ClearWords();
-            await manager.Delay(Config.recallDurationMs);
+            await manager.Delay(CONSTANTS.recallDurationMs);
             // try { await inputManager.WaitForKey(skipKeys, false, Config.recallDurationMs); }
             // catch (TimeoutException) {}
 
@@ -198,8 +200,8 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
 
     protected async Task Recognition() {
         // Get recognition state variables
-        int[] isiLimits = Config.interStimulusDurationMs;
-        int[] stimEarlyOnsetMsLimits = Config.stimEarlyOnsetMs;
+        int[] isiLimits = CONSTANTS.interStimulusDurationMs;
+        int[] stimEarlyOnsetMsLimits = CONSTANTS.stimEarlyOnsetMs;
         var recogStimWords = session.Trial.recognition;
 
         for (int i = 0; i < recogStimWords.Count; ++i) {
@@ -225,7 +227,7 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
                 practiceStr + "recognitionRecall_" + session.TrialNum + "_" + i +".wav");
             manager.recorder.StartRecording(wavPath);
             eventReporter.LogTS("start recall period");
-            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(Config.stimulusDurationMs+Config.recogDurationMs));
+            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(CONSTANTS.stimulusDurationMs+CONSTANTS.recogDurationMs));
 
             // Do the recognition and log it
             Dictionary<string, object> data = new() {
@@ -233,16 +235,16 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
                 { "serialpos", i },
                 { "stimWord", wordStim.stim },
             };
-            eventReporter.LogTS("word stimulus info", data);
+            eventReporter.LogTS("recognition word stimulus info", data);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
             oldNewKeys.TurnOn();
             wordDisplayer.DisplayWord(wordStim.word.word);
-            await manager.Delay(Config.stimulusDurationMs);
+            await manager.Delay(CONSTANTS.stimulusDurationMs);
 
             // Clear the word and wait for the rest of the recognition duration
             wordDisplayer.ClearWords();
-            await manager.Delay(Config.recogDurationMs);
-            // try { await inputManager.WaitForKey(skipKeys, false, Config.recogDurationMs); }
+            await manager.Delay(CONSTANTS.recogDurationMs);
+            // try { await inputManager.WaitForKey(skipKeys, false, CONSTANTS.recogDurationMs); }
             // catch (TimeoutException) {}
 
             // Stop recording and recognition period
@@ -304,14 +306,21 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
         oldNewKeys.SetKeySize();
         oldNewKeys.SetupKeyPositions();
 
-        // Read practice words and generate practice session
+        // Read the practice words and generate practice session
         var sourcePracticeWords = ReadWordpool<Word>(FileManager.GetPracticeWordList(), "practice_wordpool");
-        var practiceWords = new WordRandomSubset<Word>(sourcePracticeWords, true);
+        var practiceWords = new WordRandomSubset<Word>(sourcePracticeWords);
         practiceSession = GeneratePracticeSession(practiceWords);
 
-        // Read words, save the original words, and set the WordDisplay sizes
+        // Read the main words, set the WordDisplay sizes, and check if any practice words are in the wordpool
         var sourceWords = ReadWordpool<Word>(FileManager.GetWordList(), "wordpool");
-        wordDisplayer.SetWordSize(sourceWords);
+        wordDisplayer.SetWordSize(sourceWords.Concat(sourcePracticeWords).ToList());
+        var repeatedWords = sourcePracticeWords.Where(w => sourceWords.Any(pw => pw.word == w.word)).ToList();
+        if (repeatedWords.Count > 0) {
+            ErrorNotifier.ErrorTS(new Exception("There are words from the practice wordpool in the main wordpool."
+                + $"\nPlease remove the practice words ({FileManager.GetPracticeWordList()}) "
+                + $"from the main wordpool ({FileManager.GetWordList()})"
+                + $"\nThe repeated words are: {string.Join(", ", repeatedWords.ConvertAll(w => w.word))}"));
+        }
 
         // Allow for splitting over multiple sessions
         var usedWordsPath = Path.Combine(FileManager.SessionPath(), "usedWords.tsv");
@@ -332,7 +341,6 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
             File.WriteAllLines(usedWordsPath, new string[1]{titleLine});
         }
 
-
         // Generate the random subset needed
         // If the number of words is less than the words needed, then ask the user if they want to reset word usage and resuse words, and do it again
         // TODO: JPB: (feature) Move the GenerateSession word reuse to WordRandomSubset (or something)
@@ -351,7 +359,6 @@ public class MemMapExperiment : WordListExperimentBase<PairedWord, MemMapTrial<P
             } else {
                 ErrorNotifier.ErrorTS(new Exception($"The number of unused words {unusedWords.Count}/{sourceWords.Count} is less than the words needed", e));
             }
-            practiceWords = new WordRandomSubset<Word>(sourcePracticeWords, true);
             words = new WordRandomSubset<Word>(unusedWords, usedWordsPath: usedWordsPath);
             normalSession = GenerateSession(words);
         }

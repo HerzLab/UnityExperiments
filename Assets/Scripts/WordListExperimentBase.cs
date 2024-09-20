@@ -19,10 +19,14 @@ using UnityEPL.ExternalDevices;
 using UnityEPL.Extensions;
 using UnityEPL.Experiment;
 
-public abstract class WordListExperimentBase<WordType, TrialType, SessionType> : ExperimentBase<WordListExperimentBase<WordType, TrialType, SessionType>, SessionType, TrialType> 
-    where WordType : Word, new()
-    where TrialType : FRTrial<WordType>
+
+public abstract class WordListExperimentBase<Self, SessionType, TrialType, Constants, WordType> 
+    : ExperimentBase<Self, SessionType, TrialType, Constants>
+    where Self : WordListExperimentBase<Self, SessionType, TrialType, Constants, WordType>
     where SessionType : WordListSessionBase<WordType, TrialType>, new()
+    where TrialType : FRTrial<WordType>
+    where Constants : WordListConstants, new()
+    where WordType : Word, new()
 {
     protected override void AwakeOverride() { }
 
@@ -87,9 +91,9 @@ public abstract class WordListExperimentBase<WordType, TrialType, SessionType> :
 
         manager.recorder.StartRecording(wavPath);
         eventReporter.LogTS("start final recall period");
-        manager.hostPC?.SendStateMsgTS(HostPcStateMsg.FINAL_RECALL(Config.finalRecallDuration));
+        manager.hostPC?.SendStateMsgTS(HostPcStateMsg.FINAL_RECALL(CONSTANTS.finalRecallDuration));
 
-        await manager.Delay(Config.finalRecallDuration);
+        await manager.Delay(CONSTANTS.finalRecallDuration);
 
         eventReporter.LogTS("end final recall period");
         manager.recorder.StopRecording();
@@ -170,7 +174,7 @@ public abstract class WordListExperimentBase<WordType, TrialType, SessionType> :
         SendRamulatorStateMsg(HostPcStateMsg.ORIENT(), true);
         manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
 
-        int[] limits = Config.fixationDurationMs;
+        int[] limits = CONSTANTS.fixationDurationMs;
         int duration = UnityEPL.Utilities.Random.Rnd.Next(limits[0], limits[1]);
         textDisplayer.Display("orientation stimulus", LangStrings.Blank(), LangStrings.GenForCurrLang("+"));
         manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
@@ -190,7 +194,7 @@ public abstract class WordListExperimentBase<WordType, TrialType, SessionType> :
         SendRamulatorStateMsg(HostPcStateMsg.ENCODING(), true, new() { { "current_trial", session.TrialNum } });
         manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ENCODING(), new() { { "current_trial", session.TrialNum } });
 
-        int[] isiLimits = Config.interStimulusDurationMs;
+        int[] isiLimits = CONSTANTS.interStimulusDurationMs;
         var encStimWords = session.Trial.encoding;
 
         for (int i = 0; i < 12; ++i) {
@@ -208,7 +212,7 @@ public abstract class WordListExperimentBase<WordType, TrialType, SessionType> :
             eventReporter.LogTS("word stimulus info", data);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
             textDisplayer.Display("word stimulus", LangStrings.Blank(), LangStrings.GenForCurrLang(wordStim.word.ToDisplayString()));
-            await manager.Delay(Config.stimulusDurationMs);
+            await manager.Delay(CONSTANTS.stimulusDurationMs);
             eventReporter.LogTS("clear word stimulus", data);
             textDisplayer.Clear();
         }
@@ -220,7 +224,7 @@ public abstract class WordListExperimentBase<WordType, TrialType, SessionType> :
         manager.hostPC?.SendStateMsgTS(HostPcStateMsg.DISTRACT(), new() { { "current_trial", session.TrialNum } });
 
         textDisplayer.Display("display distractor fixation cross", LangStrings.Blank(), LangStrings.GenForCurrLang("+"));
-        await manager.Delay(Config.distractorDurationMs);
+        await manager.Delay(CONSTANTS.distractorDurationMs);
         textDisplayer.Clear();
 
         SendRamulatorStateMsg(HostPcStateMsg.DISTRACT(), false, new() { { "current_trial", session.TrialNum } });
@@ -261,7 +265,7 @@ public abstract class WordListExperimentBase<WordType, TrialType, SessionType> :
                 manager.ramulator?.SendMathMsg(mathDiplayer.Problem, mathDiplayer.Answer, responseTimeMs, correct);
 
                 // End distractor or setup next math problem
-                if ((Clock.UtcNow - startTime).TotalMilliseconds > Config.distractorDurationMs) {
+                if ((Clock.UtcNow - startTime).TotalMilliseconds > CONSTANTS.distractorDurationMs) {
                     mathDiplayer.TurnOff();
                     break;
                 } else {
@@ -273,12 +277,12 @@ public abstract class WordListExperimentBase<WordType, TrialType, SessionType> :
         SendRamulatorStateMsg(HostPcStateMsg.DISTRACT(), false, new() { { "current_trial", session.TrialNum } });;
     }
     protected async Task PauseBeforeRecall() {
-        int[] limits = Config.recallDelayMs;
+        int[] limits = CONSTANTS.recallDelayMs;
         int interval = UnityEPL.Utilities.Random.Rnd.Next(limits[0], limits[1]);
         await manager.Delay(interval);
     }
     protected async Task RecallOrientation() {
-        await Orientation(Config.recallOrientationDurationMs);
+        await Orientation(CONSTANTS.recallOrientationDurationMs);
     }
     protected async Task FreeRecall() {
         SendRamulatorStateMsg(HostPcStateMsg.RETRIEVAL(), true, new() { { "current_trial", session.TrialNum } });
@@ -293,9 +297,9 @@ public abstract class WordListExperimentBase<WordType, TrialType, SessionType> :
 
         manager.recorder.StartRecording(wavPath);
         eventReporter.LogTS("start recall period");
-        manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(Config.recallDurationMs));
+        manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(CONSTANTS.recallDurationMs));
 
-        await manager.Delay(Config.recallDurationMs);
+        await manager.Delay(CONSTANTS.recallDurationMs);
 
         manager.recorder.StopRecording();
         manager.lowBeep.Play();
@@ -320,7 +324,7 @@ public abstract class WordListExperimentBase<WordType, TrialType, SessionType> :
 
         // Read words and generate the random subset needed
         var sourceWords = ReadWordpool<WordType>(FileManager.GetWordList(), "wordpool");
-        var words = new WordRandomSubset<WordType>(sourceWords);
+        var words = new WordRandomSubset<WordType>(sourceWords, CONSTANTS.splitWordsOverTwoSessions);
 
         // TODO: (feature) Load Session
         session = GenerateSession(words);
@@ -331,9 +335,9 @@ public abstract class WordListExperimentBase<WordType, TrialType, SessionType> :
     // Helper Functions
     protected void RecallStim() {
         // Uniform stim.
-        int recStimInterval = Config.recallStimIntervalMs;
-        int stimDuration = Config.recallStimDurationMs;
-        int recPeriod = Config.recallDurationMs;
+        int recStimInterval = CONSTANTS.recallStimIntervalMs;
+        int stimDuration = CONSTANTS.recallStimDurationMs;
+        int recPeriod = CONSTANTS.recallDurationMs;
 
         uint stimReps = (uint)(recPeriod / (stimDuration + recStimInterval));
 

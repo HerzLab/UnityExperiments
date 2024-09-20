@@ -18,7 +18,7 @@ using UnityEPL.Extensions;
 using UnityEPL.Utilities;
 using UnityEPL.Experiment;
 
-public class RepFRExperiment : ExperimentBase<RepFRExperiment, FRSession<Word>, FRTrial<Word>> {
+public class RepFRExperiment : ExperimentBase<RepFRExperiment, FRSession<Word>, FRTrial<Word>, RepFRConstants> {
     protected override void AwakeOverride() { }
 
     protected void Start() {

@@ -19,7 +19,7 @@ using UnityEPL.Utilities;
 using UnityEPL.ExternalDevices;
 using UnityEPL.Experiment;
 
-public class CPSExperiment : ExperimentBase<CPSExperiment, CPSSession, CPSTrial> {
+public class CPSExperiment : ExperimentBase<CPSExperiment, CPSSession, CPSTrial, CPSConstants> {
     protected override void AwakeOverride() { }
 
     protected void Start() {

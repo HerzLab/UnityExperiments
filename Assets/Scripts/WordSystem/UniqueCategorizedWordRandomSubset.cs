@@ -14,7 +14,8 @@ using UnityEPL.Extensions;
 
 public class UniqueCategorizedWordRandomSubset : CategorizedWordRandomSubset {
 
-    public UniqueCategorizedWordRandomSubset(List<CategorizedWord> sourceWords) : base(sourceWords) { }
+    public UniqueCategorizedWordRandomSubset(List<CategorizedWord> sourceWords, bool splitWordsOverTwoSessions = false) 
+        : base(sourceWords, splitWordsOverTwoSessions) { }
 
     // Get one word from each category
     public override List<CategorizedWord> Get(int amount) {

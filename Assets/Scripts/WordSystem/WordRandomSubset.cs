@@ -32,12 +32,12 @@ public class WordRandomSubset<T>
         index = 0;
     }
 
-    public WordRandomSubset(List<T> sourceWords, bool ignoreSplit = false, string usedWordsPath = null) {
+    public WordRandomSubset(List<T> sourceWords, bool splitWordsOverTwoSessions = false, string usedWordsPath = null) {
         index = 0;
         this.usedWordsPath = usedWordsPath;
 
         // Only keep the words for that session
-        if (Config.splitWordsOverTwoSessions && !ignoreSplit) {
+        if (splitWordsOverTwoSessions) {
             int splitIndex = sourceWords.Count / 2;
             int lenRemove = sourceWords.Count - splitIndex;
             sourceWords.ShuffleInPlace(UnityEPL.Utilities.Random.StableRnd);

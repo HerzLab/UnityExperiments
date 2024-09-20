@@ -16,7 +16,7 @@ using UnityEngine;
 
 using UnityEPL;
 
-public class CatFRExperiment : WordListExperimentBase<CategorizedWord, FRTrial<CategorizedWord>, FRSession<CategorizedWord>> {
+public class CatFRExperiment : WordListExperimentBase<CatFRExperiment, FRSession<CategorizedWord>, FRTrial<CategorizedWord>, FRConstants, CategorizedWord> {
     protected override Task SetupWordList() {
         var wordRepeats = Config.wordRepeats;
         if (wordRepeats.Count() != 1 && wordRepeats[0] != 1) {
@@ -26,7 +26,7 @@ public class CatFRExperiment : WordListExperimentBase<CategorizedWord, FRTrial<C
         wordsPerList = Config.wordCounts[0];
 
         var sourceWords = ReadWordpool<CategorizedWord>(FileManager.GetWordList(), "wordpool");
-        var words = new CategorizedWordRandomSubset(sourceWords);
+        var words = new CategorizedWordRandomSubset(sourceWords, CONSTANTS.splitWordsOverTwoSessions);
 
         // TODO: (feature) Load Session
         session = GenerateSession(words);

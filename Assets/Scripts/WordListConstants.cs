@@ -6,6 +6,21 @@
 //UnityExperiments is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 //You should have received a copy of the GNU General Public License along with UnityExperiments. If not, see <https://www.gnu.org/licenses/>. 
 
-public class FRExperiment : WordListExperimentBase<FRExperiment, FRSession<Word>, FRTrial<Word>, FRConstants, Word> {
-    // This is here to make a template completed version of the WordListExperimentBase class
+using UnityEPL.Experiment;
+
+public abstract class WordListConstants : ExperimentConstants {
+    public virtual int distractorDurationMs { get; }
+    public virtual int[] fixationDurationMs { get; }
+    public virtual int[] postFixationDelayMs { get; }
+    public virtual int stimulusDurationMs { get; }
+    public virtual int[] interStimulusDurationMs { get; }
+    public virtual int[] recallDelayMs { get; }
+    public virtual int recallDurationMs { get; }
+    public virtual int recallOrientationDurationMs { get; }
+    public virtual int finalRecallDuration { get; }
+
+    public virtual int recallStimIntervalMs { get; }
+    public virtual int recallStimDurationMs { get; }
+
+    public virtual bool splitWordsOverTwoSessions { get; }
 }
