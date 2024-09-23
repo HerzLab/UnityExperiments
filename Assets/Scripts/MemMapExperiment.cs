@@ -439,7 +439,7 @@ public class MemMapExperiment
 
         // Practice Lists
         bool noPractice = Config.onlyPracticeOnFirstSession && Config.sessionNum > 1;
-        int numPracticeLists = noPractice ? 0 : Config.practiceLists;
+        int numPracticeLists = noPractice ? 0 : Config.numPracticeLists;
         for (int i = 0; i < numPracticeLists; i++) {
             var wordOrders = Enumerable.Range(0, wordsPerList).Select(i => i % 2 == 0).ToList();
             var recallOrders = Enumerable.Range(0, wordsPerList).ToList().Shuffle(UnityEPL.Utilities.Random.StableRnd);
@@ -466,7 +466,7 @@ public class MemMapExperiment
         var session = new MemMapSession<PairedWord>();
 
         // Pre No-Stim Lists
-        for (int i = 0; i < Config.preNoStimLists; i++) {
+        for (int i = 0; i < Config.numPreNoStimLists; i++) {
             var wordOrders = Enumerable.Range(0, wordsPerList).Select(i => i % 2 == 0).ToList();
             var recallOrders = Enumerable.Range(0, wordsPerList).ToList().Shuffle();
             var recogOrders = Enumerable.Range(0, wordsPerList+lureWordsPerList).ToList().Shuffle();
@@ -474,14 +474,14 @@ public class MemMapExperiment
         }
 
         // Check for invalid list types
-        if (Config.encodingAndRetrievalLists != 0) {
+        if (Config.numEncodingAndRetrievalLists != 0) {
             ErrorNotifier.ErrorTS(new Exception("Config's encodingAndRetrievalLists should be 0 in Config"));
         }
 
-        int numEncLists = Config.encodingOnlyLists;
-        int numRetLists = Config.retrievalOnlyLists;
-        int numEncAndRetLists = Config.encodingAndRetrievalLists;
-        int numNoStimLists = Config.noStimLists;
+        int numEncLists = Config.numEncodingLists;
+        int numRetLists = Config.numRetrievalLists;
+        int numEncAndRetLists = Config.numEncodingAndRetrievalLists;
+        int numNoStimLists = Config.numNoStimLists;
 
         // Generate the unique bool lists for the paired words
         // 1000 is a random number to limit it if the word lists get too long

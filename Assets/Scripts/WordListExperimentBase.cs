@@ -105,7 +105,7 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
 
     // Trial States
     protected async Task StartTrial() {
-        int numPracticeTrials = Config.practiceLists;
+        int numPracticeTrials = Config.numPracticeLists;
         int numTrials = session.trials.Count;
 
         Func<Task> optionalPracticeTrialQuestion = async () => {
@@ -418,29 +418,29 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
     {
         var session = new SessionType();
 
-        for (int i = 0; i < Config.practiceLists; i++) {
+        for (int i = 0; i < Config.numPracticeLists; i++) {
             session.AddTrial(MakeRun(randomSubset, false, false));
         }
 
-        for (int i = 0; i < Config.preNoStimLists; i++) {
+        for (int i = 0; i < Config.numPreNoStimLists; i++) {
             session.AddTrial(MakeRun(randomSubset, false, false));
         }
 
         var randomized_list = new SessionType();
 
-        for (int i = 0; i < Config.encodingOnlyLists; i++) {
+        for (int i = 0; i < Config.numEncodingLists; i++) {
             randomized_list.AddTrial(MakeRun(randomSubset, true, false));
         }
 
-        for (int i = 0; i < Config.retrievalOnlyLists; i++) {
+        for (int i = 0; i < Config.numRetrievalLists; i++) {
             randomized_list.AddTrial(MakeRun(randomSubset, false, true));
         }
 
-        for (int i = 0; i < Config.encodingAndRetrievalLists; i++) {
+        for (int i = 0; i < Config.numEncodingAndRetrievalLists; i++) {
             randomized_list.AddTrial(MakeRun(randomSubset, true, true));
         }
 
-        for (int i = 0; i < Config.noStimLists; i++) {
+        for (int i = 0; i < Config.numNoStimLists; i++) {
             randomized_list.AddTrial(MakeRun(randomSubset, false, false));
         }
 

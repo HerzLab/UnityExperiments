@@ -9,6 +9,10 @@
 using System;
 
 public class MemMapConstants : WordListConstants {
+    // MemMapExperiment
+    public virtual int recogDurationMs => 2000;
+    public virtual int[] stimEarlyOnsetMs => new int[2] {0, 100};
+
     // WordListExperimentBase
     public override int distractorDurationMs => 20000;
     public override int[] fixationDurationMs => new int[2] {250, 250};
@@ -24,9 +28,4 @@ public class MemMapConstants : WordListConstants {
     public override int recallStimDurationMs => throw new NotImplementedException();
 
     public override bool splitWordsOverTwoSessions => false;
-
-    // MemMapExperiment
-
-    public virtual int recogDurationMs => 2000;
-    public virtual int[] stimEarlyOnsetMs => new int[2] {0, 100};
 }
