@@ -48,24 +48,24 @@ public class WordDisplayer : MonoBehaviour {
         pairedWord2.fontSize = fontSize;
     }
 
-    public void DisplayWord(string word) {
+    public void DisplayWord(string word, Dictionary<string, object> data = null) {
         gameObject.SetActive(true);
-
-        wordStimulusData = new() {
-            { "words", new string[1] { word } },
-        };
+        wordStimulusData = data ?? new();
+        wordStimulusData["words"] = new string[1] { word };
+        
         EventReporter.Instance.LogTS("word stimulus", wordStimulusData);
         singleWord.text = word;
     }
 
-    public void DisplayPairedWord(string word1, string word2) {
+    public void DisplayPairedWord(string word1, string word2, Dictionary<string, object> data = null) {
         gameObject.SetActive(true);
-        wordStimulusData = new() {
-            { "words", new string[2] { word1, word2 } },
-        };
+        wordStimulusData = data ?? new();
+        wordStimulusData["words"] = new string[2] { word1, word2 };
+
         EventReporter.Instance.LogTS("word stimulus", wordStimulusData);
         pairedWord1.text = word1;
         pairedWord2.text = word2;
+        
     }
 
     public void ClearWords() {

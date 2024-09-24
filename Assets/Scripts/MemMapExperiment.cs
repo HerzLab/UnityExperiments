@@ -27,7 +27,6 @@ public class MemMapExperiment
     protected int lureWordsPerList;
     protected bool newIsLeftShift;
 
-    [SerializeField] protected WordDisplayer wordDisplayer;
     [SerializeField] protected OldNewKeys oldNewKeys;
 
     protected override async Task PreTrialStates() {
@@ -125,9 +124,8 @@ public class MemMapExperiment
                 { "serialpos", i },
                 { "stimWord", wordStim.stim },
             };
-            eventReporter.LogTS("encoding word stimulus info", data);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
-            wordDisplayer.DisplayPairedWord(wordStim.word.word, wordStim.word.pairedWord);
+            wordDisplayer.DisplayPairedWord(wordStim.word.word, wordStim.word.pairedWord, data);
             await manager.Delay(CONSTANTS.stimulusDurationMs);
             wordDisplayer.ClearWords();
 
@@ -179,9 +177,8 @@ public class MemMapExperiment
                 { "serialpos", i },
                 { "stimWord", wordStim.stim },
             };
-            eventReporter.LogTS("cued recall word stimulus info", data);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
-            wordDisplayer.DisplayWord(wordStim.word.word);
+            wordDisplayer.DisplayWord(wordStim.word.word, data);
             await manager.Delay(CONSTANTS.stimulusDurationMs);
 
             // Clear the word and wait for the rest of the recall duration
@@ -235,10 +232,9 @@ public class MemMapExperiment
                 { "serialpos", i },
                 { "stimWord", wordStim.stim },
             };
-            eventReporter.LogTS("recognition word stimulus info", data);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
             oldNewKeys.TurnOn();
-            wordDisplayer.DisplayWord(wordStim.word.word);
+            wordDisplayer.DisplayWord(wordStim.word.word, data);
             await manager.Delay(CONSTANTS.stimulusDurationMs);
 
             // Clear the word and wait for the rest of the recognition duration

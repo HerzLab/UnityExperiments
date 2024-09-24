@@ -36,7 +36,7 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
 
     protected int wordsPerList;
 
-
+    [SerializeField] protected WordDisplayer wordDisplayer;
     [SerializeField] protected MathDiplayer mathDiplayer;
 
     protected override async Task PreTrialStates() {
@@ -209,13 +209,13 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
                 { "stimWord", wordStim.stim },
             };
 
-            eventReporter.LogTS("word stimulus info", data);
             manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
-            textDisplayer.Display("word stimulus", LangStrings.Blank(), LangStrings.GenForCurrLang(wordStim.word.ToDisplayString()));
+            wordDisplayer.DisplayWord(wordStim.word.ToDisplayString(), data);
             await manager.Delay(CONSTANTS.stimulusDurationMs);
             eventReporter.LogTS("clear word stimulus", data);
-            textDisplayer.Clear();
+            wordDisplayer.ClearWords();
         }
+        wordDisplayer.TurnOff();
 
         SendRamulatorStateMsg(HostPcStateMsg.ENCODING(), false, new() { { "current_trial", session.TrialNum } });
     }
