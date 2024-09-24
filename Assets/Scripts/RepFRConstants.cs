@@ -15,6 +15,7 @@ public class RepFRConstants : FRConstants {
     public override int[] postFixationDelayMs => throw new NotImplementedException();
     public override int stimulusDurationMs => throw new NotImplementedException();
     public override int[] interStimulusDurationMs => throw new NotImplementedException();
+    public override int[] recallDelayMs => throw new NotImplementedException();
     public override int recallDurationMs => throw new NotImplementedException();
     public override int recallOrientationDurationMs => throw new NotImplementedException();
     public override int finalRecallDuration => throw new NotImplementedException();
