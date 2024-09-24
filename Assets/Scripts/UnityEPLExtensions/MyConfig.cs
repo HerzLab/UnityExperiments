@@ -19,9 +19,9 @@ namespace UnityEPL {
         public static int numPracticeLists { get { return GetSetting<int>("numPracticeLists"); } }
         public static int numNoStimLists { get { return GetSetting<int>("numNoStimLists"); } }
         public static int numPreNoStimLists { get { return GetSetting<int>("numPreNoStimLists"); } }
-        public static int numEncodingLists { get { return GetSetting<int>("numEncodingLists"); } }
-        public static int numRetrievalLists { get { return GetSetting<int>("numRetrievalLists"); } }
-        public static int numEncodingAndRetrievalLists { get { return GetSetting<int>("numEncodingAndRetrievalLists"); } }
+        public static int numEncodingStimLists { get { return GetSetting<int>("numEncodingStimLists"); } }
+        public static int numRetrievalStimLists { get { return GetSetting<int>("numRetrievalStimLists"); } }
+        public static int numEncodingAndRetrievalStimLists { get { return GetSetting<int>("numEncodingAndRetrievalStimLists"); } }
         public static bool optionalExtraPracticeTrials { get { return GetSetting<bool>("optionalExtraPracticeTrials"); } }
         public static bool onlyPracticeOnFirstSession { get { return GetSetting<bool>("onlyPracticeOnFirstSession"); } }
 

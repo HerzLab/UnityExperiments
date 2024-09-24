@@ -428,15 +428,15 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
 
         var randomized_list = new SessionType();
 
-        for (int i = 0; i < Config.numEncodingLists; i++) {
+        for (int i = 0; i < Config.numEncodingStimLists; i++) {
             randomized_list.AddTrial(MakeRun(randomSubset, true, false));
         }
 
-        for (int i = 0; i < Config.numRetrievalLists; i++) {
+        for (int i = 0; i < Config.numRetrievalStimLists; i++) {
             randomized_list.AddTrial(MakeRun(randomSubset, false, true));
         }
 
-        for (int i = 0; i < Config.numEncodingAndRetrievalLists; i++) {
+        for (int i = 0; i < Config.numEncodingAndRetrievalStimLists; i++) {
             randomized_list.AddTrial(MakeRun(randomSubset, true, true));
         }
 

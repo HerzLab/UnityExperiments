@@ -474,13 +474,13 @@ public class MemMapExperiment
         }
 
         // Check for invalid list types
-        if (Config.numEncodingAndRetrievalLists != 0) {
+        if (Config.numEncodingAndRetrievalStimLists != 0) {
             ErrorNotifier.ErrorTS(new Exception("Config's encodingAndRetrievalLists should be 0 in Config"));
         }
 
-        int numEncLists = Config.numEncodingLists;
-        int numRetLists = Config.numRetrievalLists;
-        int numEncAndRetLists = Config.numEncodingAndRetrievalLists;
+        int numEncLists = Config.numEncodingStimLists;
+        int numRetLists = Config.numRetrievalStimLists;
+        int numEncAndRetLists = Config.numEncodingAndRetrievalStimLists;
         int numNoStimLists = Config.numNoStimLists;
 
         // Generate the unique bool lists for the paired words
