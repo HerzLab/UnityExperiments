@@ -209,7 +209,6 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
                 { "stimWord", wordStim.stim },
             };
 
-            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
             wordDisplayer.DisplayWord(wordStim.word.ToDisplayString(), data);
             await manager.Delay(CONSTANTS.stimulusDurationMs);
             eventReporter.LogTS("clear word stimulus", data);

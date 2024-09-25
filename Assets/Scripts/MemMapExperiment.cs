@@ -124,7 +124,6 @@ public class MemMapExperiment
                 { "serialpos", i },
                 { "stimWord", wordStim.stim },
             };
-            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
             wordDisplayer.DisplayPairedWord(wordStim.word.word, wordStim.word.pairedWord, data);
             await manager.Delay(CONSTANTS.stimulusDurationMs);
             wordDisplayer.ClearWords();
@@ -177,7 +176,6 @@ public class MemMapExperiment
                 { "serialpos", i },
                 { "stimWord", wordStim.stim },
             };
-            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
             wordDisplayer.DisplayWord(wordStim.word.word, data);
             await manager.Delay(CONSTANTS.stimulusDurationMs);
 
@@ -232,7 +230,6 @@ public class MemMapExperiment
                 { "serialpos", i },
                 { "stimWord", wordStim.stim },
             };
-            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
             oldNewKeys.TurnOn();
             wordDisplayer.DisplayWord(wordStim.word.word, data);
             await manager.Delay(CONSTANTS.stimulusDurationMs);

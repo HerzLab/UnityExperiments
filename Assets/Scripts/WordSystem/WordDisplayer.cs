@@ -13,6 +13,7 @@ using System.Linq;
 
 using UnityEPL;
 using UnityEPL.Extensions;
+using UnityEPL.ExternalDevices;
 
 public class WordDisplayer : MonoBehaviour {
     [SerializeField] protected TextMeshProUGUI singleWord;
@@ -53,6 +54,7 @@ public class WordDisplayer : MonoBehaviour {
         wordStimulusData = data ?? new();
         wordStimulusData["words"] = new string[1] { word };
         
+        MainManager.Instance.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
         EventReporter.Instance.LogTS("word stimulus", wordStimulusData);
         singleWord.text = word;
     }
@@ -62,6 +64,7 @@ public class WordDisplayer : MonoBehaviour {
         wordStimulusData = data ?? new();
         wordStimulusData["words"] = new string[2] { word1, word2 };
 
+        MainManager.Instance.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
         EventReporter.Instance.LogTS("word stimulus", wordStimulusData);
         pairedWord1.text = word1;
         pairedWord2.text = word2;
