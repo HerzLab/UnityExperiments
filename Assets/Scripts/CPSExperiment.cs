@@ -40,15 +40,16 @@ public class CPSExperiment : ExperimentBase<CPSExperiment, CPSSession, CPSTrial,
     protected override Task PracticeTrialStates() { return Task.CompletedTask; }
     protected override Task PostTrialStates() { return Task.CompletedTask; }
 
-    protected async Task SetupExp() {
+    protected Task SetupExp() {
         if (manager.hostPC == null) {
             throw new Exception("CPS experiment must use a Host PC.\n The hostPC is null");
         }
-        await manager.hostPC.SendTrialMsgTS(0, true);
+        ReportTrialNum(true);
+        return Task.CompletedTask;
     }
 
     protected async Task FinishExperiment() {
-        await textDisplayer.PressAnyKey("display end message", LangStrings.SessionEnd());
+        await PressAnyKey("display end message", LangStrings.SessionEnd());
     }
 
     protected async Task ShowVideo() {
@@ -67,10 +68,10 @@ public class CPSExperiment : ExperimentBase<CPSExperiment, CPSSession, CPSTrial,
         };
         eventReporter.LogTS("movie", movieInfo);
 
-        await textDisplayer.PressAnyKey("instructions", LangStrings.CPSInstructions());
+        await PressAnyKey("instructions", LangStrings.CPSInstructions());
 
         UnityEngine.Debug.Log(1);
-        await manager.hostPC.SendStateMsgTS(HostPcStateMsg.ENCODING(), movieInfo);
+        await SetExperimentStatus(HostPcStatusMsg.ENCODING(), movieInfo);
 
         // Remove 10s to not overrun video legnth
         UnityEngine.Debug.Log(2);

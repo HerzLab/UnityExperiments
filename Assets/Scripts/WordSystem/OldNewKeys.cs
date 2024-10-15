@@ -4,6 +4,7 @@ using TMPro;
 
 using UnityEPL;
 using UnityEPL.Extensions;
+using UnityEPL.DataManagement;
 
 public class OldNewKeys : MonoBehaviour {
     public TextMeshProUGUI rightKey;
@@ -68,7 +69,8 @@ public class OldNewKeys : MonoBehaviour {
         if (isOn) {
             if (InputManager.Instance.GetKeyDown(KeyCode.LeftShift)) {
                 EventReporter.Instance.LogTS("old new keys", new() {
-                    { "key", KeyCode.LeftShift.ToString() }
+                    { "key", KeyCode.LeftShift.ToString() },
+                    { "old new", oldNewPosition ? "old" : "new" },
                 });
                 // Bold left key
                 leftKey.fontSize = largeFontSize;
@@ -78,7 +80,8 @@ public class OldNewKeys : MonoBehaviour {
                 rightKey.Bold(false);
             } else if (InputManager.Instance.GetKeyDown(KeyCode.RightShift)) {
                 EventReporter.Instance.LogTS("old new keys", new() {
-                    { "key", KeyCode.RightShift.ToString() }
+                    { "key", KeyCode.RightShift.ToString() },
+                    { "old new", oldNewPosition ? "new" : "old" },
                 });
                 // Bold right key
                 rightKey.fontSize = largeFontSize;

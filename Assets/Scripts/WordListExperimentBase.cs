@@ -74,11 +74,9 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
         await RecallOrientation();
         await FreeRecall();
     }
-    protected override void SendRamulatorStateMsg(HostPcStateMsg state, bool stateToggle, Dictionary<string, object> extraData = null) {
+    protected override void SendRamulatorStateMsg(HostPcStatusMsg state, bool stateToggle, Dictionary<string, object> extraData = null) {
         var dict = (extraData != null) ? new Dictionary<string, object>(extraData) : new();
-        if (state != HostPcStateMsg.WORD()) {
-            dict["phase_type"] = session?.Trial.encodingStim ?? false;
-        }
+        dict["phase_type"] = session?.Trial.encodingStim ?? false;
         manager.ramulator?.SendStateMsg(state, stateToggle, dict);
     }
 
@@ -91,7 +89,7 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
 
         manager.recorder.StartRecording(wavPath);
         eventReporter.LogTS("start final recall period");
-        manager.hostPC?.SendStateMsgTS(HostPcStateMsg.FINAL_RECALL(CONSTANTS.finalRecallDuration));
+        await SetExperimentStatus(HostPcStatusMsg.FINAL_RECALL(CONSTANTS.finalRecallDuration));
 
         await manager.Delay(CONSTANTS.finalRecallDuration);
 
@@ -100,7 +98,7 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
         manager.lowBeep.Play();
     }
     protected async Task FinishExperiment() {
-        await textDisplayer.PressAnyKey("display end message", LangStrings.SessionEnd());
+        await PressAnyKey("display end message", LangStrings.SessionEnd());
     }
 
     // Trial States
@@ -136,101 +134,85 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
 
         var stimList = session.Trial.GetStimValues();
         bool stim = stimList.Values.Aggregate((current, next) => current || next);
-        Dictionary<string, object> data = new() {
-            { "trial", session.TrialNum },
-            { "stim", stim },
-            { "stimList", stimList },
-            { "practice", session.isPractice }
-        };
-        
-        eventReporter.LogTS("start trial", data);
         manager.ramulator?.BeginNewTrial((int)session.TrialNum);
-        manager.hostPC?.SendStateMsgTS(HostPcStateMsg.TRIAL(), data);
+        ReportTrialNum(stim, new() { {"stimList", stimList} });
     }
     protected async Task NextTrialPrompt() {
-        var key = await textDisplayer.PressAnyKey("trial prompt", LangStrings.TrialPrompt(session.TrialNum));
+        var key = await PressAnyKey("trial prompt", LangStrings.TrialPrompt(session.TrialNum));
         if (key == KeyCode.D) { // D for Done
             EndCurrentSession();
         }
     }
     protected async Task NextPracticeTrialPrompt() {
-        var key = await textDisplayer.PressAnyKey("practice trial prompt", LangStrings.PracticeTrialPrompt(session.TrialNum));
+        var key = await PressAnyKey("practice trial prompt", LangStrings.PracticeTrialPrompt(session.TrialNum));
         if (key == KeyCode.D) { // D for Done
             EndCurrentSession();
         }
     }
     protected async Task CountdownVideo() {
-        SendRamulatorStateMsg(HostPcStateMsg.COUNTDOWN(), true, new() { { "current_trial", session.TrialNum } });
-        manager.hostPC?.SendStateMsgTS(HostPcStateMsg.COUNTDOWN(), new() { { "current_trial", session.TrialNum } });
+        SendRamulatorStateMsg(HostPcStatusMsg.COUNTDOWN(), true, new() { { "current_trial", session.TrialNum } });
+        await SetExperimentStatus(HostPcStatusMsg.COUNTDOWN(), new() { { "current_trial", session.TrialNum } });
 
         manager.videoControl.SetVideo(Config.countdownVideo);
-        eventReporter.LogTS("countdown");
-        manager.hostPC?.SendStateMsgTS(HostPcStateMsg.COUNTDOWN());
         await manager.videoControl.PlayVideo();
 
-        SendRamulatorStateMsg(HostPcStateMsg.COUNTDOWN(), false, new() { { "current_trial", session.TrialNum } });
+        SendRamulatorStateMsg(HostPcStatusMsg.COUNTDOWN(), false, new() { { "current_trial", session.TrialNum } });
     }
     protected async Task Fixation() {
-        SendRamulatorStateMsg(HostPcStateMsg.ORIENT(), true);
-        manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
+        SendRamulatorStateMsg(HostPcStatusMsg.ORIENT(), true);
+        await SetExperimentStatus(HostPcStatusMsg.ORIENT());
 
         int[] limits = CONSTANTS.fixationDurationMs;
         int duration = UnityEPL.Utilities.Random.Rnd.Next(limits[0], limits[1]);
         textDisplayer.Display("orientation stimulus", LangStrings.Blank(), LangStrings.GenForCurrLang("+"));
-        manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
+        await SetExperimentStatus(HostPcStatusMsg.ORIENT());
         await manager.Delay(duration);
         textDisplayer.Clear();
 
-        SendRamulatorStateMsg(HostPcStateMsg.ORIENT(), false);
+        SendRamulatorStateMsg(HostPcStatusMsg.ORIENT(), false);
     }
     protected async Task Orientation(int duration) {
-        manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
+        await SetExperimentStatus(HostPcStatusMsg.ORIENT());
         textDisplayer.Display("display recall text", LangStrings.Blank(), LangStrings.GenForCurrLang("*******"));
         manager.highBeep.Play();
         await manager.Delay(duration);
         textDisplayer.Clear();
     }
     protected async Task Encoding() {
-        SendRamulatorStateMsg(HostPcStateMsg.ENCODING(), true, new() { { "current_trial", session.TrialNum } });
-        manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ENCODING(), new() { { "current_trial", session.TrialNum } });
+        SendRamulatorStateMsg(HostPcStatusMsg.ENCODING(), true, new() { { "current_trial", session.TrialNum } });
+        await SetExperimentStatus(HostPcStatusMsg.ENCODING(), new() { { "current_trial", session.TrialNum } });
 
         int[] isiLimits = CONSTANTS.interStimulusDurationMs;
         var encStimWords = session.Trial.encoding;
 
         for (int i = 0; i < 12; ++i) {
             int isiDuration = UnityEPL.Utilities.Random.Rnd.Next(isiLimits[0], isiLimits[1]);
-            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(isiDuration));
+            await SetExperimentStatus(HostPcStatusMsg.ISI(isiDuration));
             await manager.Delay(isiDuration);
 
             var wordStim = encStimWords[i];
-            Dictionary<string, object> data = new() {
-                { "word", wordStim.word },
-                { "serialPos", i },
-                { "stimWord", wordStim.stim },
-            };
 
-            wordDisplayer.DisplayWord(wordStim.word.ToDisplayString(), data);
+            wordDisplayer.DisplayWord(wordStim.word, i, wordStim.stim);
             await manager.Delay(CONSTANTS.stimulusDurationMs);
-            eventReporter.LogTS("clear word stimulus", data);
             wordDisplayer.ClearWords();
         }
         wordDisplayer.TurnOff();
 
-        SendRamulatorStateMsg(HostPcStateMsg.ENCODING(), false, new() { { "current_trial", session.TrialNum } });
+        SendRamulatorStateMsg(HostPcStatusMsg.ENCODING(), false, new() { { "current_trial", session.TrialNum } });
     }
     protected async Task FixationDistractor() {
-        SendRamulatorStateMsg(HostPcStateMsg.DISTRACT(), true, new() { { "current_trial", session.TrialNum } });
-        manager.hostPC?.SendStateMsgTS(HostPcStateMsg.DISTRACT(), new() { { "current_trial", session.TrialNum } });
+        SendRamulatorStateMsg(HostPcStatusMsg.DISTRACT(), true, new() { { "current_trial", session.TrialNum } });
+        await SetExperimentStatus(HostPcStatusMsg.DISTRACT(), new() { { "current_trial", session.TrialNum } });
 
         textDisplayer.Display("display distractor fixation cross", LangStrings.Blank(), LangStrings.GenForCurrLang("+"));
         await manager.Delay(CONSTANTS.distractorDurationMs);
         textDisplayer.Clear();
 
-        SendRamulatorStateMsg(HostPcStateMsg.DISTRACT(), false, new() { { "current_trial", session.TrialNum } });
+        SendRamulatorStateMsg(HostPcStatusMsg.DISTRACT(), false, new() { { "current_trial", session.TrialNum } });
     }
     protected async Task MathDistractor() {
-        SendRamulatorStateMsg(HostPcStateMsg.DISTRACT(), true, new() { { "current_trial", session.TrialNum } });
-        manager.hostPC?.SendStateMsgTS(HostPcStateMsg.DISTRACT(), new() { { "current_trial", session.TrialNum } });
+        SendRamulatorStateMsg(HostPcStatusMsg.DISTRACT(), true, new() { { "current_trial", session.TrialNum } });
+        await SetExperimentStatus(HostPcStatusMsg.DISTRACT(), new() { { "current_trial", session.TrialNum } });
 
         const int numValuesInEquation = 3;
         mathDiplayer.SetNewRandomEquation(numValuesInEquation);
@@ -273,7 +255,7 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
             }
         }
 
-        SendRamulatorStateMsg(HostPcStateMsg.DISTRACT(), false, new() { { "current_trial", session.TrialNum } });;
+        SendRamulatorStateMsg(HostPcStatusMsg.DISTRACT(), false, new() { { "current_trial", session.TrialNum } });;
     }
     protected async Task PauseBeforeRecall() {
         int[] limits = CONSTANTS.recallDelayMs;
@@ -284,8 +266,8 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
         await Orientation(CONSTANTS.recallOrientationDurationMs);
     }
     protected async Task FreeRecall() {
-        SendRamulatorStateMsg(HostPcStateMsg.RETRIEVAL(), true, new() { { "current_trial", session.TrialNum } });
-        manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RETRIEVAL(), new() { { "current_trial", session.TrialNum } });
+        SendRamulatorStateMsg(HostPcStatusMsg.RETRIEVAL(), true, new() { { "current_trial", session.TrialNum } });
+        await SetExperimentStatus(HostPcStatusMsg.RETRIEVAL(), new() { { "current_trial", session.TrialNum } });
 
         string wavPath = Path.Combine(FileManager.SessionPath(), session.TrialNum + ".wav");
         bool stim = session.Trial.recallStim;
@@ -296,7 +278,7 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
 
         manager.recorder.StartRecording(wavPath);
         eventReporter.LogTS("start recall period");
-        manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(CONSTANTS.recallDurationMs));
+        await SetExperimentStatus(HostPcStatusMsg.FREE_RECALL(CONSTANTS.recallDurationMs));
 
         await manager.Delay(CONSTANTS.recallDurationMs);
 
@@ -304,7 +286,7 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
         manager.lowBeep.Play();
         eventReporter.LogTS("end recall period");
 
-        SendRamulatorStateMsg(HostPcStateMsg.RETRIEVAL(), false, new() { { "current_trial", session.TrialNum } });
+        SendRamulatorStateMsg(HostPcStatusMsg.RETRIEVAL(), false, new() { { "current_trial", session.TrialNum } });
     }
 
     // Setup Functions

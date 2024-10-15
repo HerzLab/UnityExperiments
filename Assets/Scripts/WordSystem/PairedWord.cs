@@ -32,4 +32,7 @@ public class PairedWord : Word {
     public override string ToString() {
         return $"({word}, {pairedWord})";
     }
+    public override string[] ToArray() {
+        return new string[] { word, pairedWord };
+    }
 }

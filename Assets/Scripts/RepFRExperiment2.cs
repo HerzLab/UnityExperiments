@@ -61,21 +61,21 @@ public class RepFRExperiment2 : WordListExperimentBase<RepFRExperiment2, FRSessi
 
     // Pre-Trial States
     protected override async Task Introduction() {
-        SendRamulatorStateMsg(HostPcStateMsg.INSTRUCT(), true);
-        manager.hostPC?.SendStateMsgTS(HostPcStateMsg.INSTRUCT());
+        SendRamulatorStateMsg(HostPcStatusMsg.INSTRUCT(), true);
+        await SetExperimentStatus(HostPcStatusMsg.INSTRUCT());
         await RepeatUntilYes(async (CancellationToken ct) => {
-            await textDisplayer.PressAnyKey("show instruction video", LangStrings.ShowInstructionVideo());
+            await PressAnyKey("show instruction video", LangStrings.ShowInstructionVideo());
 
             manager.videoControl.SetVideo(Config.introductionVideo, true);
             await manager.videoControl.PlayVideo();
         }, "repeat introduction video", LangStrings.RepeatIntroductionVideo(), new());
-        SendRamulatorStateMsg(HostPcStateMsg.INSTRUCT(), false);
+        SendRamulatorStateMsg(HostPcStatusMsg.INSTRUCT(), false);
     }
 
     // Trial States
     protected async Task Orientation() {
-        SendRamulatorStateMsg(HostPcStateMsg.ORIENT(), true);
-        manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
+        SendRamulatorStateMsg(HostPcStatusMsg.ORIENT(), true);
+        await SetExperimentStatus(HostPcStatusMsg.ORIENT());
 
         int[] limits = CONSTANTS.fixationDurationMs;
         int duration = UnityEPL.Utilities.Random.Rnd.Next(limits[0], limits[1]);
@@ -83,7 +83,7 @@ public class RepFRExperiment2 : WordListExperimentBase<RepFRExperiment2, FRSessi
         
         await manager.Delay(duration);
 
-        SendRamulatorStateMsg(HostPcStateMsg.ORIENT(), false);
+        SendRamulatorStateMsg(HostPcStatusMsg.ORIENT(), false);
     }
     protected async Task RecallPrompt() {
         manager.highBeep.Play();

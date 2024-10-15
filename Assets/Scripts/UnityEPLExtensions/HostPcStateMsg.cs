@@ -7,7 +7,7 @@
 //You should have received a copy of the GNU General Public License along with UnityExperiments. If not, see <https://www.gnu.org/licenses/>.
 
 namespace UnityEPL.ExternalDevices {
-    public partial class HostPcStateMsg {
-        public static HostPcStateMsg RECOGNITION() { return new HostPcStateMsg("RECOGNITION"); }
+    public partial class HostPcStatusMsg {
+        public static HostPcStatusMsg RECOGNITION() { return new HostPcStatusMsg("RECOGNITION"); }
     }
 }

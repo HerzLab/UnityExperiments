@@ -6,6 +6,8 @@
 //UnityExperiments is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 //You should have received a copy of the GNU General Public License along with UnityExperiments. If not, see <https://www.gnu.org/licenses/>. 
 
+using System.Collections.Generic;
+
 public class Word {
     public string word { get; protected set; }
 
@@ -30,5 +32,14 @@ public class Word {
 
     public virtual string ToDisplayString() {
         return word;
+    }
+    public virtual string[] ToArray() {
+        return new string[] { word };
+    }
+
+    public virtual Dictionary<string, object> ToJSON() {
+        return new Dictionary<string, object> {
+            { "words", ToArray() }
+        };
     }
 }

@@ -73,17 +73,18 @@ public class MemMapExperiment
     }
 
     protected async Task RecogInstructions() {
-        await textDisplayer.PressAnyKey("recog instructions", LangStrings.RecognitionInstructions());
+        await PressAnyKey("recog instructions", LangStrings.RecognitionInstructions());
     }
 
     protected new async Task Fixation() {
-        manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
+        
+        await SetExperimentStatus(HostPcStatusMsg.ORIENT());
 
         // Delay for random time within fixation duration limits and show orientation stimulus
         int[] limits = CONSTANTS.fixationDurationMs;
         int duration = UnityEPL.Utilities.Random.Rnd.Next(limits[0], limits[1]);
         textDisplayer.Display("orientation stimulus", LangStrings.Blank(), LangStrings.GenForCurrLang("+"));
-        manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ORIENT());
+        await SetExperimentStatus(HostPcStatusMsg.ORIENT());
         await manager.Delay(duration);
 
         // Delay for random time within post-fixation delay limits
@@ -94,7 +95,10 @@ public class MemMapExperiment
     }
 
     protected new async Task Encoding() {
-        manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ENCODING(), new() { { "current_trial", session.TrialNum } });
+        await SetExperimentStatus(
+            HostPcStatusMsg.ENCODING(),
+            new() { { "current_trial", session.TrialNum } }
+        );
 
         // Get encoding state variables
         int[] isiLimits = CONSTANTS.interStimulusDurationMs;
@@ -110,21 +114,16 @@ public class MemMapExperiment
             isiDuration -= stimEarlyDuration;
 
             // Do the ISI
-            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(isiDuration));
+            await SetExperimentStatus(HostPcStatusMsg.ISI(isiDuration));
             await manager.Delay(isiDuration);
 
             // Do the stim and wait the rest of the ISI
             if (wordStim.stim) { manager.hostPC?.SendStimMsgTS(); }
-            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(stimEarlyDuration));
+            await SetExperimentStatus(HostPcStatusMsg.ISI(stimEarlyDuration));
             await manager.Delay(stimEarlyDuration);
 
             // Do the encoding and log it
-            Dictionary<string, object> data = new() {
-                { "word", wordStim.word },
-                { "serialpos", i },
-                { "stimWord", wordStim.stim },
-            };
-            wordDisplayer.DisplayPairedWord(wordStim.word.word, wordStim.word.pairedWord, data);
+            wordDisplayer.DisplayPairedWord(wordStim.word, i, wordStim.stim);
             await manager.Delay(CONSTANTS.stimulusDurationMs);
             wordDisplayer.ClearWords();
 
@@ -140,6 +139,11 @@ public class MemMapExperiment
     }
 
     protected async Task CuedRecall() {
+        await SetExperimentStatus(
+            HostPcStatusMsg.CUED_RECALL(CONSTANTS.stimulusDurationMs+CONSTANTS.recallDurationMs),
+            new() { { "current_trial", session.TrialNum } }
+        );
+
         // Get cued recall state variables
         int[] isiLimits = CONSTANTS.interStimulusDurationMs;
         int[] stimEarlyOnsetMsLimits = CONSTANTS.stimEarlyOnsetMs;
@@ -154,12 +158,12 @@ public class MemMapExperiment
             isiDuration -= stimEarlyDuration;
 
             // Do the ISI
-            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(isiDuration));
+            await SetExperimentStatus(HostPcStatusMsg.ISI(isiDuration));
             await manager.Delay(isiDuration);
 
             // Do the stim and wait the rest of the ISI
             if (wordStim.stim) { manager.hostPC?.SendStimMsgTS(); }
-            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(stimEarlyDuration));
+            await SetExperimentStatus(HostPcStatusMsg.ISI(stimEarlyDuration));
             await manager.Delay(stimEarlyDuration);
 
             // Start recording for the cued recall
@@ -167,16 +171,10 @@ public class MemMapExperiment
             string wavPath = Path.Combine(FileManager.SessionPath(), 
                 practiceStr + "cuedRecall_" + session.TrialNum + "_" + i +".wav");
             manager.recorder.StartRecording(wavPath);
-            eventReporter.LogTS("start recall period");
-            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(CONSTANTS.stimulusDurationMs+CONSTANTS.recallDurationMs));
+            eventReporter.LogTS("start recognition period");
 
             // Do the cued recall and log it
-            Dictionary<string, object> data = new() {
-                { "word", wordStim.word.word },
-                { "serialpos", i },
-                { "stimWord", wordStim.stim },
-            };
-            wordDisplayer.DisplayWord(wordStim.word.word, data);
+            wordDisplayer.DisplayWord(wordStim.word, i, wordStim.stim);
             await manager.Delay(CONSTANTS.stimulusDurationMs);
 
             // Clear the word and wait for the rest of the recall duration
@@ -187,13 +185,18 @@ public class MemMapExperiment
 
             // Stop recording and recall period
             manager.recorder.StopRecording();
-            eventReporter.LogTS("stop recall period");
+            eventReporter.LogTS("stop recognition period");
             manager.lowBeep.Play();
         }
         wordDisplayer.TurnOff();
     }
 
     protected async Task Recognition() {
+        await SetExperimentStatus(
+            HostPcStatusMsg.RECOGNITION(CONSTANTS.stimulusDurationMs+CONSTANTS.recogDurationMs), 
+            new() { { "current_trial", session.TrialNum } }
+        );
+
         // Get recognition state variables
         int[] isiLimits = CONSTANTS.interStimulusDurationMs;
         int[] stimEarlyOnsetMsLimits = CONSTANTS.stimEarlyOnsetMs;
@@ -208,12 +211,12 @@ public class MemMapExperiment
             isiDuration -= stimEarlyDuration;
 
             // Do the ISI
-            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(isiDuration));
+            await SetExperimentStatus(HostPcStatusMsg.ISI(isiDuration));
             await manager.Delay(isiDuration);
 
             // Do the stim and wait the rest of the ISI
             if (wordStim.stim) { manager.hostPC?.SendStimMsgTS(); }
-            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.ISI(stimEarlyDuration));
+            await SetExperimentStatus(HostPcStatusMsg.ISI(stimEarlyDuration));
             await manager.Delay(stimEarlyDuration);
 
             // Start recording for the cued recall
@@ -222,16 +225,10 @@ public class MemMapExperiment
                 practiceStr + "recognitionRecall_" + session.TrialNum + "_" + i +".wav");
             manager.recorder.StartRecording(wavPath);
             eventReporter.LogTS("start recall period");
-            manager.hostPC?.SendStateMsgTS(HostPcStateMsg.RECALL(CONSTANTS.stimulusDurationMs+CONSTANTS.recogDurationMs));
 
             // Do the recognition and log it
-            Dictionary<string, object> data = new() {
-                { "word", wordStim.word.word },
-                { "serialpos", i },
-                { "stimWord", wordStim.stim },
-            };
             oldNewKeys.TurnOn();
-            wordDisplayer.DisplayWord(wordStim.word.word, data);
+            wordDisplayer.DisplayWord(wordStim.word, i, wordStim.stim);
             await manager.Delay(CONSTANTS.stimulusDurationMs);
 
             // Clear the word and wait for the rest of the recognition duration
@@ -260,7 +257,7 @@ public class MemMapExperiment
 
             // Question 1 sub questions
             if (q1Resp == KeyCode.Y) {
-                await textDisplayer.PressAnyKey("Question 1a", LangStrings.Blank(), LangStrings.QuestioneerQ1a());
+                await PressAnyKey("Question 1a", LangStrings.Blank(), LangStrings.QuestioneerQ1a());
 
                 string wavPath = Path.Combine(FileManager.SessionPath(), "q1a.wav");
                 manager.recorder.StartRecording(wavPath);

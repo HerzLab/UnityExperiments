@@ -1300,7 +1300,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8fd84b3dbb45d4a10a39645538d8ffb7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mathDiplayer: {fileID: 0}
+  wordDisplayer: {fileID: 278883340}
+  mathDiplayer: {fileID: 190926003}
 --- !u!4 &1006524977
 Transform:
   m_ObjectHideFlags: 0
@@ -1496,6 +1497,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f52e65229a36742bbb01730cda0ef0e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  wordDisplayer: {fileID: 278883340}
   mathDiplayer: {fileID: 190926003}
 --- !u!1 &1514456384
 GameObject:
@@ -1662,8 +1664,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe4850c4aa9194ad4abc56a6580fb37c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mathDiplayer: {fileID: 190926003}
   wordDisplayer: {fileID: 278883340}
+  mathDiplayer: {fileID: 190926003}
   oldNewKeys: {fileID: 278883341}
 --- !u!4 &1595924332
 Transform:

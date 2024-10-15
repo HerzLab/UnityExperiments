@@ -12,9 +12,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using UnityEPL;
 using UnityEPL.Utilities;
 using UnityEPL.Extensions;
+using UnityEPL.DataManagement;
 
 public class MathDiplayer : MonoBehaviour {
     [SerializeField] protected TextMeshProUGUI equation;

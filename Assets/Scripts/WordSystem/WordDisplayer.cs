@@ -14,15 +14,16 @@ using System.Linq;
 using UnityEPL;
 using UnityEPL.Extensions;
 using UnityEPL.ExternalDevices;
+using UnityEPL.DataManagement;
 
-public class WordDisplayer : MonoBehaviour {
+public class WordDisplayer : EventMonoBehaviour {
     [SerializeField] protected TextMeshProUGUI singleWord;
     [SerializeField] protected TextMeshProUGUI pairedWord1;
     [SerializeField] protected TextMeshProUGUI pairedWord2;
 
-    protected Dictionary<string, object> wordStimulusData = null;
+    protected Dictionary<string, object> wordData = null;
 
-    public void Awake() {
+    protected override void AwakeOverride() {
         TurnOff();
     }
 
@@ -49,31 +50,38 @@ public class WordDisplayer : MonoBehaviour {
         pairedWord2.fontSize = fontSize;
     }
 
-    public void DisplayWord(string word, Dictionary<string, object> data = null) {
+    public void DisplayWord<T>(T word, int serialPos, bool stimWord, Dictionary<string, object> data = null) 
+        where T : Word
+    {
+        var words = new string[1] { word.word };
+        var state = HostPcExpMsg.WORD(words, serialPos, stimWord);
+        wordData = state.dict;
+
+        eventReporter.LogTS("word stimulus", wordData);
+        manager.hostPC?.SendExpMsgTS(state);
+
         gameObject.SetActive(true);
-        wordStimulusData = data ?? new();
-        wordStimulusData["words"] = new string[1] { word };
-        
-        MainManager.Instance.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
-        EventReporter.Instance.LogTS("word stimulus", wordStimulusData);
-        singleWord.text = word;
+        singleWord.text = word.word;
     }
 
-    public void DisplayPairedWord(string word1, string word2, Dictionary<string, object> data = null) {
-        gameObject.SetActive(true);
-        wordStimulusData = data ?? new();
-        wordStimulusData["words"] = new string[2] { word1, word2 };
+    public void DisplayPairedWord<T>(T word, int serialPos, bool stimWord, Dictionary<string, object> data = null) 
+        where T : PairedWord
+    {
+        var words = new string[2] { word.word, word.pairedWord };
+        var state = HostPcExpMsg.WORD(words, serialPos, stimWord);
 
-        MainManager.Instance.hostPC?.SendStateMsgTS(HostPcStateMsg.WORD(), data);
-        EventReporter.Instance.LogTS("word stimulus", wordStimulusData);
-        pairedWord1.text = word1;
-        pairedWord2.text = word2;
-        
+        eventReporter.LogTS("word stimulus", wordData);
+        manager.hostPC?.SendExpMsgTS(state);
+
+        gameObject.SetActive(true);
+        pairedWord1.text = word.word;
+        pairedWord2.text = word.pairedWord;
     }
 
     public void ClearWords() {
-        EventReporter.Instance.LogTS("clear word stimulus", wordStimulusData);
-        wordStimulusData = null;
+        eventReporter.LogTS("clear word stimulus", wordData);
+
+        wordData = null;
         singleWord.text = "";
         pairedWord1.text = "";
         pairedWord2.text = "";
