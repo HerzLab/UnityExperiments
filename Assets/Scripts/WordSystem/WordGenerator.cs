@@ -71,8 +71,7 @@ public class StimWordList<T> : Timeline<WordStim<T>>
         }
 
         if (words_.Count != stims_.Count) {
-            ErrorNotifier.ErrorTS(new
-                ArgumentException("word_list and stim_list must be the same length"));
+            throw new ArgumentException("word_list and stim_list must be the same length");
         }
     }
 

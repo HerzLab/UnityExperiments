@@ -37,7 +37,7 @@ public class CategorizedWordRandomSubset : WordRandomSubset<CategorizedWord> {
             var stableShuffledCategories = shuffled.ToList();
 
             if (stableShuffledCategories.Count % 2 != 0) {
-                ErrorNotifier.ErrorTS(new Exception($"There are an odd number of categories ({stableShuffledCategories.Count}), even though the config says to splitWordsOverTwoSessions"));
+                throw new Exception($"There are an odd number of categories ({stableShuffledCategories.Count}), even though the config says to splitWordsOverTwoSessions");
             }
 
             stableShuffledCategories.Sort((x, y) => {

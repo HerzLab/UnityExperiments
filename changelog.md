@@ -15,3 +15,6 @@ Initial Release
   - Prior event timings are only accurate to the framerate of the monitor
 - Added "play video", "pause video", and "video finished" events for videos
 - Added "recording start" and "recording stop" events for audio recording
+- Changed "start recall period" and "stop recall period" to "start recognition period" and "stop recognition period" for the recognition period
+- Removed "countdown" event because it was a duplicate of the "COUNTDOWN" status event
+- Added "old new" that is set to either "old" or "new" to each "old new keys" event

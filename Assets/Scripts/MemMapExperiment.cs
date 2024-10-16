@@ -274,18 +274,18 @@ public class MemMapExperiment
         var wordRepeats = Config.wordRepeats;
         var wordCounts = Config.wordCounts;
         if (wordRepeats.Count() != 1 && wordRepeats[0] != 1) {
-            ErrorNotifier.ErrorTS(new Exception("Config's wordRepeats should only have one item with a value of 1"));
+            throw new Exception("Config's wordRepeats should only have one item with a value of 1");
         } else if (wordCounts.Count() != 1) {
-            ErrorNotifier.ErrorTS(new Exception("Config's wordCounts should only have one item in it"));
+            throw new Exception("Config's wordCounts should only have one item in it");
         }
 
         // Validate lure word repeats and counts
         var lureWordRepeats = Config.lureWordRepeats;
         var lureWordCounts = Config.lureWordCounts;
         if (lureWordRepeats.Count() != 1 && lureWordRepeats[0] != 1) {
-            ErrorNotifier.ErrorTS(new Exception("Config's lureWordRepeats should only have one item with a value of 1"));
+            throw new Exception("Config's lureWordRepeats should only have one item with a value of 1");
         } else if (lureWordCounts.Count() != 1) {
-            ErrorNotifier.ErrorTS(new Exception("Config's lureWordCounts should only have one item in it"));
+            throw new Exception("Config's lureWordCounts should only have one item in it");
         }
 
         // Set member variables
@@ -306,10 +306,10 @@ public class MemMapExperiment
         wordDisplayer.SetWordSize(sourceWords.Concat(sourcePracticeWords).ToList());
         var repeatedWords = sourcePracticeWords.Where(w => sourceWords.Any(pw => pw.word == w.word)).ToList();
         if (repeatedWords.Count > 0) {
-            ErrorNotifier.ErrorTS(new Exception("There are words from the practice wordpool in the main wordpool."
+            throw new Exception("There are words from the practice wordpool in the main wordpool."
                 + $"\nPlease remove the practice words ({FileManager.GetPracticeWordList()}) "
                 + $"from the main wordpool ({FileManager.GetWordList()})"
-                + $"\nThe repeated words are: {string.Join(", ", repeatedWords.ConvertAll(w => w.word))}"));
+                + $"\nThe repeated words are: {string.Join(", ", repeatedWords.ConvertAll(w => w.word))}");
         }
 
         // Allow for splitting over multiple sessions
@@ -338,7 +338,7 @@ public class MemMapExperiment
         var words = new WordRandomSubset<Word>(unusedWords, usedWordsPath: usedWordsPath);
         try {
             normalSession = GenerateSession(words);
-        } catch (Exception e) {
+        } catch (WordListTooSmallException e) {
             textDisplayer.Display("ran out of words", LangStrings.Blank(), LangStrings.RanOutOfUnusedWords());
             KeyCode keyCode = await inputManager.WaitForKey(ynKeyCodes);
             textDisplayer.Clear();
@@ -347,7 +347,7 @@ public class MemMapExperiment
                 File.Delete(usedWordsPath);
                 unusedWords = new List<Word>(sourceWords);
             } else {
-                ErrorNotifier.ErrorTS(new Exception($"The number of unused words {unusedWords.Count}/{sourceWords.Count} is less than the words needed", e));
+                throw new WordListTooSmallException($"The number of unused words {unusedWords.Count}/{sourceWords.Count} is less than the words needed", e);
             }
             words = new WordRandomSubset<Word>(unusedWords, usedWordsPath: usedWordsPath);
             normalSession = GenerateSession(words);
@@ -378,7 +378,7 @@ public class MemMapExperiment
 
         // Swap the word order for recall and recog words as needed
         if (wordOrders.Count != wordsPerList) {
-            ErrorNotifier.ErrorTS(new Exception($"The number of word orders {wordOrders.Count} does not equal the number of words per list {wordsPerList}"));
+            throw new Exception($"The number of word orders {wordOrders.Count} does not equal the number of words per list {wordsPerList}");
         }
         for (int i = 0; i < wordOrders.Count; ++i) {
             if (wordOrders[i]) {
@@ -390,7 +390,7 @@ public class MemMapExperiment
 
         // Reassign the order of the recall word list
         if (recallOrders.Count != recallWords.Count) {
-            ErrorNotifier.ErrorTS(new Exception($"The number of recall orders {recallOrders.Count} does not equal the number of words per list {recallWords.Count}"));
+            throw new Exception($"The number of recall orders {recallOrders.Count} does not equal the number of words per list {recallWords.Count}");
         }
         var oldRecallWords = new List<PairedWord>(recallWords);
         for (int i = 0; i < recallOrders.Count; ++i) {
@@ -399,7 +399,7 @@ public class MemMapExperiment
 
         // Reassign the order of the recognition word list
         if (recogOrders.Count != recogWords.Count) {
-            ErrorNotifier.ErrorTS(new Exception($"The number of recog orders {recogOrders.Count} does not equal the number of words per list {recogWords.Count}"));
+            throw new Exception($"The number of recog orders {recogOrders.Count} does not equal the number of words per list {recogWords.Count}");
         }
         var oldRecogWords = new List<PairedWord>(recogWords);
         for (int i = 0; i < recogOrders.Count; ++i) {
@@ -465,7 +465,7 @@ public class MemMapExperiment
 
         // Check for invalid list types
         if (Config.numEncodingAndRetrievalStimLists != 0) {
-            ErrorNotifier.ErrorTS(new Exception("Config's encodingAndRetrievalLists should be 0 in Config"));
+            throw new Exception("Config's encodingAndRetrievalLists should be 0 in Config");
         }
 
         int numEncLists = Config.numEncodingStimLists;

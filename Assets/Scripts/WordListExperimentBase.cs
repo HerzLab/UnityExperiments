@@ -295,9 +295,9 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
         var wordRepeats = Config.wordRepeats;
         var wordCounts = Config.wordCounts;
         if (wordRepeats.Count() != 1 && wordRepeats[0] != 1) {
-            ErrorNotifier.ErrorTS(new Exception("Config's wordRepeats should only have one item with a value of 1"));
+            throw new Exception("Config's wordRepeats should only have one item with a value of 1");
         } else if (wordCounts.Count() != 1) {
-            ErrorNotifier.ErrorTS(new Exception("Config's wordCounts should only have one item in it"));
+            throw new Exception("Config's wordCounts should only have one item in it");
         }
 
         // Set member variables
