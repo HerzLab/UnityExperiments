@@ -13,10 +13,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 
-using UnityEPL;
-using UnityEPL.Utilities;
-using UnityEPL.ExternalDevices;
-using UnityEPL.Extensions;
+using PsyForge;
+using PsyForge.Utilities;
+using PsyForge.ExternalDevices;
+using PsyForge.Extensions;
 
 public class MemMapExperiment 
     : WordListExperimentBase<MemMapExperiment, MemMapSession<PairedWord>, MemMapTrial<PairedWord>, MemMapConstants, PairedWord> 
@@ -82,7 +82,7 @@ public class MemMapExperiment
 
         // Delay for random time within fixation duration limits and show orientation stimulus
         int[] limits = CONSTANTS.fixationDurationMs;
-        int duration = UnityEPL.Utilities.Random.Rnd.Next(limits[0], limits[1]);
+        int duration = PsyForge.Utilities.Random.Rnd.Next(limits[0], limits[1]);
         textDisplayer.Display("orientation stimulus", LangStrings.Blank(), LangStrings.GenForCurrLang("+"));
         await SetExperimentStatus(HostPcStatusMsg.ORIENT());
         await manager.Delay(duration);
@@ -90,7 +90,7 @@ public class MemMapExperiment
         // Delay for random time within post-fixation delay limits
         textDisplayer.Clear();
         limits = CONSTANTS.postFixationDelayMs;
-        duration = UnityEPL.Utilities.Random.Rnd.Next(limits[0], limits[1]);
+        duration = PsyForge.Utilities.Random.Rnd.Next(limits[0], limits[1]);
         await manager.Delay(duration);
     }
 
@@ -106,8 +106,8 @@ public class MemMapExperiment
             var wordStim = encStimWords[i];
 
             // Determine the Inter Stimulus Interval (ISI), when stim should start, and adjust ISI
-            int isiDuration = UnityEPL.Utilities.Random.Rnd.Next(isiLimits[0], isiLimits[1]);
-            int stimEarlyDuration = UnityEPL.Utilities.Random.Rnd.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
+            int isiDuration = PsyForge.Utilities.Random.Rnd.Next(isiLimits[0], isiLimits[1]);
+            int stimEarlyDuration = PsyForge.Utilities.Random.Rnd.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
             isiDuration -= stimEarlyDuration;
 
             // Do the ISI
@@ -131,7 +131,7 @@ public class MemMapExperiment
 
     protected async Task PauseBeforeRecog() {
         int[] limits = CONSTANTS.recallDelayMs;
-        int interval = UnityEPL.Utilities.Random.Rnd.Next(limits[0], limits[1]);
+        int interval = PsyForge.Utilities.Random.Rnd.Next(limits[0], limits[1]);
         await manager.Delay(interval);
     }
 
@@ -148,8 +148,8 @@ public class MemMapExperiment
             var wordStim = recallStimWords[i];
 
             // Determine the Inter Stimulus Interval (ISI), when stim should start, and adjust ISI
-            int isiDuration = UnityEPL.Utilities.Random.Rnd.Next(isiLimits[0], isiLimits[1]);
-            int stimEarlyDuration = UnityEPL.Utilities.Random.Rnd.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
+            int isiDuration = PsyForge.Utilities.Random.Rnd.Next(isiLimits[0], isiLimits[1]);
+            int stimEarlyDuration = PsyForge.Utilities.Random.Rnd.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
             isiDuration -= stimEarlyDuration;
 
             // Do the ISI
@@ -199,8 +199,8 @@ public class MemMapExperiment
             var wordStim = recogStimWords[i];
             
             // Determine the Inter Stimulus Interval (ISI), when stim should start, and adjust ISI
-            int isiDuration = UnityEPL.Utilities.Random.Rnd.Next(isiLimits[0], isiLimits[1]);
-            int stimEarlyDuration = UnityEPL.Utilities.Random.Rnd.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
+            int isiDuration = PsyForge.Utilities.Random.Rnd.Next(isiLimits[0], isiLimits[1]);
+            int stimEarlyDuration = PsyForge.Utilities.Random.Rnd.Next(stimEarlyOnsetMsLimits[0], stimEarlyOnsetMsLimits[1]);
             isiDuration -= stimEarlyDuration;
 
             // Do the ISI
@@ -425,7 +425,7 @@ public class MemMapExperiment
         int numPracticeLists = noPractice ? 0 : Config.numPracticeLists;
         for (int i = 0; i < numPracticeLists; i++) {
             var wordOrders = Enumerable.Range(0, wordsPerList).Select(i => i % 2 == 0).ToList();
-            var recallOrders = Enumerable.Range(0, wordsPerList).ToList().Shuffle(UnityEPL.Utilities.Random.StableRnd);
+            var recallOrders = Enumerable.Range(0, wordsPerList).ToList().Shuffle(PsyForge.Utilities.Random.StableRnd);
             var recogOrders = GenZigZagList(wordsPerList, lureWordsPerList);
             session.AddTrial(MakeTrial(randomSubset, false, false, false, wordOrders, recallOrders, recogOrders));
         }

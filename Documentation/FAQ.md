@@ -12,7 +12,7 @@ These are general questions often asked.
 
 ## Common Errors
 
-These are common errors when running the project in unity and how to fix them. Please also check the [UnityEPL FAQ](/Packages/UnityEPL/Documentation/FAQ.rst#CommonErrors) documentation.
+These are common errors when running the project in unity and how to fix them. Please also check the [PsyForge FAQ](/Packages/PsyForge/Documentation/FAQ.rst#CommonErrors) documentation.
 
 1. ### You start the experiment, but all you see is the empty background (looks like the sky)
 

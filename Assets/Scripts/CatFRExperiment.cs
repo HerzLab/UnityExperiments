@@ -14,7 +14,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 
-using UnityEPL;
+using PsyForge;
 
 public class CatFRExperiment : WordListExperimentBase<CatFRExperiment, FRSession<CategorizedWord>, FRTrial<CategorizedWord>, FRConstants, CategorizedWord> {
     protected override Task SetupWordList() {

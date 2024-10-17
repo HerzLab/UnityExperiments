@@ -11,10 +11,10 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
-using UnityEPL;
-using UnityEPL.Extensions;
-using UnityEPL.ExternalDevices;
-using UnityEPL.DataManagement;
+using PsyForge;
+using PsyForge.Extensions;
+using PsyForge.ExternalDevices;
+using PsyForge.DataManagement;
 
 public class WordDisplayer : EventMonoBehaviour {
     [SerializeField] protected TextMeshProUGUI singleWord;

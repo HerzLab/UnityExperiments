@@ -17,9 +17,9 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-using UnityEPL;
-using UnityEPL.Utilities;
-using UnityEPL.ExternalDevices;
+using PsyForge;
+using PsyForge.Utilities;
+using PsyForge.ExternalDevices;
 
 public class RepFRExperiment2 : WordListExperimentBase<RepFRExperiment2, FRSession<Word>, FRTrial<Word>, RepFRConstants, Word> {
     protected RepCounts repCounts = null;
@@ -78,7 +78,7 @@ public class RepFRExperiment2 : WordListExperimentBase<RepFRExperiment2, FRSessi
         await SetExperimentStatus(HostPcStatusMsg.ORIENT());
 
         int[] limits = CONSTANTS.fixationDurationMs;
-        int duration = UnityEPL.Utilities.Random.Rnd.Next(limits[0], limits[1]);
+        int duration = PsyForge.Utilities.Random.Rnd.Next(limits[0], limits[1]);
         textDisplayer.Display("orientation stimulus", LangStrings.Blank(), LangStrings.GenForCurrLang("+"));
         
         await manager.Delay(duration);

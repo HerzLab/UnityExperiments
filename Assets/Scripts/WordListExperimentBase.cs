@@ -13,11 +13,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 
-using UnityEPL;
-using UnityEPL.Utilities;
-using UnityEPL.ExternalDevices;
-using UnityEPL.Extensions;
-using UnityEPL.Experiment;
+using PsyForge;
+using PsyForge.Utilities;
+using PsyForge.ExternalDevices;
+using PsyForge.Extensions;
+using PsyForge.Experiment;
 
 
 public abstract class WordListExperimentBase<Self, SessionType, TrialType, Constants, WordType> 
@@ -163,7 +163,7 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
         await SetExperimentStatus(HostPcStatusMsg.ORIENT());
 
         int[] limits = CONSTANTS.fixationDurationMs;
-        int duration = UnityEPL.Utilities.Random.Rnd.Next(limits[0], limits[1]);
+        int duration = PsyForge.Utilities.Random.Rnd.Next(limits[0], limits[1]);
         textDisplayer.Display("orientation stimulus", LangStrings.Blank(), LangStrings.GenForCurrLang("+"));
         await SetExperimentStatus(HostPcStatusMsg.ORIENT());
         await manager.Delay(duration);
@@ -186,7 +186,7 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
         var encStimWords = session.Trial.encoding;
 
         for (int i = 0; i < 12; ++i) {
-            int isiDuration = UnityEPL.Utilities.Random.Rnd.Next(isiLimits[0], isiLimits[1]);
+            int isiDuration = PsyForge.Utilities.Random.Rnd.Next(isiLimits[0], isiLimits[1]);
             await SetExperimentStatus(HostPcStatusMsg.ISI(isiDuration));
             await manager.Delay(isiDuration);
 
@@ -259,7 +259,7 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
     }
     protected async Task PauseBeforeRecall() {
         int[] limits = CONSTANTS.recallDelayMs;
-        int interval = UnityEPL.Utilities.Random.Rnd.Next(limits[0], limits[1]);
+        int interval = PsyForge.Utilities.Random.Rnd.Next(limits[0], limits[1]);
         await manager.Delay(interval);
     }
     protected async Task RecallOrientation() {
@@ -384,7 +384,7 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
             // var trues = Enumerable.Range(1, wordsPerList-halfNumWords).Select(i => true).ToList();
             // var stimList = falses.Concat(trues).ToList().Shuffle();
             var stimList = Enumerable.Range(1, wordsPerList)
-                            .Select(i => UnityEPL.Utilities.Random.Rnd.NextDouble() >= 0.5)
+                            .Select(i => PsyForge.Utilities.Random.Rnd.NextDouble() >= 0.5)
                             .ToList();
             return new StimWordList<WordType>(inputWords, stimList);
         } else {

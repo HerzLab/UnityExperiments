@@ -10,8 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using UnityEPL.Extensions;
-using UnityEPL.Utilities;
+using PsyForge.Extensions;
+using PsyForge.Utilities;
 
 // Stores the number of times to repeat a word, and the count of how many
 // words should be repeated that many times.
@@ -160,7 +160,7 @@ public class RepWordGenerator {
 
     public static void AssignRandomStim(RepWordList rw) {
         for (int i = 0; i < rw.Count; i++) {
-            bool stim = Convert.ToBoolean(UnityEPL.Utilities.Random.Rnd.Next(2));
+            bool stim = Convert.ToBoolean(PsyForge.Utilities.Random.Rnd.Next(2));
             rw.SetStim(i, stim);
         }
     }
@@ -184,7 +184,7 @@ public class RepWordGenerator {
         StimWordList<Word> preparedWords = SpreadWords(repeats, topPercentSpaced);
 
         foreach (var word_stim in singles) {
-            int insert_at = UnityEPL.Utilities.Random.Rnd.Next(preparedWords.Count + 1);
+            int insert_at = PsyForge.Utilities.Random.Rnd.Next(preparedWords.Count + 1);
             preparedWords.Insert(insert_at, word_stim);
         }
 

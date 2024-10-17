@@ -10,8 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-using UnityEPL;
-using UnityEPL.Extensions;
+using PsyForge;
+using PsyForge.Extensions;
 
 // Provides random subsets of a word pool without replacement.
 public class WordRandomSubset<T> 
@@ -40,7 +40,7 @@ public class WordRandomSubset<T>
         if (splitWordsOverTwoSessions) {
             int splitIndex = sourceWords.Count / 2;
             int lenRemove = sourceWords.Count - splitIndex;
-            sourceWords.ShuffleInPlace(UnityEPL.Utilities.Random.StableRnd);
+            sourceWords.ShuffleInPlace(PsyForge.Utilities.Random.StableRnd);
             if (Config.sessionNum % 2 == 0) {
                 sourceWords.RemoveRange(splitIndex, lenRemove);
             } else {

@@ -10,8 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using UnityEPL.Utilities;
-using UnityEPL.Experiment;
+using PsyForge.Utilities;
+using PsyForge.Experiment;
 
 [Serializable]
 public abstract class WordListSessionBase<WordType, TrialType> : ExperimentSession<TrialType>

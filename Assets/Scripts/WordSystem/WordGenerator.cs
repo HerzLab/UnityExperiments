@@ -10,9 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using UnityEPL;
-using UnityEPL.Extensions;
-using UnityEPL.Utilities;
+using PsyForge;
+using PsyForge.Extensions;
+using PsyForge.Utilities;
 
 // Stores a word and whether or not it should be stimulated during encoding.
 public class WordStim<T>

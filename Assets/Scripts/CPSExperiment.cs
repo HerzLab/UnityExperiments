@@ -14,10 +14,10 @@ using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
 
-using UnityEPL;
-using UnityEPL.Utilities;
-using UnityEPL.ExternalDevices;
-using UnityEPL.Experiment;
+using PsyForge;
+using PsyForge.Utilities;
+using PsyForge.ExternalDevices;
+using PsyForge.Experiment;
 
 public class CPSExperiment : ExperimentBase<CPSExperiment, CPSSession, CPSTrial, CPSConstants> {
     protected override void AwakeOverride() { }

@@ -8,7 +8,7 @@
 
 using System.Threading.Tasks;
 using UnityEngine;
-using UnityEPL;
+using PsyForge;
 
 public class ICatFRExperiment : CatFRExperiment {
 

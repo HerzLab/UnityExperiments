@@ -1,10 +1,10 @@
 # Architecture
 
-This is the overall architecture and components in UnityExperiments. I will reference many things from UnityEPL, so if something is not explained here, check that library [here](/Packages/UnityEPL/README.md).
+This is the overall architecture and components in UnityExperiments. I will reference many things from PsyForge, so if something is not explained here, check that library [here](/Packages/PsyForge/README.md).
 
 ## Overview
 
-There are certain coding practices that should always be applied when coding in the UnityEPL. Some are recommendations and some are requirements (code will break if you do not follow them). We try to make as many errors occur at compile time, but there are always limitations of the language.
+There are certain coding practices that should always be applied when coding in the PsyForge. Some are recommendations and some are requirements (code will break if you do not follow them). We try to make as many errors occur at compile time, but there are always limitations of the language.
 
 ## Important Code Structures
 

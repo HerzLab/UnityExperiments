@@ -13,10 +13,10 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using UnityEngine;
 
-using UnityEPL;
-using UnityEPL.Extensions;
-using UnityEPL.Utilities;
-using UnityEPL.Experiment;
+using PsyForge;
+using PsyForge.Extensions;
+using PsyForge.Utilities;
+using PsyForge.Experiment;
 
 public class RepFRExperiment : ExperimentBase<RepFRExperiment, FRSession<Word>, FRTrial<Word>, RepFRConstants> {
     protected override void AwakeOverride() { }

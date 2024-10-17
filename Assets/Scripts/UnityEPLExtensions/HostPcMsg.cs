@@ -6,7 +6,7 @@
 //UnityExperiments is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 //You should have received a copy of the GNU General Public License along with UnityExperiments. If not, see <https://www.gnu.org/licenses/>.
 
-namespace UnityEPL.ExternalDevices {
+namespace PsyForge.ExternalDevices {
     public partial class HostPcStatusMsg {
         public static HostPcStatusMsg REST() { return new HostPcStatusMsg("REST"); }
         public static HostPcStatusMsg ORIENT() { return new HostPcStatusMsg("ORIENT"); }
