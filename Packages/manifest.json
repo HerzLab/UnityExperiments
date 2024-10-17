@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "com.pennmem.unityepl": "file:UnityEPL",
+    "com.bruskatech.psyforge": "file:PsyForge",
     "com.unity.ai.navigation": "2.0.0",
     "com.unity.collab-proxy": "2.2.0",
     "com.unity.collections": "2.1.4",
