@@ -95,10 +95,7 @@ public class MemMapExperiment
     }
 
     protected new async Task Encoding() {
-        await SetExperimentStatus(
-            HostPcStatusMsg.ENCODING(),
-            new() { { "current_trial", session.TrialNum } }
-        );
+        await SetExperimentStatus(HostPcStatusMsg.ENCODING(session.TrialNum));
 
         // Get encoding state variables
         int[] isiLimits = CONSTANTS.interStimulusDurationMs;
@@ -139,10 +136,8 @@ public class MemMapExperiment
     }
 
     protected async Task CuedRecall() {
-        await SetExperimentStatus(
-            HostPcStatusMsg.CUED_RECALL(CONSTANTS.stimulusDurationMs+CONSTANTS.recallDurationMs),
-            new() { { "current_trial", session.TrialNum } }
-        );
+        var fullRecallDurationMs = CONSTANTS.stimulusDurationMs+CONSTANTS.recallDurationMs;
+        await SetExperimentStatus(HostPcStatusMsg.CUED_RECALL(fullRecallDurationMs, session.TrialNum));
 
         // Get cued recall state variables
         int[] isiLimits = CONSTANTS.interStimulusDurationMs;
@@ -192,10 +187,8 @@ public class MemMapExperiment
     }
 
     protected async Task Recognition() {
-        await SetExperimentStatus(
-            HostPcStatusMsg.RECOGNITION(CONSTANTS.stimulusDurationMs+CONSTANTS.recogDurationMs), 
-            new() { { "current_trial", session.TrialNum } }
-        );
+        var fullRecogDurationMs = CONSTANTS.stimulusDurationMs+CONSTANTS.recogDurationMs;
+        await SetExperimentStatus(HostPcStatusMsg.RECOGNITION(fullRecogDurationMs, session.TrialNum));
 
         // Get recognition state variables
         int[] isiLimits = CONSTANTS.interStimulusDurationMs;

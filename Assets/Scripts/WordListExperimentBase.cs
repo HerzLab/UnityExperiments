@@ -89,7 +89,7 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
 
         manager.recorder.StartRecording(wavPath);
         eventReporter.LogTS("start final recall period");
-        await SetExperimentStatus(HostPcStatusMsg.FINAL_RECALL(CONSTANTS.finalRecallDuration));
+        await SetExperimentStatus(HostPcStatusMsg.FINAL_RECALL(CONSTANTS.finalRecallDuration, session.TrialNum));
 
         await manager.Delay(CONSTANTS.finalRecallDuration);
 
@@ -179,8 +179,8 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
         textDisplayer.Clear();
     }
     protected async Task Encoding() {
-        SendRamulatorStateMsg(HostPcStatusMsg.ENCODING(), true, new() { { "current_trial", session.TrialNum } });
-        await SetExperimentStatus(HostPcStatusMsg.ENCODING(), new() { { "current_trial", session.TrialNum } });
+        SendRamulatorStateMsg(HostPcStatusMsg.ENCODING(session.TrialNum), true);
+        await SetExperimentStatus(HostPcStatusMsg.ENCODING(session.TrialNum));
 
         int[] isiLimits = CONSTANTS.interStimulusDurationMs;
         var encStimWords = session.Trial.encoding;
@@ -198,7 +198,7 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
         }
         wordDisplayer.TurnOff();
 
-        SendRamulatorStateMsg(HostPcStatusMsg.ENCODING(), false, new() { { "current_trial", session.TrialNum } });
+        SendRamulatorStateMsg(HostPcStatusMsg.ENCODING(session.TrialNum), false);
     }
     protected async Task FixationDistractor() {
         SendRamulatorStateMsg(HostPcStatusMsg.DISTRACT(), true, new() { { "current_trial", session.TrialNum } });
@@ -278,7 +278,7 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
 
         manager.recorder.StartRecording(wavPath);
         eventReporter.LogTS("start recall period");
-        await SetExperimentStatus(HostPcStatusMsg.FREE_RECALL(CONSTANTS.recallDurationMs));
+        await SetExperimentStatus(HostPcStatusMsg.FREE_RECALL(CONSTANTS.recallDurationMs, session.TrialNum));
 
         await manager.Delay(CONSTANTS.recallDurationMs);
 

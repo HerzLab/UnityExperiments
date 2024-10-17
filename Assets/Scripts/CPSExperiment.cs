@@ -71,7 +71,7 @@ public class CPSExperiment : ExperimentBase<CPSExperiment, CPSSession, CPSTrial,
         await PressAnyKey("instructions", LangStrings.CPSInstructions());
 
         UnityEngine.Debug.Log(1);
-        await SetExperimentStatus(HostPcStatusMsg.ENCODING(), movieInfo);
+        await SetExperimentStatus(HostPcStatusMsg.ENCODING(session.TrialNum), movieInfo);
 
         // Remove 10s to not overrun video legnth
         UnityEngine.Debug.Log(2);
