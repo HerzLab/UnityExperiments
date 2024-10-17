@@ -1,15 +1,15 @@
 .DS_Store
 *.app/
 
-/[Ll]ibrary/
-/[Tt]emp/
-/[Oo]bj/
-/[Bb]uild/
-/[Bb]uilds/
-/[Ww]ebgl/
-/[Ll]ogs/
-/[Uu]ser[Ss]ettings/
-/[Pp]ackages/
+/[Ll]ibrary/**
+/[Tt]emp/**
+/[Oo]bj/**
+/[Bb]uild/**
+/[Bb]uilds/**
+/[Ww]ebgl/**
+/[Ll]ogs/**
+/[Uu]ser[Ss]ettings/**
+/[Pp]ackages/**
 
 # Visual Studio 2015 cache directory
 /.vs/
@@ -66,3 +66,6 @@ Assets/Goldmine/Metal textures pack*
 Assets/Goldmine/Materials*
 Assets/Goldmine/Ground textures pack*
 Assets/Goldmine/Gems pack (TinkiVinki)*
+
+# Re-add PsyForge
+!/[Pp]ackages/PsyForge
