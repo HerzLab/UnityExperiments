@@ -6,6 +6,12 @@ Initial Release
 
 ## v1.0.2
 
+### Analysis considerations
+
+- Make Question about stim happen for readonly sessions
+
+## v1.0.3
+
 ### Analysis Considerations
 
 - Use the new "constants and configs" event for getting all configs and experiment constants
