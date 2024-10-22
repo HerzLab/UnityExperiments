@@ -6,11 +6,16 @@ Initial Release
 
 ## v1.0.2
 
-### Analysis considerations
+### General
 
-- Make Question about stim happen for readonly sessions
+- Make question about stim happen for readonly sessions
 
 ## v1.0.3
+
+### General
+
+- This is a big overhaul of a bunch of things under the hood, in UnityEPL/PsyForge
+- UnityEPL 3.0 also was rebranded to PsyForge
 
 ### Analysis Considerations
 
