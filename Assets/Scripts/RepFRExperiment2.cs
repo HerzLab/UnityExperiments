@@ -62,7 +62,7 @@ public class RepFRExperiment2 : WordListExperimentBase<RepFRExperiment2, FRSessi
     // Pre-Trial States
     protected override async Task Introduction() {
         SendRamulatorStateMsg(HostPcStatusMsg.INSTRUCT(), true);
-        await SetExperimentStatus(HostPcStatusMsg.INSTRUCT());
+        SetExperimentStatus(HostPcStatusMsg.INSTRUCT());
         await RepeatUntilYes(async (CancellationToken ct) => {
             await PressAnyKey("show instruction video", LangStrings.ShowInstructionVideo());
 
@@ -75,7 +75,7 @@ public class RepFRExperiment2 : WordListExperimentBase<RepFRExperiment2, FRSessi
     // Trial States
     protected async Task Orientation() {
         SendRamulatorStateMsg(HostPcStatusMsg.ORIENT(), true);
-        await SetExperimentStatus(HostPcStatusMsg.ORIENT());
+        SetExperimentStatus(HostPcStatusMsg.ORIENT());
 
         int[] limits = CONSTANTS.fixationDurationMs;
         int duration = PsyForge.Utilities.Random.Rnd.Next(limits[0], limits[1]);

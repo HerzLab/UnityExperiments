@@ -78,13 +78,13 @@ public class MemMapExperiment
 
     protected new async Task Fixation() {
         
-        await SetExperimentStatus(HostPcStatusMsg.ORIENT());
+        SetExperimentStatus(HostPcStatusMsg.ORIENT());
 
         // Delay for random time within fixation duration limits and show orientation stimulus
         int[] limits = CONSTANTS.fixationDurationMs;
         int duration = PsyForge.Utilities.Random.Rnd.Next(limits[0], limits[1]);
         textDisplayer.Display("orientation stimulus", LangStrings.Blank(), LangStrings.GenForCurrLang("+"));
-        await SetExperimentStatus(HostPcStatusMsg.ORIENT());
+        SetExperimentStatus(HostPcStatusMsg.ORIENT());
         await manager.Delay(duration);
 
         // Delay for random time within post-fixation delay limits
@@ -95,7 +95,7 @@ public class MemMapExperiment
     }
 
     protected new async Task Encoding() {
-        await SetExperimentStatus(HostPcStatusMsg.ENCODING(session.TrialNum));
+        SetExperimentStatus(HostPcStatusMsg.ENCODING(session.TrialNum));
 
         // Get encoding state variables
         int[] isiLimits = CONSTANTS.interStimulusDurationMs;
@@ -111,12 +111,12 @@ public class MemMapExperiment
             isiDuration -= stimEarlyDuration;
 
             // Do the ISI
-            await SetExperimentStatus(HostPcStatusMsg.ISI(isiDuration));
+            SetExperimentStatus(HostPcStatusMsg.ISI(isiDuration));
             await manager.Delay(isiDuration);
 
             // Do the stim and wait the rest of the ISI
             if (wordStim.stim) { manager.hostPC?.SendStimMsgTS(); }
-            await SetExperimentStatus(HostPcStatusMsg.ISI(stimEarlyDuration));
+            SetExperimentStatus(HostPcStatusMsg.ISI(stimEarlyDuration));
             await manager.Delay(stimEarlyDuration);
 
             // Do the encoding and log it
@@ -137,7 +137,7 @@ public class MemMapExperiment
 
     protected async Task CuedRecall() {
         var fullRecallDurationMs = CONSTANTS.stimulusDurationMs+CONSTANTS.recallDurationMs;
-        await SetExperimentStatus(HostPcStatusMsg.CUED_RECALL(fullRecallDurationMs, session.TrialNum));
+        SetExperimentStatus(HostPcStatusMsg.CUED_RECALL(fullRecallDurationMs, session.TrialNum));
 
         // Get cued recall state variables
         int[] isiLimits = CONSTANTS.interStimulusDurationMs;
@@ -153,12 +153,12 @@ public class MemMapExperiment
             isiDuration -= stimEarlyDuration;
 
             // Do the ISI
-            await SetExperimentStatus(HostPcStatusMsg.ISI(isiDuration));
+            SetExperimentStatus(HostPcStatusMsg.ISI(isiDuration));
             await manager.Delay(isiDuration);
 
             // Do the stim and wait the rest of the ISI
             if (wordStim.stim) { manager.hostPC?.SendStimMsgTS(); }
-            await SetExperimentStatus(HostPcStatusMsg.ISI(stimEarlyDuration));
+            SetExperimentStatus(HostPcStatusMsg.ISI(stimEarlyDuration));
             await manager.Delay(stimEarlyDuration);
 
             // Start recording for the cued recall
@@ -188,7 +188,7 @@ public class MemMapExperiment
 
     protected async Task Recognition() {
         var fullRecogDurationMs = CONSTANTS.stimulusDurationMs+CONSTANTS.recogDurationMs;
-        await SetExperimentStatus(HostPcStatusMsg.RECOGNITION(fullRecogDurationMs, session.TrialNum));
+        SetExperimentStatus(HostPcStatusMsg.RECOGNITION(fullRecogDurationMs, session.TrialNum));
 
         // Get recognition state variables
         int[] isiLimits = CONSTANTS.interStimulusDurationMs;
@@ -204,12 +204,12 @@ public class MemMapExperiment
             isiDuration -= stimEarlyDuration;
 
             // Do the ISI
-            await SetExperimentStatus(HostPcStatusMsg.ISI(isiDuration));
+            SetExperimentStatus(HostPcStatusMsg.ISI(isiDuration));
             await manager.Delay(isiDuration);
 
             // Do the stim and wait the rest of the ISI
             if (wordStim.stim) { manager.hostPC?.SendStimMsgTS(); }
-            await SetExperimentStatus(HostPcStatusMsg.ISI(stimEarlyDuration));
+            SetExperimentStatus(HostPcStatusMsg.ISI(stimEarlyDuration));
             await manager.Delay(stimEarlyDuration);
 
             // Start recording for the cued recall

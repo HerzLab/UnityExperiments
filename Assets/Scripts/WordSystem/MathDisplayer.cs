@@ -56,7 +56,7 @@ public class MathDiplayer : MonoBehaviour {
 
         var values = new int[numValues];
         for (int i = 0; i < numValues; i++) {
-            values[i] = UnityEngine.Random.Range(1, 10);
+            values[i] = PsyForge.Utilities.Random.Rnd.Next(1, 10);
         }
         SetNewEquation(values);
     }
