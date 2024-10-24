@@ -32,7 +32,7 @@ public class Word {
     }
     public virtual Dictionary<string, object> ToJSON() {
         return new Dictionary<string, object> {
-            { "type", word.GetType().Name },
+            { "type", GetType().Name },
             { "words", GetWords() }
         };
     }
