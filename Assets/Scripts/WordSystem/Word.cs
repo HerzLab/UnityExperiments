@@ -22,24 +22,18 @@ public class Word {
     public static implicit operator string(Word word) {
         return word;
     }
-    public override string ToString() {
-        return word;
+
+    public virtual string[] GetWords() {
+        return new string[] { word };
     }
 
     public virtual string ToTSV() {
         return word;
     }
-
-    public virtual string ToDisplayString() {
-        return word;
-    }
-    public virtual string[] ToArray() {
-        return new string[] { word };
-    }
-
     public virtual Dictionary<string, object> ToJSON() {
         return new Dictionary<string, object> {
-            { "words", ToArray() }
+            { "type", word.GetType().Name },
+            { "words", GetWords() }
         };
     }
 }

@@ -21,18 +21,11 @@ public class PairedWord : Word {
         this.pairedWord = pairedWord;
     }
 
-    public override string ToDisplayString() {
-        return word+"\n\n"+pairedWord;
+    public override string[] GetWords() {
+        return new string[] { word, pairedWord };
     }
 
     public override string ToTSV() {
         return word + "\t" + pairedWord;
-    }
-
-    public override string ToString() {
-        return $"({word}, {pairedWord})";
-    }
-    public override string[] ToArray() {
-        return new string[] { word, pairedWord };
     }
 }

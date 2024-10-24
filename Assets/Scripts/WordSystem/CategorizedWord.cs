@@ -26,7 +26,6 @@ public class CategorizedWord : Word {
     public override string ToTSV() {
         return category + "\t" + word;
     }
-
     public override Dictionary<string, object> ToJSON() {
         var json = base.ToJSON();
         json.Add("category", category);

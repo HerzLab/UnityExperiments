@@ -15,6 +15,7 @@ using PsyForge;
 using PsyForge.Extensions;
 using PsyForge.ExternalDevices;
 using PsyForge.DataManagement;
+using PsyForge.Experiment;
 
 public class WordDisplayer : EventMonoBehaviour {
     [SerializeField] protected TextMeshProUGUI singleWord;
@@ -55,10 +56,16 @@ public class WordDisplayer : EventMonoBehaviour {
     {
         var words = new string[1] { word.word };
         var state = HostPcExpMsg.WORD(words, serialPos, stimWord);
-        wordData = state.dict;
+        wordData = (data ?? new()).Concat(state.dict).ToDictionary(x=>x.Key,x=>x.Value);
+        wordData.Add("fullWord", word.ToJSON());
 
         eventReporter.LogTS("word stimulus", wordData);
-        manager.hostPC?.SendExpMsgTS(state);
+        eventReporter.LogTS(state.name, wordData);
+        // if (manager.hostPC == null) {
+        //     eventReporter.LogTS(state.name, wordData);
+        // } else {
+        //     manager.hostPC?.SendExpMsgTS(state, data);
+        // }
 
         gameObject.SetActive(true);
         singleWord.text = word.word;
@@ -69,9 +76,16 @@ public class WordDisplayer : EventMonoBehaviour {
     {
         var words = new string[2] { word.word, word.pairedWord };
         var state = HostPcExpMsg.WORD(words, serialPos, stimWord);
+        wordData = (data ?? new()).Concat(state.dict).ToDictionary(x=>x.Key,x=>x.Value);
+        wordData.Add("fullWord", word.ToJSON());
 
         eventReporter.LogTS("word stimulus", wordData);
-        manager.hostPC?.SendExpMsgTS(state);
+        eventReporter.LogTS(state.name, wordData);
+        // if (manager.hostPC == null) {
+        //     eventReporter.LogTS(state.name, wordData);
+        // } else {
+        //     manager.hostPC?.SendExpMsgTS(state, data);
+        // }
 
         gameObject.SetActive(true);
         pairedWord1.text = word.word;

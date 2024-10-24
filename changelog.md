@@ -1,16 +1,16 @@
 # Changelog
 
-## v1.0.1
+## v1.0.1 (2024-09-03)
 
 Initial Release
 
-## v1.0.2
+## v1.0.2 (2024-09-06)
 
 ### General
 
 - Make question about stim happen for readonly sessions
 
-## v1.0.3
+## v1.0.3 (2024-10-22)
 
 ### General
 
