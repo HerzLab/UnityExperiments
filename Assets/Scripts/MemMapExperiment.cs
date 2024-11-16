@@ -29,7 +29,7 @@ public class MemMapExperiment
 
     [SerializeField] protected OldNewKeys oldNewKeys;
 
-    protected override async Task PreTrialStates() {
+    protected override async Task InitialStates() {
         await SetupWordList();
 
         if (!Config.skipIntros) {
@@ -38,10 +38,6 @@ public class MemMapExperiment
             await Introduction();
             await ConfirmStart();
         }
-    }
-    protected override async Task PostTrialStates() {
-        await Questioneer();
-        await FinishExperiment();
     }
     protected override async Task PracticeTrialStates() {
         await StartTrial();
@@ -70,6 +66,10 @@ public class MemMapExperiment
         await PauseBeforeRecall();
         await RecallOrientation();
         await Recognition();
+    }
+    protected override async Task FinalStates() {
+        await Questioneer();
+        await FinishExperiment();
     }
 
     protected async Task RecogInstructions() {

@@ -25,16 +25,13 @@ public class RepFRExperiment2 : WordListExperimentBase<RepFRExperiment2, FRSessi
     protected RepCounts repCounts = null;
     protected int uniqueWordsPerList;
 
-    protected override async Task PreTrialStates() {
+    protected override async Task InitialStates() {
         await SetupWordList();
 
         await QuitPrompt();
         await Introduction();
         await MicrophoneTest();
         await ConfirmStart();
-    }
-    protected override async Task PostTrialStates() {
-        await FinishExperiment();
     }
     protected override async Task PracticeTrialStates() {
         await StartTrial();
@@ -57,6 +54,9 @@ public class RepFRExperiment2 : WordListExperimentBase<RepFRExperiment2, FRSessi
         await PauseBeforeRecall();
         await RecallPrompt();
         await FreeRecall();
+    }
+    protected override async Task FinalStates() {
+        await FinishExperiment();
     }
 
     // Pre-Trial States

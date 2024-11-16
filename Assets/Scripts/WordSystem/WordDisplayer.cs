@@ -14,8 +14,6 @@ using System.Linq;
 using PsyForge;
 using PsyForge.Extensions;
 using PsyForge.ExternalDevices;
-using PsyForge.DataManagement;
-using PsyForge.Experiment;
 
 public class WordDisplayer : EventMonoBehaviour {
     [SerializeField] protected TextMeshProUGUI singleWord;

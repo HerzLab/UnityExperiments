@@ -36,9 +36,9 @@ public class CPSExperiment : ExperimentBase<CPSExperiment, CPSSession, CPSTrial,
         await FinishExperiment();
     }
 
-    protected override Task PreTrialStates() { return Task.CompletedTask; }
+    protected override Task InitialStates() { return Task.CompletedTask; }
     protected override Task PracticeTrialStates() { return Task.CompletedTask; }
-    protected override Task PostTrialStates() { return Task.CompletedTask; }
+    protected override Task FinalStates() { return Task.CompletedTask; }
 
     protected Task SetupExp() {
         if (manager.hostPC == null) {

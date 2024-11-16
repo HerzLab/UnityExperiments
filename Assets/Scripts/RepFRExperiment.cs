@@ -36,9 +36,9 @@ public class RepFRExperiment : ExperimentBase<RepFRExperiment, FRSession<Word>, 
         EndCurrentSession();
     }
 
-    protected override Task PreTrialStates() { return Task.CompletedTask; }
+    protected override Task InitialStates() { return Task.CompletedTask; }
     protected override Task PracticeTrialStates() { return Task.CompletedTask; }
-    protected override Task PostTrialStates() { return Task.CompletedTask; }
+    protected override Task FinalStates() { return Task.CompletedTask; }
 
     // NOTE: rather than use flags for the audio test, this is entirely based off of timings.
     // Since there is processing latency (which seems to be unity version dependent), this
@@ -52,10 +52,10 @@ public class RepFRExperiment : ExperimentBase<RepFRExperiment, FRSession<Word>, 
         await DoWaitWhile(() => manager.lowBeep.isPlaying);
         //await manager.Delay((int)(manager.lowBeep.clip.length * 1000) + 100)
         manager.recorder.StartRecording(wavPath);
-        textDisplayer.DisplayText("microphone test recording", LangStrings.MicrophoneTestRecording().Color("red"));
+        textDisplayer.Display("microphone test recording", text: LangStrings.MicrophoneTestRecording().Color("red"));
         await manager.Delay(Config.micTestDurationMs);
 
-        textDisplayer.DisplayText("microphone test playing", LangStrings.MicrophoneTestPlaying().Color("green"));
+        textDisplayer.Display("microphone test playing", text: LangStrings.MicrophoneTestPlaying().Color("green"));
         var clip = manager.recorder.StopRecording();
         manager.playback.Play(clip);
         await manager.Delay(Config.micTestDurationMs);

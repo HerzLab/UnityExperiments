@@ -39,7 +39,7 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
     [SerializeField] protected WordDisplayer wordDisplayer;
     [SerializeField] protected MathDiplayer mathDiplayer;
 
-    protected override async Task PreTrialStates() {
+    protected override async Task InitialStates() {
         await SetupWordList();
 
         if (!Config.skipIntros) {
@@ -48,9 +48,6 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
             await MicrophoneTest();
             await ConfirmStart();
         }
-    }
-    protected override async Task PostTrialStates() {
-        await FinishExperiment();
     }
     protected override async Task PracticeTrialStates() {
         await StartTrial();
@@ -74,6 +71,11 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
         await RecallOrientation();
         await FreeRecall();
     }
+    protected override async Task FinalStates() {
+        await FinishExperiment();
+    }
+
+    
     protected override void SendRamulatorStateMsg(HostPcStatusMsg state, bool stateToggle, Dictionary<string, object> extraData = null) {
         var dict = (extraData != null) ? new Dictionary<string, object>(extraData) : new();
         dict["phase_type"] = session?.Trial.encodingStim ?? false;

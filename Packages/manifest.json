@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "com.bruskatech.psyforge": "file:PsyForge",
+    "com.nobi.roundedcorners": "https://github.com/kirevdokimov/Unity-UI-Rounded-Corners.git",
     "com.unity.ai.navigation": "2.0.4",
     "com.unity.collab-proxy": "2.5.2",
     "com.unity.collections": "2.5.1",
