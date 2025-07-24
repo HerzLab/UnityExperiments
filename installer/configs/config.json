@@ -30,7 +30,7 @@
     "mccdaqSyncBoxTimeBetweenPulsesMs": 200,
 
     "ramulatorOn": false,
-    "elememOn": true,
+    "elememOn": false,
     "hostServerIP": "192.168.215.1",
     "hostServerPort": 8889,
     "elememHeartbeatInterval": 1000
