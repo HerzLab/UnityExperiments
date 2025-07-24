@@ -14,9 +14,11 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 using PsyForge;
-using PsyForge.Utilities;
 using PsyForge.ExternalDevices;
 using PsyForge.Extensions;
+using PsyForge.Experiment;
+using PsyForge.Localization;
+using System.Threading;
 
 public class MemMapExperiment 
     : WordListExperimentBase<MemMapExperiment, MemMapSession<PairedWord>, MemMapTrial<PairedWord>, MemMapConstants, PairedWord> 
@@ -29,17 +31,17 @@ public class MemMapExperiment
 
     [SerializeField] protected OldNewKeys oldNewKeys;
 
-    protected override async Task InitialStates() {
+    protected override async Awaitable InitialStates() {
         await SetupWordList();
 
         if (!Config.skipIntros) {
-            await QuitPrompt();
+            await SubjectConfirmation();
             await MicrophoneTest();
-            await Introduction();
+            await IntroductionVideo();
             await ConfirmStart();
         }
     }
-    protected override async Task PracticeTrialStates() {
+    protected override async Awaitable PracticeTrialStates(CancellationToken ct) {
         await StartTrial();
         await NextPracticeTrialPrompt();
         await CountdownVideo();
@@ -53,7 +55,7 @@ public class MemMapExperiment
         await RecallOrientation();
         await Recognition();
     }
-    protected override async Task TrialStates() {
+    protected override async Awaitable TrialStates(CancellationToken ct) {
         await StartTrial();
         await NextTrialPrompt();
         await CountdownVideo();
@@ -67,24 +69,26 @@ public class MemMapExperiment
         await RecallOrientation();
         await Recognition();
     }
-    protected override async Task FinalStates() {
+    protected override async Awaitable FinalStates() {
         await Questioneer();
         await FinishExperiment();
     }
 
     protected async Task RecogInstructions() {
-        await PressAnyKey("recog instructions", LangStrings.RecognitionInstructions());
+        await ExpHelpers.PressAnyKey("recog instructions", LangStrings.RecognitionInstructions());
     }
+    
+    // TODO: JPB: (feature) Implement quitAnytimeButSkipAheadInstead 
 
     protected new async Task Fixation() {
-        
-        SetExperimentStatus(HostPcStatusMsg.ORIENT());
+
+        ExpHelpers.SetExperimentStatus(HostPcStatusMsg.ORIENT());
 
         // Delay for random time within fixation duration limits and show orientation stimulus
         int[] limits = CONSTANTS.fixationDurationMs;
         int duration = PsyForge.Utilities.Random.Rnd.Next(limits[0], limits[1]);
         textDisplayer.Display("orientation stimulus", LangStrings.Blank(), LangStrings.GenForCurrLang("+"));
-        SetExperimentStatus(HostPcStatusMsg.ORIENT());
+        ExpHelpers.SetExperimentStatus(HostPcStatusMsg.ORIENT());
         await manager.Delay(duration);
 
         // Delay for random time within post-fixation delay limits
@@ -95,7 +99,7 @@ public class MemMapExperiment
     }
 
     protected new async Task Encoding() {
-        SetExperimentStatus(HostPcStatusMsg.ENCODING(session.TrialNum));
+        ExpHelpers.SetExperimentStatus(HostPcStatusMsg.ENCODING(session.TrialNum));
 
         // Get encoding state variables
         int[] isiLimits = CONSTANTS.interStimulusDurationMs;
@@ -111,12 +115,12 @@ public class MemMapExperiment
             isiDuration -= stimEarlyDuration;
 
             // Do the ISI
-            SetExperimentStatus(HostPcStatusMsg.ISI(isiDuration));
+            ExpHelpers.SetExperimentStatus(HostPcStatusMsg.ISI(isiDuration));
             await manager.Delay(isiDuration);
 
             // Do the stim and wait the rest of the ISI
             if (wordStim.stim) { manager.hostPC?.SendStimMsgTS(); }
-            SetExperimentStatus(HostPcStatusMsg.ISI(stimEarlyDuration));
+            ExpHelpers.SetExperimentStatus(HostPcStatusMsg.ISI(stimEarlyDuration));
             await manager.Delay(stimEarlyDuration);
 
             // Do the encoding and log it
@@ -137,7 +141,7 @@ public class MemMapExperiment
 
     protected async Task CuedRecall() {
         var fullRecallDurationMs = CONSTANTS.stimulusDurationMs+CONSTANTS.recallDurationMs;
-        SetExperimentStatus(HostPcStatusMsg.CUED_RECALL(fullRecallDurationMs, session.TrialNum));
+        ExpHelpers.SetExperimentStatus(HostPcStatusMsg.CUED_RECALL(fullRecallDurationMs, session.TrialNum));
 
         // Get cued recall state variables
         int[] isiLimits = CONSTANTS.interStimulusDurationMs;
@@ -153,12 +157,12 @@ public class MemMapExperiment
             isiDuration -= stimEarlyDuration;
 
             // Do the ISI
-            SetExperimentStatus(HostPcStatusMsg.ISI(isiDuration));
+            ExpHelpers.SetExperimentStatus(HostPcStatusMsg.ISI(isiDuration));
             await manager.Delay(isiDuration);
 
             // Do the stim and wait the rest of the ISI
             if (wordStim.stim) { manager.hostPC?.SendStimMsgTS(); }
-            SetExperimentStatus(HostPcStatusMsg.ISI(stimEarlyDuration));
+            ExpHelpers.SetExperimentStatus(HostPcStatusMsg.ISI(stimEarlyDuration));
             await manager.Delay(stimEarlyDuration);
 
             // Start recording for the cued recall
@@ -188,7 +192,7 @@ public class MemMapExperiment
 
     protected async Task Recognition() {
         var fullRecogDurationMs = CONSTANTS.stimulusDurationMs+CONSTANTS.recogDurationMs;
-        SetExperimentStatus(HostPcStatusMsg.RECOGNITION(fullRecogDurationMs, session.TrialNum));
+        ExpHelpers.SetExperimentStatus(HostPcStatusMsg.RECOGNITION(fullRecogDurationMs, session.TrialNum));
 
         // Get recognition state variables
         int[] isiLimits = CONSTANTS.interStimulusDurationMs;
@@ -204,12 +208,12 @@ public class MemMapExperiment
             isiDuration -= stimEarlyDuration;
 
             // Do the ISI
-            SetExperimentStatus(HostPcStatusMsg.ISI(isiDuration));
+            ExpHelpers.SetExperimentStatus(HostPcStatusMsg.ISI(isiDuration));
             await manager.Delay(isiDuration);
 
             // Do the stim and wait the rest of the ISI
             if (wordStim.stim) { manager.hostPC?.SendStimMsgTS(); }
-            SetExperimentStatus(HostPcStatusMsg.ISI(stimEarlyDuration));
+            ExpHelpers.SetExperimentStatus(HostPcStatusMsg.ISI(stimEarlyDuration));
             await manager.Delay(stimEarlyDuration);
 
             // Start recording for the cued recall
@@ -250,7 +254,7 @@ public class MemMapExperiment
 
             // Question 1 sub questions
             if (q1Resp == KeyCode.Y) {
-                await PressAnyKey("Question 1a", LangStrings.Blank(), LangStrings.QuestioneerQ1a());
+                await ExpHelpers.PressAnyKey("Question 1a", LangStrings.Blank(), LangStrings.QuestioneerQ1a());
 
                 string wavPath = Path.Combine(FileManager.SessionPath(), "q1a.wav");
                 manager.recorder.StartRecording(wavPath);
@@ -266,24 +270,24 @@ public class MemMapExperiment
         // Validate word repeats and counts
         var wordRepeats = Config.wordRepeats;
         var wordCounts = Config.wordCounts;
-        if (wordRepeats.Count() != 1 && wordRepeats[0] != 1) {
+        if (wordRepeats.Val.Count() != 1 && wordRepeats.Val[0] != 1) {
             throw new Exception("Config's wordRepeats should only have one item with a value of 1");
-        } else if (wordCounts.Count() != 1) {
+        } else if (wordCounts.Val.Count() != 1) {
             throw new Exception("Config's wordCounts should only have one item in it");
         }
 
         // Validate lure word repeats and counts
         var lureWordRepeats = Config.lureWordRepeats;
         var lureWordCounts = Config.lureWordCounts;
-        if (lureWordRepeats.Count() != 1 && lureWordRepeats[0] != 1) {
+        if (lureWordRepeats.Val.Count() != 1 && lureWordRepeats.Val[0] != 1) {
             throw new Exception("Config's lureWordRepeats should only have one item with a value of 1");
-        } else if (lureWordCounts.Count() != 1) {
+        } else if (lureWordCounts.Val.Count() != 1) {
             throw new Exception("Config's lureWordCounts should only have one item in it");
         }
 
         // Set member variables
-        wordsPerList = wordCounts[0];
-        lureWordsPerList = lureWordCounts[0];
+        wordsPerList = wordCounts.Val[0];
+        lureWordsPerList = lureWordCounts.Val[0];
 
         // Set the OldNewKeys sizes
         oldNewKeys.SetKeySize();

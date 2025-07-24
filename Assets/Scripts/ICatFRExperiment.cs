@@ -9,10 +9,11 @@
 using System.Threading.Tasks;
 using UnityEngine;
 using PsyForge;
+using System.Threading;
 
 public class ICatFRExperiment : CatFRExperiment {
 
-    protected override async Task PracticeTrialStates() {
+    protected override async Awaitable PracticeTrialStates(CancellationToken ct) {
         await StartTrial();
         await NextPracticeTrialPrompt();
         await CountdownVideo();
@@ -23,7 +24,7 @@ public class ICatFRExperiment : CatFRExperiment {
         await RecallOrientation();
         await FreeRecall();
     }
-    protected override async Task TrialStates() {
+    protected override async Awaitable TrialStates(CancellationToken ct) {
         await StartTrial();
         await NextTrialPrompt();
         await CountdownVideo();

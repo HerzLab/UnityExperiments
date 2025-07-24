@@ -19,11 +19,11 @@ using PsyForge;
 public class CatFRExperiment : WordListExperimentBase<CatFRExperiment, FRSession<CategorizedWord>, FRTrial<CategorizedWord>, FRConstants, CategorizedWord> {
     protected override Task SetupWordList() {
         var wordRepeats = Config.wordRepeats;
-        if (wordRepeats.Count() != 1 && wordRepeats[0] != 1) {
+        if (wordRepeats.Val.Count() != 1 && wordRepeats.Val[0] != 1) {
             throw new Exception("Config's wordRepeats should only have one item with a value of 1");
         }
 
-        wordsPerList = Config.wordCounts[0];
+        wordsPerList = Config.wordCounts.Val[0];
 
         var sourceWords = ReadWordpool<CategorizedWord>(FileManager.GetWordList(), "wordpool");
         var words = new CategorizedWordRandomSubset(sourceWords, CONSTANTS.splitWordsOverTwoSessions);

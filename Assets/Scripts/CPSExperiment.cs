@@ -18,27 +18,25 @@ using PsyForge;
 using PsyForge.Utilities;
 using PsyForge.ExternalDevices;
 using PsyForge.Experiment;
+using System.Threading;
+using PsyForge.Localization;
 
 public class CPSExperiment : ExperimentBase<CPSExperiment, CPSSession, CPSTrial, CPSConstants> {
     protected override void AwakeOverride() { }
-
-    protected void Start() {
-        Run();
-    }
 
     protected void SetVideo() {
         manager.videoControl.SetVideo(Config.video);
     }
 
-    protected override async Task TrialStates() {
+    protected override async Awaitable TrialStates(CancellationToken ct) {
         await SetupExp();
         await ShowVideo();
         await FinishExperiment();
     }
 
-    protected override Task InitialStates() { return Task.CompletedTask; }
-    protected override Task PracticeTrialStates() { return Task.CompletedTask; }
-    protected override Task FinalStates() { return Task.CompletedTask; }
+    protected override async Awaitable InitialStates() { await Task.CompletedTask; }
+    protected override async Awaitable PracticeTrialStates(CancellationToken ct) { await Task.CompletedTask; }
+    protected override async Awaitable FinalStates() { await Task.CompletedTask; }
 
     protected Task SetupExp() {
         if (manager.hostPC == null) {
@@ -49,7 +47,7 @@ public class CPSExperiment : ExperimentBase<CPSExperiment, CPSSession, CPSTrial,
     }
 
     protected async Task FinishExperiment() {
-        await PressAnyKey("display end message", LangStrings.SessionEnd());
+        await ExpHelpers.PressAnyKey("display end message", LangStrings.SessionEnd());
     }
 
     protected async Task ShowVideo() {
@@ -68,10 +66,10 @@ public class CPSExperiment : ExperimentBase<CPSExperiment, CPSSession, CPSTrial,
         };
         eventReporter.LogTS("movie", movieInfo);
 
-        await PressAnyKey("instructions", LangStrings.CPSInstructions());
+        await ExpHelpers.PressAnyKey("instructions", LangStrings.CPSInstructions());
 
         UnityEngine.Debug.Log(1);
-        SetExperimentStatus(HostPcStatusMsg.ENCODING(session.TrialNum), movieInfo);
+        ExpHelpers.SetExperimentStatus(HostPcStatusMsg.ENCODING(session.TrialNum), movieInfo);
 
         // Remove 10s to not overrun video legnth
         UnityEngine.Debug.Log(2);

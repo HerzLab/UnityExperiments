@@ -1,0 +1,39 @@
+{
+    "experimentClass": "MemMapExperiment",
+    "experimentName": "MemMapOpenLoop",
+    "experimentScene": "FR",
+
+    "stimMode": "OpenLoop",
+
+    "skipIntros": false,
+
+    "quitAnytime": true,
+    "quitAnytimeButSkipAheadInstead": false,
+    "pauseAnytime": true,
+    "targetFrameRate": 120,
+
+    "wordpool": "ram_wordpool_en.tsv",
+    "practiceWordpool": "ram_practice_wordpool_en.tsv",
+    "introductionVideo": "FR1_instructions.mov",
+    "countdownVideo": "countdown_10s.mov",
+
+    "splitWordsOverTwoSessions": false,
+    "optionalExtraPracticeTrials": false,
+    "onlyPracticeOnFirstSession": true,
+    "numPracticeLists": 1,
+
+    "wordRepeats": [1],
+    "wordCounts": [3],
+    "lureWordRepeats": [1],
+    "lureWordCounts": [3],
+
+    "numPreNoStimLists": 0,
+    "numNoStimLists": 4,
+    "numEncodingStimLists": 4,
+    "numRetrievalStimLists": 4,
+    "numEncodingAndRetrievalStimLists": 0,
+
+    "micTestDurationMs": 3000,
+
+    "placeholder": false
+}

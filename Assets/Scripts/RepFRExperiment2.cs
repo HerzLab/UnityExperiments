@@ -20,20 +20,22 @@ using UnityEngine.UIElements;
 using PsyForge;
 using PsyForge.Utilities;
 using PsyForge.ExternalDevices;
+using PsyForge.Experiment;
+using PsyForge.Localization;
 
 public class RepFRExperiment2 : WordListExperimentBase<RepFRExperiment2, FRSession<Word>, FRTrial<Word>, RepFRConstants, Word> {
     protected RepCounts repCounts = null;
     protected int uniqueWordsPerList;
 
-    protected override async Task InitialStates() {
+    protected override async Awaitable InitialStates() {
         await SetupWordList();
 
-        await QuitPrompt();
+        await SubjectConfirmation();
         await Introduction();
         await MicrophoneTest();
         await ConfirmStart();
     }
-    protected override async Task PracticeTrialStates() {
+    protected override async Awaitable PracticeTrialStates(CancellationToken ct) {
         await StartTrial();
         await NextPracticeTrialPrompt();
         await CountdownVideo();
@@ -44,7 +46,7 @@ public class RepFRExperiment2 : WordListExperimentBase<RepFRExperiment2, FRSessi
         await RecallPrompt();
         await FreeRecall();
     }
-    protected override async Task TrialStates() {
+    protected override async Awaitable TrialStates(CancellationToken ct) {
         await StartTrial();
         await NextTrialPrompt();
         await CountdownVideo();
@@ -55,16 +57,16 @@ public class RepFRExperiment2 : WordListExperimentBase<RepFRExperiment2, FRSessi
         await RecallPrompt();
         await FreeRecall();
     }
-    protected override async Task FinalStates() {
+    protected override async Awaitable FinalStates() {
         await FinishExperiment();
     }
 
     // Pre-Trial States
-    protected override async Task Introduction() {
+    protected async Task Introduction() {
         SendRamulatorStateMsg(HostPcStatusMsg.INSTRUCT(), true);
-        SetExperimentStatus(HostPcStatusMsg.INSTRUCT());
-        await RepeatUntilYes(async (CancellationToken ct) => {
-            await PressAnyKey("show instruction video", LangStrings.ShowInstructionVideo());
+        ExpHelpers.SetExperimentStatus(HostPcStatusMsg.INSTRUCT());
+        await ExpHelpers.RepeatUntilYes(async (CancellationToken ct) => {
+            await ExpHelpers.PressAnyKey("show instruction video", LangStrings.ShowInstructionVideo());
 
             manager.videoControl.SetVideo(Config.introductionVideo, true);
             await manager.videoControl.PlayVideo();
@@ -75,7 +77,7 @@ public class RepFRExperiment2 : WordListExperimentBase<RepFRExperiment2, FRSessi
     // Trial States
     protected async Task Orientation() {
         SendRamulatorStateMsg(HostPcStatusMsg.ORIENT(), true);
-        SetExperimentStatus(HostPcStatusMsg.ORIENT());
+        ExpHelpers.SetExperimentStatus(HostPcStatusMsg.ORIENT());
 
         int[] limits = CONSTANTS.fixationDurationMs;
         int duration = PsyForge.Utilities.Random.Rnd.Next(limits[0], limits[1]);

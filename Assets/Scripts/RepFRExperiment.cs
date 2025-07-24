@@ -17,28 +17,26 @@ using PsyForge;
 using PsyForge.Extensions;
 using PsyForge.Utilities;
 using PsyForge.Experiment;
+using System.Threading;
+using PsyForge.Localization;
 
 public class RepFRExperiment : ExperimentBase<RepFRExperiment, FRSession<Word>, FRTrial<Word>, RepFRConstants> {
     protected override void AwakeOverride() { }
-
-    protected void Start() {
-        Run();
-    }
 
     protected void SetVideo() {
         manager.videoControl.SetVideo(Config.introductionVideo);
     }
 
-    protected override async Task TrialStates() {
+    protected override async Awaitable TrialStates(CancellationToken ct) {
         await RecordTest();
         //SetVideo();
         //await manager.videoControl.PlayVideo();
         EndCurrentSession();
     }
 
-    protected override Task InitialStates() { return Task.CompletedTask; }
-    protected override Task PracticeTrialStates() { return Task.CompletedTask; }
-    protected override Task FinalStates() { return Task.CompletedTask; }
+    protected override async Awaitable InitialStates() { await Task.CompletedTask; }
+    protected override async Awaitable PracticeTrialStates(CancellationToken ct) { await Task.CompletedTask; }
+    protected override async Awaitable FinalStates() { await Task.CompletedTask; }
 
     // NOTE: rather than use flags for the audio test, this is entirely based off of timings.
     // Since there is processing latency (which seems to be unity version dependent), this
@@ -57,7 +55,8 @@ public class RepFRExperiment : ExperimentBase<RepFRExperiment, FRSession<Word>, 
 
         textDisplayer.Display("microphone test playing", text: LangStrings.MicrophoneTestPlaying().Color("green"));
         var clip = manager.recorder.StopRecording();
-        manager.playback.Play(clip);
+        
+        manager.playback.PlayOneShot(clip);
         await manager.Delay(Config.micTestDurationMs);
     }
 }

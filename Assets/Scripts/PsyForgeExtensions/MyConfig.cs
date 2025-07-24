@@ -10,34 +10,34 @@ namespace PsyForge {
 
     public static partial class Config {
         // Game Section Skips
-        public static bool skipIntros { get { return GetSetting<bool>("skipIntros"); } }
+        public static Conf<bool> skipIntros;
 
         // FRExperiment.cs
-        public static string countdownVideo { get { return GetSetting<string>("countdownVideo"); } }
+        public static Conf<string> countdownVideo;
 
-        public static int restDurationMs { get { return GetSetting<int>("restDurationMs"); } }
-        public static int numPracticeLists { get { return GetSetting<int>("numPracticeLists"); } }
-        public static int numNoStimLists { get { return GetSetting<int>("numNoStimLists"); } }
-        public static int numPreNoStimLists { get { return GetSetting<int>("numPreNoStimLists"); } }
-        public static int numEncodingStimLists { get { return GetSetting<int>("numEncodingStimLists"); } }
-        public static int numRetrievalStimLists { get { return GetSetting<int>("numRetrievalStimLists"); } }
-        public static int numEncodingAndRetrievalStimLists { get { return GetSetting<int>("numEncodingAndRetrievalStimLists"); } }
-        public static bool optionalExtraPracticeTrials { get { return GetSetting<bool>("optionalExtraPracticeTrials"); } }
-        public static bool onlyPracticeOnFirstSession { get { return GetSetting<bool>("onlyPracticeOnFirstSession"); } }
+        public static Conf<int> restDurationMs;
+        public static Conf<int> numPracticeLists;
+        public static Conf<int> numNoStimLists;
+        public static Conf<int> numPreNoStimLists;
+        public static Conf<int> numEncodingStimLists;
+        public static Conf<int> numRetrievalStimLists;
+        public static Conf<int> numEncodingAndRetrievalStimLists;
+        public static Conf<bool> optionalExtraPracticeTrials;
+        public static Conf<bool> onlyPracticeOnFirstSession;
 
         // RepFRExperiment.cs
-        public static int[] wordRepeats { get { return GetSetting<int[]>("wordRepeats"); } }
-        public static int[] wordCounts { get { return GetSetting<int[]>("wordCounts"); } }
+        public static Conf<int[]> wordRepeats;
+        public static Conf<int[]> wordCounts;
 
         // ltpRepFRExperiment.cs
-        public static int[] restLists { get { return GetSetting<int[]>("restLists"); } }
+        public static Conf<int[]> restLists;
 
         // CPSExperiment.cs
-        public static string video { get { return GetSetting<string>("video"); } }
+        public static Conf<string> video;
 
         // MemMapExperiment.cs
-        public static int[] lureWordRepeats { get { return GetSetting<int[]>("lureWordRepeats"); } }
-        public static int[] lureWordCounts { get { return GetSetting<int[]>("lureWordCounts"); } }
+        public static Conf<int[]> lureWordRepeats;
+        public static Conf<int[]> lureWordCounts;
     }
 
 }

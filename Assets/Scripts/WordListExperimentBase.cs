@@ -18,6 +18,8 @@ using PsyForge.Utilities;
 using PsyForge.ExternalDevices;
 using PsyForge.Extensions;
 using PsyForge.Experiment;
+using System.Threading;
+using PsyForge.Localization;
 
 
 public abstract class WordListExperimentBase<Self, SessionType, TrialType, Constants, WordType> 
@@ -30,26 +32,22 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
 {
     protected override void AwakeOverride() { }
 
-    protected void Start() {
-        Run();
-    }
-
     protected int wordsPerList;
 
     [SerializeField] protected WordDisplayer wordDisplayer;
     [SerializeField] protected MathDiplayer mathDiplayer;
 
-    protected override async Task InitialStates() {
+    protected override async Awaitable InitialStates() {
         await SetupWordList();
 
         if (!Config.skipIntros) {
-            await QuitPrompt();
-            await Introduction();
+            await SubjectConfirmation();
+            await IntroductionVideo();
             await MicrophoneTest();
             await ConfirmStart();
         }
     }
-    protected override async Task PracticeTrialStates() {
+    protected override async Awaitable PracticeTrialStates(CancellationToken ct) {
         await StartTrial();
         await NextPracticeTrialPrompt();
         await CountdownVideo();
@@ -60,7 +58,7 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
         await RecallOrientation();
         await FreeRecall();
     }
-    protected override async Task TrialStates() {
+    protected override async Awaitable TrialStates(CancellationToken ct) {
         await StartTrial();
         await NextTrialPrompt();
         await CountdownVideo();
@@ -71,15 +69,15 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
         await RecallOrientation();
         await FreeRecall();
     }
-    protected override async Task FinalStates() {
+    protected override async Awaitable FinalStates() {
         await FinishExperiment();
     }
 
     
-    protected override void SendRamulatorStateMsg(HostPcStatusMsg state, bool stateToggle, Dictionary<string, object> extraData = null) {
+    protected void SendRamulatorStateMsg(HostPcStatusMsg state, bool stateToggle, Dictionary<string, object> extraData = null) {
         var dict = (extraData != null) ? new Dictionary<string, object>(extraData) : new();
         dict["phase_type"] = session?.Trial.encodingStim ?? false;
-        manager.ramulator?.SendStateMsg(state, stateToggle, dict);
+        // manager.ramulator?.SendStateMsg(state, stateToggle, dict);
     }
 
 
@@ -91,7 +89,7 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
 
         manager.recorder.StartRecording(wavPath);
         eventReporter.LogTS("start final recall period");
-        SetExperimentStatus(HostPcStatusMsg.FINAL_RECALL(CONSTANTS.finalRecallDuration, session.TrialNum));
+        ExpHelpers.SetExperimentStatus(HostPcStatusMsg.FINAL_RECALL(CONSTANTS.finalRecallDuration, session.TrialNum));
 
         await manager.Delay(CONSTANTS.finalRecallDuration);
 
@@ -100,7 +98,7 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
         manager.lowBeep.Play();
     }
     protected async Task FinishExperiment() {
-        await PressAnyKey("display end message", LangStrings.SessionEnd());
+        await ExpHelpers.PressAnyKey("display end message", LangStrings.SessionEnd());
     }
 
     // Trial States
@@ -136,24 +134,24 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
 
         var stimList = session.Trial.GetStimValues();
         bool stim = stimList.Values.Aggregate((current, next) => current || next);
-        manager.ramulator?.BeginNewTrial((int)session.TrialNum);
+        // manager.ramulator?.BeginNewTrial((int)session.TrialNum);
         ReportTrialNum(stim, new() { {"stimList", stimList} });
     }
     protected async Task NextTrialPrompt() {
-        var key = await PressAnyKey("trial prompt", LangStrings.TrialPrompt(session.TrialNum));
+        var key = await ExpHelpers.PressAnyKey("trial prompt", LangStrings.TrialPrompt(session.TrialNum));
         if (key == KeyCode.D) { // D for Done
             EndCurrentSession();
         }
     }
     protected async Task NextPracticeTrialPrompt() {
-        var key = await PressAnyKey("practice trial prompt", LangStrings.PracticeTrialPrompt(session.TrialNum));
+        var key = await ExpHelpers.PressAnyKey("practice trial prompt", LangStrings.PracticeTrialPrompt(session.TrialNum));
         if (key == KeyCode.D) { // D for Done
             EndCurrentSession();
         }
     }
     protected async Task CountdownVideo() {
         SendRamulatorStateMsg(HostPcStatusMsg.COUNTDOWN(), true, new() { { "current_trial", session.TrialNum } });
-        SetExperimentStatus(HostPcStatusMsg.COUNTDOWN(), new() { { "current_trial", session.TrialNum } });
+        ExpHelpers.SetExperimentStatus(HostPcStatusMsg.COUNTDOWN(), new() { { "current_trial", session.TrialNum } });
 
         manager.videoControl.SetVideo(Config.countdownVideo);
         await manager.videoControl.PlayVideo();
@@ -162,19 +160,19 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
     }
     protected async Task Fixation() {
         SendRamulatorStateMsg(HostPcStatusMsg.ORIENT(), true);
-        SetExperimentStatus(HostPcStatusMsg.ORIENT());
+        ExpHelpers.SetExperimentStatus(HostPcStatusMsg.ORIENT());
 
         int[] limits = CONSTANTS.fixationDurationMs;
         int duration = PsyForge.Utilities.Random.Rnd.Next(limits[0], limits[1]);
         textDisplayer.Display("orientation stimulus", LangStrings.Blank(), LangStrings.GenForCurrLang("+"));
-        SetExperimentStatus(HostPcStatusMsg.ORIENT());
+        ExpHelpers.SetExperimentStatus(HostPcStatusMsg.ORIENT());
         await manager.Delay(duration);
         textDisplayer.Clear();
 
         SendRamulatorStateMsg(HostPcStatusMsg.ORIENT(), false);
     }
     protected async Task Orientation(int duration) {
-        SetExperimentStatus(HostPcStatusMsg.ORIENT());
+        ExpHelpers.SetExperimentStatus(HostPcStatusMsg.ORIENT());
         textDisplayer.Display("display recall text", LangStrings.Blank(), LangStrings.GenForCurrLang("*******"));
         manager.highBeep.Play();
         await manager.Delay(duration);
@@ -182,14 +180,14 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
     }
     protected async Task Encoding() {
         SendRamulatorStateMsg(HostPcStatusMsg.ENCODING(session.TrialNum), true);
-        SetExperimentStatus(HostPcStatusMsg.ENCODING(session.TrialNum));
+        ExpHelpers.SetExperimentStatus(HostPcStatusMsg.ENCODING(session.TrialNum));
 
         int[] isiLimits = CONSTANTS.interStimulusDurationMs;
         var encStimWords = session.Trial.encoding;
 
         for (int i = 0; i < 12; ++i) {
             int isiDuration = PsyForge.Utilities.Random.Rnd.Next(isiLimits[0], isiLimits[1]);
-            SetExperimentStatus(HostPcStatusMsg.ISI(isiDuration));
+            ExpHelpers.SetExperimentStatus(HostPcStatusMsg.ISI(isiDuration));
             await manager.Delay(isiDuration);
 
             var wordStim = encStimWords[i];
@@ -204,7 +202,7 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
     }
     protected async Task FixationDistractor() {
         SendRamulatorStateMsg(HostPcStatusMsg.DISTRACT(), true, new() { { "current_trial", session.TrialNum } });
-        SetExperimentStatus(HostPcStatusMsg.DISTRACT(), new() { { "current_trial", session.TrialNum } });
+        ExpHelpers.SetExperimentStatus(HostPcStatusMsg.DISTRACT(), new() { { "current_trial", session.TrialNum } });
 
         textDisplayer.Display("display distractor fixation cross", LangStrings.Blank(), LangStrings.GenForCurrLang("+"));
         await manager.Delay(CONSTANTS.distractorDurationMs);
@@ -214,7 +212,7 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
     }
     protected async Task MathDistractor() {
         SendRamulatorStateMsg(HostPcStatusMsg.DISTRACT(), true, new() { { "current_trial", session.TrialNum } });
-        SetExperimentStatus(HostPcStatusMsg.DISTRACT(), new() { { "current_trial", session.TrialNum } });
+        ExpHelpers.SetExperimentStatus(HostPcStatusMsg.DISTRACT(), new() { { "current_trial", session.TrialNum } });
 
         const int numValuesInEquation = 3;
         mathDiplayer.SetNewRandomEquation(numValuesInEquation);
@@ -225,7 +223,7 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
             var key = keyCode.ToString();
 
             // Enter only numbers
-            if (IsNumericKeyCode(keyCode)) {
+            if (ExpHelpers.IsNumericKeyCode(keyCode)) {
                 key = key[key.Length - 1].ToString(); // Unity gives numbers as Alpha# or Keypad#
                 mathDiplayer.AddDigitToAnswer(int.Parse(key));
             }
@@ -245,7 +243,7 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
                 }
 
                 // Report results
-                manager.ramulator?.SendMathMsg(mathDiplayer.Problem, mathDiplayer.Answer, responseTimeMs, correct);
+                // manager.ramulator?.SendMathMsg(mathDiplayer.Problem, mathDiplayer.Answer, responseTimeMs, correct);
 
                 // End distractor or setup next math problem
                 if ((Clock.UtcNow - startTime).TotalMilliseconds > CONSTANTS.distractorDurationMs) {
@@ -269,7 +267,7 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
     }
     protected async Task FreeRecall() {
         SendRamulatorStateMsg(HostPcStatusMsg.RETRIEVAL(), true, new() { { "current_trial", session.TrialNum } });
-        SetExperimentStatus(HostPcStatusMsg.RETRIEVAL(), new() { { "current_trial", session.TrialNum } });
+        ExpHelpers.SetExperimentStatus(HostPcStatusMsg.RETRIEVAL(), new() { { "current_trial", session.TrialNum } });
 
         string wavPath = Path.Combine(FileManager.SessionPath(), session.TrialNum + ".wav");
         bool stim = session.Trial.recallStim;
@@ -280,7 +278,7 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
 
         manager.recorder.StartRecording(wavPath);
         eventReporter.LogTS("start recall period");
-        SetExperimentStatus(HostPcStatusMsg.FREE_RECALL(CONSTANTS.recallDurationMs, session.TrialNum));
+        ExpHelpers.SetExperimentStatus(HostPcStatusMsg.FREE_RECALL(CONSTANTS.recallDurationMs, session.TrialNum));
 
         await manager.Delay(CONSTANTS.recallDurationMs);
 
@@ -296,14 +294,14 @@ public abstract class WordListExperimentBase<Self, SessionType, TrialType, Const
         // Validate word repeats and counts
         var wordRepeats = Config.wordRepeats;
         var wordCounts = Config.wordCounts;
-        if (wordRepeats.Count() != 1 && wordRepeats[0] != 1) {
+        if (wordRepeats.Val.Count() != 1 && wordRepeats.Val[0] != 1) {
             throw new Exception("Config's wordRepeats should only have one item with a value of 1");
-        } else if (wordCounts.Count() != 1) {
+        } else if (wordCounts.Val.Count() != 1) {
             throw new Exception("Config's wordCounts should only have one item in it");
         }
 
         // Set member variables
-        wordsPerList = wordCounts[0];
+        wordsPerList = wordCounts.Val[0];
 
         // Read words and generate the random subset needed
         var sourceWords = ReadWordpool<WordType>(FileManager.GetWordList(), "wordpool");

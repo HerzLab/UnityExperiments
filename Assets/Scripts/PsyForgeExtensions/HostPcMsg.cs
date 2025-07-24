@@ -16,7 +16,6 @@ namespace PsyForge.ExternalDevices {
         public static HostPcStatusMsg SYNC() { return new HostPcStatusMsg("SYNC"); }
         public static HostPcStatusMsg VOCALIZATION() { return new HostPcStatusMsg("VOCALIZATION"); }
         public static HostPcStatusMsg FIXATION() { return new HostPcStatusMsg("FIXATION"); }
-        public static HostPcStatusMsg ENCODING(uint trailNum) { return new HostPcStatusMsg("ENCODING", new() {{"current_trial", trailNum}}); }
         public static HostPcStatusMsg RETRIEVAL() { return new HostPcStatusMsg("RETRIEVAL"); }
         public static HostPcStatusMsg MATH() { return new HostPcStatusMsg("MATH"); }
         public static HostPcStatusMsg ISI(float duration) { return new HostPcStatusMsg("ISI", new() {{"duration", duration}}); }
